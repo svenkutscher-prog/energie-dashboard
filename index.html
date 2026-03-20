@@ -30,7 +30,11 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 #loadingBar{height:2px;background:linear-gradient(90deg,var(--strom),var(--gas),var(--wasser));background-size:200%;animation:slide 1.2s linear infinite;display:none;}
 #loadingBar.active{display:block;}
 @keyframes slide{0%{background-position:0%}100%{background-position:200%}}
-.error-banner{margin:12px 14px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:rgba(239,100,100,0.9);display:none;}
+.error-banner{margin:12px 14px 0;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:rgba(239,100,100,0.9);display:none;}
+
+/* PAGES */
+.page{display:none;}
+.page.active{display:block;}
 
 /* ZÄHLER */
 .zaehler-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:14px 14px 0;}
@@ -79,7 +83,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 .chart-wrap{position:relative;height:220px;}
 
 /* TABLE */
-.mtable{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-top:10px;}
+.mtable{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-top:10px;overflow-x:auto;}
 .mtable table{width:100%;border-collapse:collapse;font-family:'Space Mono',monospace;font-size:11px;}
 .mtable th{background:var(--bg3);padding:7px 6px;text-align:right;color:var(--muted);font-size:10px;font-weight:400;white-space:nowrap;}
 .mtable th:first-child{text-align:left;width:30px;}
@@ -93,13 +97,44 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 /* INSTALL HINT */
 .install-hint{margin:12px 14px 0;background:rgba(59,130,246,0.08);border:1px dashed rgba(59,130,246,0.3);border-radius:10px;padding:10px 14px;font-size:11px;color:rgba(100,160,255,0.8);line-height:1.5;display:flex;gap:8px;align-items:flex-start;}
 
-/* SKELETON */
-.skeleton{background:linear-gradient(90deg,var(--card) 25%,var(--bg3) 50%,var(--card) 75%);background-size:200%;animation:shimmer 1.2s infinite;border-radius:8px;}
-@keyframes shimmer{0%{background-position:200%}100%{background-position:-200%}}
+/* ── SETTINGS PAGE ───────────────────────────────── */
+.settings-section{padding:16px 14px 0;}
+.settings-group{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:0;}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);}
+.settings-row:last-child{border-bottom:none;}
+.settings-row-left{display:flex;align-items:center;gap:12px;}
+.settings-icon{font-size:20px;width:28px;text-align:center;}
+.settings-label{font-size:14px;font-weight:500;color:var(--text);}
+.settings-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+
+/* TOGGLE SWITCH */
+.toggle{position:relative;width:44px;height:26px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;position:absolute;}
+.toggle-track{position:absolute;inset:0;border-radius:13px;background:rgba(255,255,255,0.12);transition:background 0.2s;cursor:pointer;}
+.toggle input:checked + .toggle-track{background:var(--green);}
+.toggle-thumb{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform 0.2s;pointer-events:none;}
+.toggle input:checked ~ .toggle-thumb{transform:translateX(18px);}
+
+/* YEAR CHIPS */
+.year-chips{display:flex;flex-wrap:wrap;gap:8px;padding:14px 16px;}
+.year-chip{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.2s;font-family:'Space Mono',monospace;}
+.year-chip.on{color:#0a0f1e;border-color:transparent;}
+.year-chip[data-yr="2021"].on{background:rgba(100,116,139,0.85);}
+.year-chip[data-yr="2022"].on{background:rgba(99,102,241,0.85);}
+.year-chip[data-yr="2023"].on{background:rgba(20,184,166,0.85);}
+.year-chip[data-yr="2024"].on{background:rgba(245,158,11,0.85);}
+.year-chip[data-yr="2025"].on{background:rgba(59,130,246,0.85);}
+.year-chip[data-yr="2026"].on{background:#f1f5f9;}
+
+.settings-hint{margin:10px 14px 0;font-size:11px;color:var(--muted);line-height:1.6;padding:0 2px;}
+
+.api-row{padding:14px 16px;}
+.api-label{font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.08em;}
+.api-url{font-family:'Space Mono',monospace;font-size:10px;color:var(--green);background:var(--bg3);padding:8px 10px;border-radius:8px;word-break:break-all;line-height:1.5;}
 
 /* BOTTOM NAV */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,15,30,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;padding:8px 0 20px;z-index:100;}
-.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0;cursor:pointer;font-size:9px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0;cursor:pointer;font-size:9px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);transition:color 0.2s;}
 .nav-item.active{color:var(--strom);}
 .nav-icon{font-size:20px;}
 canvas{display:block;}
@@ -114,87 +149,225 @@ canvas{display:block;}
     <h1>ENERGIE</h1>
     <p id="lastUpdate">Lade Daten…</p>
   </div>
-  <div class="badge" onclick="loadData(true)">↻ Refresh</div>
+  <div class="badge" onclick="loadData(true)">↻</div>
 </div>
 
 <div class="error-banner" id="errorBanner"></div>
 
-<div class="install-hint" id="hint">
-  <span style="font-size:16px;flex-shrink:0">📲</span>
-  <span>Safari → Teilen <b>⎙</b> → <b>„Zum Home-Bildschirm"</b></span>
-</div>
+<!-- ══════════════════════════════════════════════════
+     PAGE: DASHBOARD
+══════════════════════════════════════════════════ -->
+<div class="page active" id="page-dashboard">
 
-<!-- ZÄHLER -->
-<div class="zaehler-grid">
-  <div class="zcard g"><div class="zlabel">Gas</div><div class="zval" id="z-gas">–</div><div class="zunit">m³ Zähler</div></div>
-  <div class="zcard s"><div class="zlabel">Strom</div><div class="zval" id="z-strom">–</div><div class="zunit">kWh Zähler</div></div>
-  <div class="zcard w"><div class="zlabel">Wasser</div><div class="zval" id="z-wasser">–</div><div class="zunit">m³ Zähler</div></div>
-</div>
-
-<!-- JAHRESVERGLEICH -->
-<div class="section">
-  <div class="section-title">Jahresvergleich</div>
-  <div class="tabs">
-    <button class="tab strom active" onclick="switchTab('strom',this)">⚡ Strom</button>
-    <button class="tab gas" onclick="switchTab('gas',this)">🔥 Gas</button>
-    <button class="tab wasser" onclick="switchTab('wasser',this)">💧 Wasser</button>
-    <button class="tab temp" onclick="switchTab('temp',this)">🌡 Temp</button>
+  <div class="install-hint" id="hint">
+    <span style="font-size:16px;flex-shrink:0">📲</span>
+    <span>Safari → Teilen <b>⎙</b> → <b>„Zum Home-Bildschirm"</b></span>
   </div>
-  <div class="sum-grid" id="sumCards"></div>
-  <div class="chart-card">
-    <div class="legend" id="legend"></div>
-    <div class="chart-wrap"><canvas id="chart"></canvas></div>
+
+  <!-- ZÄHLER -->
+  <div class="zaehler-grid" id="zaehlerGrid">
+    <div class="zcard g"><div class="zlabel">Gas</div><div class="zval" id="z-gas">–</div><div class="zunit">m³</div></div>
+    <div class="zcard s"><div class="zlabel">Strom</div><div class="zval" id="z-strom">–</div><div class="zunit">kWh</div></div>
+    <div class="zcard w"><div class="zlabel">Wasser</div><div class="zval" id="z-wasser">–</div><div class="zunit">m³</div></div>
   </div>
-  <div class="mtable" id="table"></div>
+
+  <!-- JAHRESVERGLEICH -->
+  <div class="section">
+    <div class="section-title">Jahresvergleich</div>
+    <div class="tabs" id="catTabs"></div>
+    <div class="sum-grid" id="sumCards"></div>
+    <div class="chart-card">
+      <div class="legend" id="legend"></div>
+      <div class="chart-wrap"><canvas id="chart"></canvas></div>
+    </div>
+    <div class="mtable" id="table"></div>
+  </div>
+  <div style="height:20px"></div>
 </div>
 
-<div style="height:20px"></div>
+<!-- ══════════════════════════════════════════════════
+     PAGE: EINSTELLUNGEN
+══════════════════════════════════════════════════ -->
+<div class="page" id="page-settings">
+  <div class="settings-section">
+    <div class="section-title">Kategorien anzeigen</div>
+    <div class="settings-group" id="catToggles"></div>
+  </div>
 
+  <div class="settings-section" style="margin-top:16px;">
+    <div class="section-title">Jahre anzeigen</div>
+    <div class="settings-group">
+      <div class="year-chips" id="yearChips"></div>
+    </div>
+    <div class="settings-hint">Mindestens 1 Jahr muss aktiv sein. 2026 ist immer hervorgehoben.</div>
+  </div>
+
+  <div class="settings-section" style="margin-top:16px;">
+    <div class="section-title">Datenquelle</div>
+    <div class="settings-group">
+      <div class="api-row">
+        <div class="api-label">Apps Script URL</div>
+        <div class="api-url" id="apiUrlDisplay"></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="height:20px"></div>
+</div>
+
+<!-- BOTTOM NAV -->
 <div class="bottom-nav">
-  <div class="nav-item active"><div class="nav-icon">📊</div><div>Dashboard</div></div>
-  <div class="nav-item"><div class="nav-icon">📈</div><div>Trends</div></div>
-  <div class="nav-item"><div class="nav-icon">📅</div><div>Monat</div></div>
-  <div class="nav-item"><div class="nav-icon">⚙️</div><div>Setup</div></div>
+  <div class="nav-item active" onclick="showPage('dashboard',this)"><div class="nav-icon">📊</div><div>Dashboard</div></div>
+  <div class="nav-item" onclick="showPage('trends',this)"><div class="nav-icon">📈</div><div>Trends</div></div>
+  <div class="nav-item" onclick="showPage('monat',this)"><div class="nav-icon">📅</div><div>Monat</div></div>
+  <div class="nav-item" onclick="showPage('settings',this)"><div class="nav-icon">⚙️</div><div>Einstellungen</div></div>
 </div>
 
 <script>
 if(window.navigator.standalone) document.getElementById('hint').style.display='none';
 
+// ── CONFIG ─────────────────────────────────────────────────
 const API_URL = 'https://script.google.com/macros/s/AKfycby5_WYDWxvEVaTABlIAbCEgsdllyuhzlpD3d4JrR7o2QDsIm8RFqsdGvbnTZO_GIt3NCA/exec';
-const CACHE_KEY = 'energie_data';
-const CACHE_TTL = 60 * 60 * 1000; // 1 Stunde
+const CACHE_KEY  = 'energie_data';
+const PREF_KEY   = 'energie_prefs';
+const CACHE_TTL  = 60 * 60 * 1000;
 
-const M=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
-const J=[2021,2022,2023,2024,2025,2026];
-const C=['rgba(100,116,139,0.85)','rgba(99,102,241,0.85)','rgba(20,184,166,0.85)','rgba(245,158,11,0.85)','rgba(59,130,246,0.85)','#f1f5f9'];
-
-const META = {
-  strom: {label:'Strom', unit:'kWh', color:'#f59e0b'},
-  gas:   {label:'Gas',   unit:'m³',  color:'#ef4444'},
-  wasser:{label:'Wasser',unit:'m³',  color:'#3b82f6'},
-  temp:  {label:'Temp',  unit:'°C',  color:'#10b981'}
+const M = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+const ALL_YEARS  = [2021,2022,2023,2024,2025,2026];
+const YEAR_COLORS= {
+  2021:'rgba(100,116,139,0.85)',
+  2022:'rgba(99,102,241,0.85)',
+  2023:'rgba(20,184,166,0.85)',
+  2024:'rgba(245,158,11,0.85)',
+  2025:'rgba(59,130,246,0.85)',
+  2026:'#f1f5f9'
 };
 
-let DB = null;
-let curTab = 'strom';
-let mainChart = null;
+const ALL_CATS = [
+  {key:'strom', label:'Strom',      icon:'⚡', unit:'kWh', color:'#f59e0b'},
+  {key:'gas',   label:'Gas',        icon:'🔥', unit:'m³',  color:'#ef4444'},
+  {key:'wasser',label:'Wasser',     icon:'💧', unit:'m³',  color:'#3b82f6'},
+  {key:'temp',  label:'Temperatur', icon:'🌡', unit:'°C',  color:'#10b981'},
+];
 
-// ── LOAD DATA ──────────────────────────────────────────────
+// ── PREFERENCES ────────────────────────────────────────────
+function defaultPrefs() {
+  return {
+    cats:  {strom:true, gas:true, wasser:true, temp:true},
+    years: {2021:true, 2022:true, 2023:true, 2024:true, 2025:true, 2026:true}
+  };
+}
+function loadPrefs() {
+  try { return JSON.parse(localStorage.getItem(PREF_KEY)) || defaultPrefs(); }
+  catch(e) { return defaultPrefs(); }
+}
+function savePrefs(p) { localStorage.setItem(PREF_KEY, JSON.stringify(p)); }
+
+let prefs = loadPrefs();
+let DB = null;
+let curTab = null;
+let mainChart = null;
+let curPage = 'dashboard';
+
+// ── PAGE NAVIGATION ────────────────────────────────────────
+function showPage(name, navEl) {
+  curPage = name;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const pg = document.getElementById('page-' + name);
+  if (pg) pg.classList.add('active');
+  if (navEl) navEl.classList.add('active');
+  if (name === 'settings') renderSettings();
+  if (name === 'dashboard') render();
+}
+
+// ── BUILD SETTINGS UI ──────────────────────────────────────
+function renderSettings() {
+  // Category toggles
+  document.getElementById('catToggles').innerHTML = ALL_CATS.map(c => `
+    <div class="settings-row">
+      <div class="settings-row-left">
+        <div class="settings-icon">${c.icon}</div>
+        <div>
+          <div class="settings-label">${c.label}</div>
+          <div class="settings-sub">${c.unit}</div>
+        </div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" ${prefs.cats[c.key] ? 'checked' : ''}
+          onchange="toggleCat('${c.key}', this.checked)">
+        <div class="toggle-track"></div>
+        <div class="toggle-thumb"></div>
+      </label>
+    </div>`).join('');
+
+  // Year chips
+  document.getElementById('yearChips').innerHTML = ALL_YEARS.map(yr => `
+    <button class="year-chip ${prefs.years[yr] ? 'on' : ''}" data-yr="${yr}"
+      onclick="toggleYear(${yr}, this)">${yr}</button>`).join('');
+
+  // API URL
+  document.getElementById('apiUrlDisplay').textContent = API_URL;
+}
+
+function toggleCat(key, on) {
+  // Ensure at least 1 cat active
+  const active = ALL_CATS.filter(c => c.key !== key && prefs.cats[c.key]);
+  if (!on && active.length === 0) {
+    // Revert
+    event.target.checked = true;
+    return;
+  }
+  prefs.cats[key] = on;
+  savePrefs(prefs);
+  buildCatTabs();
+  // If current tab was turned off, switch to first active
+  const activeCats = ALL_CATS.filter(c => prefs.cats[c.key]);
+  if (!prefs.cats[curTab] && activeCats.length) {
+    curTab = activeCats[0].key;
+  }
+  render();
+}
+
+function toggleYear(yr, btn) {
+  const active = ALL_YEARS.filter(y => y !== yr && prefs.years[y]);
+  if (prefs.years[yr] && active.length === 0) return; // keep at least 1
+  prefs.years[yr] = !prefs.years[yr];
+  savePrefs(prefs);
+  btn.classList.toggle('on', prefs.years[yr]);
+  render();
+}
+
+// ── BUILD CATEGORY TABS ────────────────────────────────────
+function buildCatTabs() {
+  const activeCats = ALL_CATS.filter(c => prefs.cats[c.key]);
+  if (!curTab || !prefs.cats[curTab]) curTab = activeCats[0]?.key || 'strom';
+
+  document.getElementById('catTabs').innerHTML = activeCats.map(c => `
+    <button class="tab ${c.key} ${curTab === c.key ? 'active' : ''}"
+      onclick="switchTab('${c.key}', this)">${c.icon} ${c.label}</button>`).join('');
+}
+
+function switchTab(t, btn) {
+  curTab = t;
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+// ── DATA LOADING ───────────────────────────────────────────
 async function loadData(forceRefresh = false) {
   const bar = document.getElementById('loadingBar');
   bar.classList.add('active');
 
-  // Try cache first
   if (!forceRefresh) {
     const cached = localStorage.getItem(CACHE_KEY);
     if (cached) {
       try {
         const {data, ts} = JSON.parse(cached);
         if (Date.now() - ts < CACHE_TTL) {
-          DB = data;
-          bar.classList.remove('active');
-          applyData();
-          return;
+          DB = data; bar.classList.remove('active');
+          applyData(); return;
         }
       } catch(e) {}
     }
@@ -205,82 +378,61 @@ async function loadData(forceRefresh = false) {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     if (data.error) throw new Error(data.error);
-
     DB = data;
     localStorage.setItem(CACHE_KEY, JSON.stringify({data, ts: Date.now()}));
     document.getElementById('errorBanner').style.display = 'none';
     applyData();
-
   } catch(err) {
-    const banner = document.getElementById('errorBanner');
-    banner.textContent = '⚠️ Fehler beim Laden: ' + err.message + ' — Zeige gecachte Daten.';
-    banner.style.display = 'block';
-
-    // Fallback to cache even if stale
+    const b = document.getElementById('errorBanner');
+    b.textContent = '⚠️ ' + err.message + ' — zeige gecachte Daten.';
+    b.style.display = 'block';
     const cached = localStorage.getItem(CACHE_KEY);
-    if (cached) {
-      try { DB = JSON.parse(cached).data; applyData(); } catch(e) {}
-    }
+    if (cached) { try { DB = JSON.parse(cached).data; applyData(); } catch(e){} }
   }
-
   bar.classList.remove('active');
 }
 
 function applyData() {
   if (!DB) return;
-
-  // Last update
   document.getElementById('lastUpdate').textContent = 'Stand: ' + (DB.lastUpdate || '–');
-
-  // Zählerstände
   const z = DB.zaehler || {};
-  document.getElementById('z-strom').textContent = z.strom ? Number(z.strom).toLocaleString('de') : '36661';
-  document.getElementById('z-gas').textContent   = z.gas   ? Number(z.gas).toLocaleString('de')   : '7946';
-  document.getElementById('z-wasser').textContent= z.wasser? Number(z.wasser).toLocaleString('de'): '545';
-
+  document.getElementById('z-strom').textContent  = z.strom  ? fmt(z.strom)  : '36661';
+  document.getElementById('z-gas').textContent    = z.gas    ? fmt(z.gas)    : '7946';
+  document.getElementById('z-wasser').textContent = z.wasser ? fmt(z.wasser) : '545';
+  buildCatTabs();
   render();
 }
 
-// ── TABS ───────────────────────────────────────────────────
-function switchTab(t, btn) {
-  curTab = t;
-  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-  btn.classList.add('active');
-  render();
-}
-
-// ── RENDER ─────────────────────────────────────────────────
+// ── RENDER DASHBOARD ───────────────────────────────────────
 function render() {
-  if (!DB) return;
-  const key = curTab;
-  const raw = DB[key];
+  if (!DB || curPage !== 'dashboard') return;
+  const meta = ALL_CATS.find(c => c.key === curTab);
+  if (!meta) return;
+  const raw  = DB[curTab];
   if (!raw) return;
 
-  const meta = META[key];
-  const vals  = raw.values || raw;
-  const tots  = raw.totals || {};
+  const vals = raw.values || raw;
+  const tots = raw.totals || {};
+  const activeYears = ALL_YEARS.filter(yr => prefs.years[yr]);
 
-  // Find last month with data in 2026
+  // Last month with data in 2026
   const v26 = vals[2026] || [];
   let lastM = -1;
   v26.forEach((v, i) => { if (v !== null && v !== '') lastM = i; });
   if (lastM < 0) lastM = 0;
 
-  // Summary cards
-  const cur26 = tots[2026] || v26.filter(v=>v!==null).reduce((a,b)=>a+b,0);
-  const v26m  = v26[lastM];
-  const v25m  = (vals[2025]||[])[lastM];
-  const pct   = (v25m && v26m !== null) ? ((v26m - v25m) / v25m * 100).toFixed(1) : null;
-  const sign  = pct > 0 ? '+' : '';
-  const tcls  = key==='temp' ? '' : (pct > 0 ? 'trend-up' : 'trend-down');
+  // Summary
+  const v26m = v26[lastM];
+  const v25m = (vals[2025] || [])[lastM];
+  const pct  = (v25m && v26m !== null) ? ((v26m - v25m) / v25m * 100).toFixed(1) : null;
+  const sign = pct > 0 ? '+' : '';
+  const tcls = curTab === 'temp' ? '' : (pct > 0 ? 'trend-up' : 'trend-down');
 
-  // Compare 2026 total vs same months 2025
-  const v25slice = (vals[2025]||[]).slice(0, lastM+1).filter(v=>v!==null);
-  const sum25 = v25slice.reduce((a,b)=>a+b,0);
   const sum26 = v26.slice(0, lastM+1).filter(v=>v!==null).reduce((a,b)=>a+b,0);
-  const ytdPct = sum25 ? (((sum26 - sum25) / sum25) * 100).toFixed(1) : null;
+  const sum25 = (vals[2025]||[]).slice(0, lastM+1).filter(v=>v!==null).reduce((a,b)=>a+b,0);
+  const ytdPct = sum25 ? (((sum26-sum25)/sum25)*100).toFixed(1) : null;
   const ytdSign = ytdPct > 0 ? '+' : '';
-  const ytdCls = key==='temp' ? '' : (ytdPct > 0 ? 'trend-up' : 'trend-down');
+  const ytdCls = curTab==='temp' ? '' : (ytdPct > 0 ? 'trend-up' : 'trend-down');
 
   document.getElementById('sumCards').innerHTML = `
     <div class="sum-card">
@@ -293,40 +445,38 @@ function render() {
       <div class="sum-label">${M[lastM]} 2026</div>
       <div class="sum-val" style="color:${meta.color}">${v26m !== null ? fmt(v26m) : '–'}</div>
       <div class="sum-sub">${meta.unit}</div>
-      ${pct!==null ? `<div class="sum-trend ${tcls}">${sign}${pct}% vs ${M[lastM]} 2025</div>` : ''}
+      ${pct!==null ? `<div class="sum-trend ${tcls}">${sign}${pct}% vs ${M[lastM]} '25</div>` : ''}
     </div>`;
 
-  // Chart
+  // Chart — only active years
   if (mainChart) { mainChart.destroy(); mainChart = null; }
 
-  const datasets = J.map((yr, i) => ({
+  const datasets = activeYears.map(yr => ({
     label: String(yr),
-    data: (vals[yr] || []).map(v => v===''||v===undefined ? null : v),
-    borderColor: C[i],
+    data: (vals[yr] || []).map(v => (v===null||v===''||v===undefined) ? null : Number(v)),
+    borderColor: YEAR_COLORS[yr],
     backgroundColor: yr===2026 ? 'rgba(241,245,249,0.06)' : 'transparent',
     borderWidth: yr===2026 ? 2.5 : 1.5,
     pointRadius: yr===2026 ? 3 : 1.5,
-    pointBackgroundColor: C[i],
+    pointBackgroundColor: YEAR_COLORS[yr],
     tension: 0.4, spanGaps: false, fill: yr===2026
   }));
 
-  document.getElementById('legend').innerHTML = J.map((yr,i) =>
+  document.getElementById('legend').innerHTML = activeYears.map(yr =>
     `<div class="legend-item ${yr===2026?'hi':''}">
-      <div class="legend-dot" style="background:${C[i]}"></div>${yr}
+      <div class="legend-dot" style="background:${YEAR_COLORS[yr]}"></div>${yr}
     </div>`).join('');
 
   mainChart = new Chart(document.getElementById('chart').getContext('2d'), {
-    type: 'line',
-    data: { labels: M, datasets },
+    type: 'line', data: { labels: M, datasets },
     options: {
       responsive: true, maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
+      interaction: { mode:'index', intersect:false },
       plugins: {
-        legend: { display: false },
+        legend: { display:false },
         tooltip: {
-          backgroundColor: 'rgba(10,15,30,0.97)',
-          borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
-          titleColor: '#94a3b8', bodyColor: '#f1f5f9', padding: 10, cornerRadius: 8,
+          backgroundColor:'rgba(10,15,30,0.97)', borderColor:'rgba(255,255,255,0.1)', borderWidth:1,
+          titleColor:'#94a3b8', bodyColor:'#f1f5f9', padding:10, cornerRadius:8,
           callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y!==null ? fmt(c.parsed.y) : '–'} ${meta.unit}` }
         }
       },
@@ -337,33 +487,33 @@ function render() {
     }
   });
 
-  // Table
+  // Table — only active years
   const rows = M.map((m, i) => {
-    const rowVals = J.map(yr => {
+    const rowVals = activeYears.map(yr => {
       const v = (vals[yr]||[])[i];
       return (v===null||v===''||v===undefined) ? null : Number(v);
     });
-    const defined = rowVals.filter(v => v !== null);
+    const defined = rowVals.filter(v => v!==null);
     const minV = defined.length ? Math.min(...defined) : null;
     const maxV = defined.length ? Math.max(...defined) : null;
-    const cells = J.map((yr, j) => {
+    const cells = activeYears.map((yr, j) => {
       const v = rowVals[j];
-      if (v === null) return `<td style="color:var(--muted)">–</td>`;
-      const best  = key!=='temp' && v===minV && defined.length>1;
-      const worst = key!=='temp' && v===maxV && defined.length>1;
-      const cls = [yr===2026?'hi':'', best?'best':'', worst?'worst':''].filter(Boolean).join(' ');
+      if (v===null) return `<td style="color:var(--muted)">–</td>`;
+      const best  = curTab!=='temp' && v===minV && defined.length>1;
+      const worst = curTab!=='temp' && v===maxV && defined.length>1;
+      const cls   = [yr===2026?'hi':'', best?'best':'', worst?'worst':''].filter(Boolean).join(' ');
       return `<td class="${cls}">${fmt(v)}</td>`;
     }).join('');
     return `<tr class="${i===lastM?'cm':''}"><td>${m}</td>${cells}</tr>`;
   }).join('');
 
-  const totRow = J.map((yr, i) => {
+  const totRow = activeYears.map(yr => {
     const t = tots[yr];
-    return `<td class="${yr===2026?'hi':''}" style="color:${yr===2026?'var(--text)':C[i]}">${t!=null?fmt(t):'–'}</td>`;
+    return `<td class="${yr===2026?'hi':''}" style="color:${yr===2026?'var(--text)':YEAR_COLORS[yr]}">${t!=null?fmt(t):'–'}</td>`;
   }).join('');
 
   document.getElementById('table').innerHTML = `<table>
-    <thead><tr><th>Mon</th>${J.map((yr,i)=>`<th style="color:${C[i]}">${yr}</th>`).join('')}</tr></thead>
+    <thead><tr><th>Mon</th>${activeYears.map(yr=>`<th style="color:${YEAR_COLORS[yr]}">${yr}</th>`).join('')}</tr></thead>
     <tbody>${rows}
     <tr style="border-top:2px solid rgba(255,255,255,0.12)">
       <td style="color:var(--muted);font-weight:700">Σ</td>${totRow}
@@ -371,8 +521,8 @@ function render() {
 }
 
 function fmt(v) {
-  if (v === null || v === undefined) return '–';
-  return Number(v).toLocaleString('de', {maximumFractionDigits: 1});
+  if (v===null||v===undefined) return '–';
+  return Number(v).toLocaleString('de', {maximumFractionDigits:1});
 }
 
 // ── START ──────────────────────────────────────────────────

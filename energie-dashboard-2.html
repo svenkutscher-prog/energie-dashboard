@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Energie">
+<meta name="theme-color" content="#0a0f1e">
+<title>Energie Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+:root {
+  --bg:#0a0f1e; --bg2:#111827; --bg3:#1a2236; --card:#161d2e;
+  --border:rgba(255,255,255,0.07);
+  --strom:#f59e0b; --gas:#ef4444; --wasser:#3b82f6; --temp:#10b981;
+  --text:#f1f5f9; --muted:#64748b; --green:#10b981; --r:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;padding-bottom:100px;overscroll-behavior:none;}
+
+.topbar{position:sticky;top:0;z-index:100;background:rgba(10,15,30,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding:14px 18px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.topbar h1{font-family:'Space Mono',monospace;font-size:15px;letter-spacing:0.08em;}
+.topbar p{font-size:11px;color:var(--muted);margin-top:1px;}
+.badge{background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);color:var(--strom);font-family:'Space Mono',monospace;font-size:11px;padding:4px 10px;border-radius:20px;}
+
+.zaehler-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:14px 14px 0;}
+.zcard{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 10px;text-align:center;position:relative;overflow:hidden;}
+.zcard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.zcard.s::before{background:var(--strom);}
+.zcard.g::before{background:var(--gas);}
+.zcard.w::before{background:var(--wasser);}
+.zlabel{font-size:9px;letter-spacing:0.1em;color:var(--muted);text-transform:uppercase;font-weight:500;}
+.zval{font-family:'Space Mono',monospace;font-size:18px;font-weight:700;margin:4px 0 2px;}
+.zcard.s .zval{color:var(--strom);}
+.zcard.g .zval{color:var(--gas);}
+.zcard.w .zval{color:var(--wasser);}
+.zunit{font-size:9px;color:var(--muted);}
+
+.section{padding:16px 14px 0;}
+.section-title{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:10px;}
+
+.tabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{flex-shrink:0;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.2s;}
+.tab.active{color:#0a0f1e;border-color:transparent;}
+.tab.strom.active{background:var(--strom);}
+.tab.gas.active{background:var(--gas);}
+.tab.wasser.active{background:var(--wasser);}
+.tab.temp.active{background:var(--temp);}
+
+.sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.sum-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px;}
+.sum-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;}
+.sum-val{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;}
+.sum-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+.sum-trend{font-size:11px;margin-top:3px;}
+.trend-up{color:var(--gas);}
+.trend-down{color:var(--green);}
+
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px;}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted);}
+.legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+.legend-item.hi{color:var(--text);font-weight:600;}
+.chart-wrap{position:relative;height:220px;}
+
+.mtable{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-top:10px;}
+.mtable table{width:100%;border-collapse:collapse;font-family:'Space Mono',monospace;font-size:11px;}
+.mtable th{background:var(--bg3);padding:7px 6px;text-align:right;color:var(--muted);font-size:10px;font-weight:400;white-space:nowrap;}
+.mtable th:first-child{text-align:left;width:30px;}
+.mtable td{padding:7px 6px;text-align:right;border-top:1px solid var(--border);white-space:nowrap;}
+.mtable td:first-child{text-align:left;color:var(--muted);}
+.mtable tr.cm td{background:rgba(255,255,255,0.03);}
+.mtable td.hi{font-weight:700;color:var(--text);}
+.mtable td.best{color:var(--green);}
+.mtable td.worst{color:var(--gas);}
+
+.install-hint{margin:12px 14px 0;background:rgba(59,130,246,0.08);border:1px dashed rgba(59,130,246,0.3);border-radius:10px;padding:10px 14px;font-size:11px;color:rgba(100,160,255,0.8);line-height:1.5;display:flex;gap:8px;align-items:flex-start;}
+
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,15,30,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;padding:8px 0 20px;z-index:100;}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0;cursor:pointer;font-size:9px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);}
+.nav-item.active{color:var(--strom);}
+.nav-icon{font-size:20px;}
+canvas{display:block;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div><h1>ENERGIE</h1><p>Stand: 19.03.2026</p></div>
+  <div class="badge">KW 12</div>
+</div>
+
+<div class="install-hint" id="hint">
+  <span style="font-size:16px;flex-shrink:0">📲</span>
+  <span>Safari → Teilen <b>⎙</b> → <b>„Zum Home-Bildschirm"</b></span>
+</div>
+
+<div class="zaehler-grid">
+  <div class="zcard g"><div class="zlabel">Gas</div><div class="zval">7946</div><div class="zunit">m³ Zähler</div></div>
+  <div class="zcard s"><div class="zlabel">Strom</div><div class="zval">36661</div><div class="zunit">kWh Zähler</div></div>
+  <div class="zcard w"><div class="zlabel">Wasser</div><div class="zval">545</div><div class="zunit">m³ Zähler</div></div>
+</div>
+
+<div class="section">
+  <div class="section-title">Jahresvergleich</div>
+  <div class="tabs">
+    <button class="tab strom active" onclick="switchTab('strom',this)">⚡ Strom</button>
+    <button class="tab gas" onclick="switchTab('gas',this)">🔥 Gas</button>
+    <button class="tab wasser" onclick="switchTab('wasser',this)">💧 Wasser</button>
+    <button class="tab temp" onclick="switchTab('temp',this)">🌡 Temp</button>
+  </div>
+  <div class="sum-grid" id="sumCards"></div>
+  <div class="chart-card">
+    <div class="legend" id="legend"></div>
+    <div class="chart-wrap"><canvas id="chart"></canvas></div>
+  </div>
+  <div class="mtable" id="table"></div>
+</div>
+
+<div style="height:20px"></div>
+
+<div class="bottom-nav">
+  <div class="nav-item active"><div class="nav-icon">📊</div><div>Dashboard</div></div>
+  <div class="nav-item"><div class="nav-icon">📈</div><div>Trends</div></div>
+  <div class="nav-item"><div class="nav-icon">📅</div><div>Monat</div></div>
+  <div class="nav-item"><div class="nav-icon">⚙️</div><div>Setup</div></div>
+</div>
+
+<script>
+if(window.navigator.standalone) document.getElementById('hint').style.display='none';
+
+const M=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+const J=[2021,2022,2023,2024,2025,2026];
+const C=['rgba(100,116,139,0.85)','rgba(99,102,241,0.85)','rgba(20,184,166,0.85)','rgba(245,158,11,0.85)','rgba(59,130,246,0.85)','#f1f5f9'];
+
+const DATA={
+  strom:{label:'Strom',unit:'kWh',color:'#f59e0b',lastMonth:2,
+    v:{2021:[419,360,329,323,390,286,334,360,345,370,358,370],
+       2022:[430,355,372,342,347,340,334,292,327,355,325,396],
+       2023:[394,338,374,342,316,370,314,316,274,338,380,395],
+       2024:[409,359,382,334,323,312,296,310,293,353,359,288],
+       2025:[437,353,293,286,357,288,308,363,216,38,147,176],
+       2026:[262,118,8,null,null,null,null,null,null,null,null,null]},
+    tot:{2021:4244,2022:4215,2023:4151,2024:4018,2025:3262,2026:388}},
+  gas:{label:'Gas',unit:'m³',color:'#ef4444',lastMonth:2,
+    v:{2021:[339,285,221,178,164,39,37.1,47,61,137,217,287],
+       2022:[330,251,179,132,55,45,40,33,52,70,135,321],
+       2023:[293,239,237,141,60,40,35,33,30,75,200,267],
+       2024:[325,207,164,111,44,32,32,31,37,111,228,212],
+       2025:[403,259,148,94,61,31,29,35,35,101,184,187],
+       2026:[411,265,90,null,null,null,null,null,null,null,null,null]},
+    tot:{2021:2012,2022:1643,2023:1650,2024:1534,2025:1567,2026:766}},
+  wasser:{label:'Wasser',unit:'m³',color:'#3b82f6',lastMonth:2,
+    v:{2021:[6,4,4,4,6,11,12,9,10,6,5,4],
+       2022:[6,5,4,5,9,9,14,18,10,4,3,5],
+       2023:[2,3,5,3,5,19,13,7,11,7,4,5],
+       2024:[4,4,4,3,6,7,9,9,7,4,3,3],
+       2025:[4,5,3,4,11,18,10,11,7,5,5,3],
+       2026:[5,4,2,null,null,null,null,null,null,null,null,null]},
+    tot:{2021:81,2022:92,2023:84,2024:63,2025:86,2026:11}},
+  temp:{label:'Temperatur',unit:'°C',color:'#10b981',lastMonth:2,
+    v:{2021:[3,4,8,5,13,19,18,18,16,10,7,6],
+       2022:[4,5,7,10,14,18,19,21,16,16,9,4],
+       2023:[6,6,9,12,17,24,23,22,21,15,8,6],
+       2024:[4,10,13,14,19,20,23,24,20,15,8,6],
+       2025:[4,6,11,14,17,25,22,22,18,12,9,6],
+       2026:[4,8,9,null,null,null,null,null,null,null,null,null]},
+    tot:{2021:127,2022:143,2023:169,2024:166,2025:166,2026:21}}
+};
+
+let cur='strom', chart=null;
+function switchTab(t,btn){cur=t;document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));btn.classList.add('active');render();}
+
+function render(){
+  const d=DATA[cur];
+  const lm=d.lastMonth; // 0-indexed last month with data (2 = März)
+  const v26=d.v[2026][lm], v25=d.v[2025][lm];
+  const pct=v25?((v26-v25)/v25*100).toFixed(1):null;
+  const sign=pct>0?'+':'';
+  const tcls=cur==='temp'?'':(pct>0?'trend-up':'trend-down');
+
+  document.getElementById('sumCards').innerHTML=`
+    <div class="sum-card">
+      <div class="sum-label">2026 gesamt</div>
+      <div class="sum-val" style="color:${d.color}">${d.tot[2026].toLocaleString('de')}</div>
+      <div class="sum-sub">${d.unit} · Jan–Mär</div>
+      <div class="sum-trend ${cur==='temp'?'':((d.tot[2026]-d.tot[2025]/12*3)/(d.tot[2025]/12*3)*100)>0?'trend-up':'trend-down'}">
+        vs 2025 anteilig: ${sign}${(((d.tot[2026]-(d.tot[2025]/12*3))/(d.tot[2025]/12*3))*100).toFixed(1)}%
+      </div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-label">${M[lm]} 2026</div>
+      <div class="sum-val" style="color:${d.color}">${v26??'–'}</div>
+      <div class="sum-sub">${d.unit}</div>
+      ${pct!==null?`<div class="sum-trend ${tcls}">${sign}${pct}% vs ${M[lm]} 2025</div>`:''}
+    </div>`;
+
+  // Chart
+  if(chart){chart.destroy();chart=null;}
+  const datasets=J.map((yr,i)=>({
+    label:String(yr),data:d.v[yr],
+    borderColor:C[i],
+    backgroundColor:yr===2026?'rgba(241,245,249,0.06)':'transparent',
+    borderWidth:yr===2026?2.5:1.5,
+    pointRadius:yr===2026?3:1.5,
+    pointBackgroundColor:C[i],
+    tension:0.4,spanGaps:false,fill:yr===2026
+  }));
+
+  document.getElementById('legend').innerHTML=J.map((yr,i)=>
+    `<div class="legend-item ${yr===2026?'hi':''}">
+      <div class="legend-dot" style="background:${C[i]}"></div>${yr}
+    </div>`).join('');
+
+  chart=new Chart(document.getElementById('chart').getContext('2d'),{
+    type:'line',data:{labels:M,datasets},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'rgba(10,15,30,0.97)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,
+          titleColor:'#94a3b8',bodyColor:'#f1f5f9',padding:10,cornerRadius:8,
+          callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y!==null?c.parsed.y.toLocaleString('de'):'–'} ${d.unit}`}
+        }
+      },
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#475569',font:{size:9}}},
+        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#475569',font:{size:9},callback:v=>v+' '+d.unit}}
+      }
+    }
+  });
+
+  // Table
+  const rows=M.map((m,i)=>{
+    const vals=J.map(yr=>d.v[yr][i]).filter(v=>v!==null);
+    const minV=Math.min(...vals), maxV=Math.max(...vals);
+    const cells=J.map((yr,j)=>{
+      const v=d.v[yr][i];
+      if(v===null) return `<td style="color:var(--muted)">–</td>`;
+      const best=cur!=='temp'&&v===minV&&vals.length>1;
+      const worst=cur!=='temp'&&v===maxV&&vals.length>1;
+      const cls=[yr===2026?'hi':'',best?'best':'',worst?'worst':''].filter(Boolean).join(' ');
+      return `<td class="${cls}">${v.toLocaleString('de')}</td>`;
+    }).join('');
+    return `<tr class="${i===lm?'cm':''}"><td>${m}</td>${cells}</tr>`;
+  }).join('');
+
+  const totRow=J.map((yr,i)=>`<td class="${yr===2026?'hi':''}" style="color:${yr===2026?'var(--text)':C[i]}">${d.tot[yr].toLocaleString('de')}</td>`).join('');
+
+  document.getElementById('table').innerHTML=`<table>
+    <thead><tr><th>Mon</th>${J.map((yr,i)=>`<th style="color:${C[i]}">${yr}</th>`).join('')}</tr></thead>
+    <tbody>${rows}
+    <tr style="border-top:2px solid rgba(255,255,255,0.12)"><td style="color:var(--muted);font-weight:700">Σ</td>${totRow}</tr>
+    </tbody></table>`;
+}
+
+render();
+</script>
+</body>
+</html>

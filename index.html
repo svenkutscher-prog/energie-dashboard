@@ -10,437 +10,373 @@
 <title>Energie Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+:root {
+  --bg:#0a0f1e; --bg3:#1a2236; --card:#161d2e;
+  --border:rgba(255,255,255,0.07);
+  --strom:#f59e0b; --gas:#ef4444; --wasser:#3b82f6; --temp:#10b981;
+  --text:#f1f5f9; --muted:#64748b; --green:#10b981; --r:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;padding-bottom:100px;overscroll-behavior:none;}
 
-  :root {
-    --bg: #0a0f1e;
-    --bg2: #111827;
-    --bg3: #1a2236;
-    --card: #161d2e;
-    --border: rgba(255,255,255,0.07);
-    --strom: #f59e0b;
-    --gas: #ef4444;
-    --wasser: #3b82f6;
-    --text: #f1f5f9;
-    --muted: #64748b;
-    --green: #10b981;
-    --red: #ef4444;
-    --r: 14px;
-  }
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:100;background:rgba(10,15,30,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding:14px 18px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.topbar h1{font-family:'Space Mono',monospace;font-size:15px;letter-spacing:0.08em;}
+.topbar p{font-size:11px;color:var(--muted);margin-top:1px;}
+.badge{background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);color:var(--strom);font-family:'Space Mono',monospace;font-size:11px;padding:4px 10px;border-radius:20px;cursor:pointer;}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+/* LOADING */
+#loadingBar{height:2px;background:linear-gradient(90deg,var(--strom),var(--gas),var(--wasser));background-size:200%;animation:slide 1.2s linear infinite;display:none;}
+#loadingBar.active{display:block;}
+@keyframes slide{0%{background-position:0%}100%{background-position:200%}}
+.error-banner{margin:12px 14px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:rgba(239,100,100,0.9);display:none;}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-    padding-bottom: 100px;
-    overscroll-behavior: none;
-  }
+/* ZÄHLER */
+.zaehler-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:14px 14px 0;}
+.zcard{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 10px;text-align:center;position:relative;overflow:hidden;}
+.zcard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.zcard.s::before{background:var(--strom);}
+.zcard.g::before{background:var(--gas);}
+.zcard.w::before{background:var(--wasser);}
+.zlabel{font-size:9px;letter-spacing:0.1em;color:var(--muted);text-transform:uppercase;font-weight:500;}
+.zval{font-family:'Space Mono',monospace;font-size:17px;font-weight:700;margin:4px 0 2px;}
+.zcard.s .zval{color:var(--strom);}
+.zcard.g .zval{color:var(--gas);}
+.zcard.w .zval{color:var(--wasser);}
+.zunit{font-size:9px;color:var(--muted);}
 
-  /* TOP BAR */
-  .topbar {
-    position: sticky; top: 0; z-index: 100;
-    background: rgba(10,15,30,0.92);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    padding: 14px 18px 10px;
-    border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .topbar-left h1 { font-family: 'Space Mono', monospace; font-size: 15px; letter-spacing: 0.08em; color: var(--text); }
-  .topbar-left p { font-size: 11px; color: var(--muted); margin-top: 1px; }
-  .badge-week {
-    background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3);
-    color: var(--strom); font-family: 'Space Mono', monospace;
-    font-size: 11px; padding: 4px 10px; border-radius: 20px;
-  }
+/* SECTION */
+.section{padding:16px 14px 0;}
+.section-title{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:10px;}
 
-  /* ZÄHLER CARDS */
-  .zaehler-grid {
-    display: grid; grid-template-columns: 1fr 1fr 1fr;
-    gap: 10px; padding: 14px 14px 0;
-  }
-  .zaehler-card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: var(--r); padding: 12px 10px;
-    text-align: center; position: relative; overflow: hidden;
-  }
-  .zaehler-card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  }
-  .zaehler-card.strom::before { background: var(--strom); }
-  .zaehler-card.gas::before { background: var(--gas); }
-  .zaehler-card.wasser::before { background: var(--wasser); }
-  .zaehler-label { font-size: 9px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; font-weight: 500; }
-  .zaehler-value { font-family: 'Space Mono', monospace; font-size: 18px; font-weight: 700; margin: 4px 0 2px; }
-  .zaehler-card.strom .zaehler-value { color: var(--strom); }
-  .zaehler-card.gas .zaehler-value { color: var(--gas); }
-  .zaehler-card.wasser .zaehler-value { color: var(--wasser); }
-  .zaehler-unit { font-size: 9px; color: var(--muted); }
+/* TABS */
+.tabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{flex-shrink:0;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.2s;}
+.tab.active{color:#0a0f1e;border-color:transparent;}
+.tab.strom.active{background:var(--strom);}
+.tab.gas.active{background:var(--gas);}
+.tab.wasser.active{background:var(--wasser);}
+.tab.temp.active{background:var(--temp);}
 
-  /* STATUS BANNER */
-  .status-banner {
-    margin: 12px 14px 0;
-    background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25);
-    border-radius: 10px; padding: 10px 14px;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--red); animation: pulse 2s infinite; flex-shrink: 0; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-  .status-text { font-size: 12px; color: rgba(239,68,68,0.9); }
+/* SUMMARY */
+.sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.sum-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px;}
+.sum-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;}
+.sum-val{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;}
+.sum-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+.sum-trend{font-size:11px;margin-top:3px;}
+.trend-up{color:var(--gas);}
+.trend-down{color:var(--green);}
 
-  /* JAHRES SUMMARY */
-  .section { padding: 16px 14px 0; }
-  .section-title {
-    font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
-    color: var(--muted); font-weight: 600; margin-bottom: 10px;
-  }
-  .year-table {
-    background: var(--card); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden;
-  }
-  .year-table table { width: 100%; border-collapse: collapse; font-family: 'Space Mono', monospace; font-size: 11px; }
-  .year-table th { background: var(--bg3); padding: 8px 10px; text-align: right; color: var(--muted); font-size: 10px; font-weight: 400; }
-  .year-table th:first-child { text-align: left; }
-  .year-table td { padding: 8px 10px; text-align: right; border-top: 1px solid var(--border); }
-  .year-table td:first-child { text-align: left; color: var(--muted); }
-  .year-table tr.strom-row td { color: var(--strom); }
-  .year-table tr.gas-row td { color: var(--gas); }
-  .year-table td.current { background: rgba(245,158,11,0.08); font-weight: 700; }
-  .year-table tr.gas-row td.current { background: rgba(239,68,68,0.08); }
+/* CHART */
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px;}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted);}
+.legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+.legend-item.hi{color:var(--text);font-weight:600;}
+.chart-wrap{position:relative;height:220px;}
 
-  /* CHART CARDS */
-  .chart-card {
-    background: var(--card); border: 1px solid var(--border); border-radius: var(--r);
-    padding: 14px; margin-bottom: 0;
-  }
-  .chart-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-  .chart-title { font-size: 12px; font-weight: 600; color: var(--text); }
-  .chart-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
-  .chart-legend { display: flex; gap: 10px; align-items: center; }
-  .legend-item { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--muted); }
-  .legend-dot { width: 6px; height: 6px; border-radius: 50%; }
-  .legend-dash { width: 14px; height: 2px; border-radius: 1px; }
-  .chart-wrap { position: relative; height: 160px; }
+/* TABLE */
+.mtable{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-top:10px;}
+.mtable table{width:100%;border-collapse:collapse;font-family:'Space Mono',monospace;font-size:11px;}
+.mtable th{background:var(--bg3);padding:7px 6px;text-align:right;color:var(--muted);font-size:10px;font-weight:400;white-space:nowrap;}
+.mtable th:first-child{text-align:left;width:30px;}
+.mtable td{padding:7px 6px;text-align:right;border-top:1px solid var(--border);white-space:nowrap;}
+.mtable td:first-child{text-align:left;color:var(--muted);}
+.mtable tr.cm td{background:rgba(255,255,255,0.03);}
+.mtable td.hi{font-weight:700;color:var(--text);}
+.mtable td.best{color:var(--green);}
+.mtable td.worst{color:var(--gas);}
 
-  /* TEMPERATURE GRID */
-  .temp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .chart-wrap-sm { position: relative; height: 120px; }
+/* INSTALL HINT */
+.install-hint{margin:12px 14px 0;background:rgba(59,130,246,0.08);border:1px dashed rgba(59,130,246,0.3);border-radius:10px;padding:10px 14px;font-size:11px;color:rgba(100,160,255,0.8);line-height:1.5;display:flex;gap:8px;align-items:flex-start;}
 
-  /* AMPEL */
-  .ampel-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-  .ampel-card {
-    background: var(--card); border: 1px solid var(--border); border-radius: var(--r);
-    padding: 14px 10px; text-align: center;
-  }
-  .ampel-icon { font-size: 28px; margin-bottom: 6px; }
-  .ampel-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 4px; }
-  .ampel-value { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; }
-  .ampel-card.gut .ampel-value { color: var(--green); }
-  .ampel-card.ok .ampel-value { color: var(--strom); }
-  .ampel-card.hoch .ampel-value { color: var(--red); }
-  .ampel-trend { font-size: 10px; color: var(--muted); margin-top: 3px; }
+/* SKELETON */
+.skeleton{background:linear-gradient(90deg,var(--card) 25%,var(--bg3) 50%,var(--card) 75%);background-size:200%;animation:shimmer 1.2s infinite;border-radius:8px;}
+@keyframes shimmer{0%{background-position:200%}100%{background-position:-200%}}
 
-  /* BOTTOM NAV */
-  .bottom-nav {
-    position: fixed; bottom: 0; left: 0; right: 0;
-    background: rgba(10,15,30,0.95); backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-top: 1px solid var(--border);
-    display: flex; padding: 8px 0 20px;
-    z-index: 100;
-  }
-  .nav-item {
-    flex: 1; display: flex; flex-direction: column; align-items: center;
-    gap: 3px; padding: 4px 0; cursor: pointer;
-    font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase;
-    color: var(--muted); transition: color 0.2s;
-  }
-  .nav-item.active { color: var(--strom); }
-  .nav-icon { font-size: 20px; }
-
-  /* INSTALL HINT */
-  .install-hint {
-    margin: 12px 14px 0;
-    background: rgba(59,130,246,0.08); border: 1px dashed rgba(59,130,246,0.3);
-    border-radius: 10px; padding: 10px 14px;
-    font-size: 11px; color: rgba(100,160,255,0.8); line-height: 1.5;
-    display: flex; gap: 8px; align-items: flex-start;
-  }
-  .install-hint .icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
-
-  /* DATA WARNING */
-  .data-note {
-    margin: 14px 14px 0;
-    background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2);
-    border-radius: 10px; padding: 10px 14px;
-    font-size: 11px; color: rgba(100,255,200,0.7); line-height: 1.5;
-  }
-
-  canvas { display: block; }
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,15,30,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;padding:8px 0 20px;z-index:100;}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0;cursor:pointer;font-size:9px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);}
+.nav-item.active{color:var(--strom);}
+.nav-icon{font-size:20px;}
+canvas{display:block;}
 </style>
 </head>
 <body>
 
-<!-- TOP BAR -->
+<div id="loadingBar"></div>
+
 <div class="topbar">
-  <div class="topbar-left">
+  <div>
     <h1>ENERGIE</h1>
-    <p>Daten vom: 19.03.26</p>
+    <p id="lastUpdate">Lade Daten…</p>
   </div>
-  <div class="badge-week">KW 12</div>
+  <div class="badge" onclick="loadData(true)">↻ Refresh</div>
 </div>
 
-<!-- STATUS -->
-<div class="status-banner">
-  <div class="status-dot"></div>
-  <div class="status-text">Nicht aktuelle Daten — letzter Import: gestern</div>
+<div class="error-banner" id="errorBanner"></div>
+
+<div class="install-hint" id="hint">
+  <span style="font-size:16px;flex-shrink:0">📲</span>
+  <span>Safari → Teilen <b>⎙</b> → <b>„Zum Home-Bildschirm"</b></span>
 </div>
 
-<!-- INSTALL HINT (nur im Browser sichtbar) -->
-<div class="install-hint" id="installHint">
-  <span class="icon">📲</span>
-  <span>Zum Installieren: Safari → Teilen <b>⎙</b> → <b>„Zum Home-Bildschirm"</b></span>
-</div>
-
-<!-- ZÄHLERSTÄNDE -->
+<!-- ZÄHLER -->
 <div class="zaehler-grid">
-  <div class="zaehler-card gas">
-    <div class="zaehler-label">Gas</div>
-    <div class="zaehler-value">7946</div>
-    <div class="zaehler-unit">m³ Zähler</div>
-  </div>
-  <div class="zaehler-card strom">
-    <div class="zaehler-label">Strom</div>
-    <div class="zaehler-value">36661</div>
-    <div class="zaehler-unit">kWh Zähler</div>
-  </div>
-  <div class="zaehler-card wasser">
-    <div class="zaehler-label">Wasser</div>
-    <div class="zaehler-value">545</div>
-    <div class="zaehler-unit">m³ Zähler</div>
-  </div>
+  <div class="zcard g"><div class="zlabel">Gas</div><div class="zval" id="z-gas">–</div><div class="zunit">m³ Zähler</div></div>
+  <div class="zcard s"><div class="zlabel">Strom</div><div class="zval" id="z-strom">–</div><div class="zunit">kWh Zähler</div></div>
+  <div class="zcard w"><div class="zlabel">Wasser</div><div class="zval" id="z-wasser">–</div><div class="zunit">m³ Zähler</div></div>
 </div>
 
-<!-- AMPEL -->
-<div class="section">
-  <div class="section-title">Verbrauch heute</div>
-  <div class="ampel-grid">
-    <div class="ampel-card gut">
-      <div class="ampel-icon">⚡</div>
-      <div class="ampel-label">Strom</div>
-      <div class="ampel-value">1.33</div>
-      <div class="ampel-trend">kWh · ↓ gut</div>
-    </div>
-    <div class="ampel-card hoch">
-      <div class="ampel-icon">🔥</div>
-      <div class="ampel-label">Gas</div>
-      <div class="ampel-value">5.47</div>
-      <div class="ampel-trend">m³ · ↑ hoch</div>
-    </div>
-    <div class="ampel-card ok">
-      <div class="ampel-icon">💧</div>
-      <div class="ampel-label">Wasser</div>
-      <div class="ampel-value">–</div>
-      <div class="ampel-trend">m³ · ok</div>
-    </div>
-  </div>
-</div>
-
-<!-- JAHRES TABELLE -->
+<!-- JAHRESVERGLEICH -->
 <div class="section">
   <div class="section-title">Jahresvergleich</div>
-  <div class="year-table">
-    <table>
-      <tr>
-        <th>Total</th><th>2020</th><th>2021</th><th>2022</th><th>2023</th><th>2024</th><th>2025</th><th class="current">2026</th>
-      </tr>
-      <tr class="strom-row">
-        <td>Strom</td><td>4244</td><td>4215</td><td>4151</td><td>4018</td><td>4018</td><td>3262</td><td class="current">388</td>
-      </tr>
-      <tr class="gas-row">
-        <td>Gas</td><td>2012</td><td>1643</td><td>1650</td><td>1534</td><td>1534</td><td>1567</td><td class="current">766</td>
-      </tr>
-    </table>
+  <div class="tabs">
+    <button class="tab strom active" onclick="switchTab('strom',this)">⚡ Strom</button>
+    <button class="tab gas" onclick="switchTab('gas',this)">🔥 Gas</button>
+    <button class="tab wasser" onclick="switchTab('wasser',this)">💧 Wasser</button>
+    <button class="tab temp" onclick="switchTab('temp',this)">🌡 Temp</button>
   </div>
-</div>
-
-<!-- STROM CHART -->
-<div class="section">
-  <div class="section-title">Strom – Verbrauch im Monat</div>
+  <div class="sum-grid" id="sumCards"></div>
   <div class="chart-card">
-    <div class="chart-header">
-      <div>
-        <div class="chart-title">Strom h kWh/Tag</div>
-        <div class="chart-sub">Ø 4,33 kWh</div>
-      </div>
-      <div class="chart-legend">
-        <div class="legend-item"><div class="legend-dot" style="background:var(--strom)"></div>Strom</div>
-        <div class="legend-item"><div class="legend-dash" style="background:var(--green)"></div>Ziel</div>
-      </div>
-    </div>
-    <div class="chart-wrap"><canvas id="stromChart"></canvas></div>
+    <div class="legend" id="legend"></div>
+    <div class="chart-wrap"><canvas id="chart"></canvas></div>
   </div>
+  <div class="mtable" id="table"></div>
 </div>
 
-<!-- GAS CHART -->
-<div class="section">
-  <div class="section-title">Gas – Heizung m³/Tag</div>
-  <div class="chart-card">
-    <div class="chart-header">
-      <div>
-        <div class="chart-title">Gas m³/Tag</div>
-        <div class="chart-sub">Zielvorgabe: 4,8 m³</div>
-      </div>
-      <div class="chart-legend">
-        <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Gas</div>
-        <div class="legend-item"><div class="legend-dash" style="background:var(--green)"></div>Ziel</div>
-      </div>
-    </div>
-    <div class="chart-wrap"><canvas id="gasChart"></canvas></div>
-  </div>
-</div>
+<div style="height:20px"></div>
 
-<!-- TEMPERATUR -->
-<div class="section">
-  <div class="section-title">Temperatur</div>
-  <div class="temp-grid">
-    <div class="chart-card">
-      <div class="chart-title" style="font-size:11px;margin-bottom:8px">IST Temperatur</div>
-      <div class="chart-wrap-sm"><canvas id="tempIstChart"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title" style="font-size:11px;margin-bottom:8px">Forecast 8 Tage</div>
-      <div class="chart-wrap-sm"><canvas id="tempForecastChart"></canvas></div>
-    </div>
-  </div>
-</div>
-
-<!-- DATA NOTE -->
-<div class="data-note">
-  📊 <strong>Demo-Daten.</strong> Um echte Google Sheets Daten anzubinden: Apps Script Web App URL hier einfügen → die Charts laden dann live.
-</div>
-
-<div style="height: 20px;"></div>
-
-<!-- BOTTOM NAV -->
 <div class="bottom-nav">
-  <div class="nav-item active">
-    <div class="nav-icon">📊</div>
-    <div>Dashboard</div>
-  </div>
-  <div class="nav-item">
-    <div class="nav-icon">📈</div>
-    <div>Trends</div>
-  </div>
-  <div class="nav-item">
-    <div class="nav-icon">📅</div>
-    <div>Monat</div>
-  </div>
-  <div class="nav-item">
-    <div class="nav-icon">⚙️</div>
-    <div>Einstellungen</div>
-  </div>
+  <div class="nav-item active"><div class="nav-icon">📊</div><div>Dashboard</div></div>
+  <div class="nav-item"><div class="nav-icon">📈</div><div>Trends</div></div>
+  <div class="nav-item"><div class="nav-icon">📅</div><div>Monat</div></div>
+  <div class="nav-item"><div class="nav-icon">⚙️</div><div>Setup</div></div>
 </div>
 
 <script>
-// Hide install hint if already installed as PWA
-if (window.navigator.standalone) {
-  document.getElementById('installHint').style.display = 'none';
-}
+if(window.navigator.standalone) document.getElementById('hint').style.display='none';
 
-const labels = ['17.12','20.12','22.12','25.12','1.01','4.01','15.01','17.01','18.01','22.01','23.01','24.01','25.01','30.01','31.01','1.02','6.02','7.02','8.02','16.02','20.02','21.02','22.02','28.02','1.03','3.03','8.03','12.03','19.03'];
-const stromData = [2.98,9.54,7.54,7.92,6.29,9.06,2.77,0.51,5.82,10.97,10.06,2.09,2.94,10.94,7.37,5.90,3.73,5.35,2.00,2.00,9.24,10.58,2.30,5.12,1.33,null,null,null,null];
-const gasData = [6.91,6.76,8.84,null,6.15,null,10.15,10.58,8.30,12.31,11.37,11.14,11.38,11.73,9.88,8.00,6.30,4.90,5.43,18.17,13.47,null,4.41,4.24,4.10,5.47,null,null,null];
-const tempIst = [-8,null,9,null,0.3,-2,null,-3,-4,-3,null,-3,null,null,null,5,7,-8,-6,null,5,null,7,10,11,-10,-9,7,9,-6,11];
-const forecastLabels = ['22.03','23.03','24.03','27.03','28.03','29.03','30.03','02.04'];
-const forecastTag = [10,6.87,7.91,null,7.36,6.45,4.65,4.92];
-const forecastNacht = [5,3.32,5.88,null,4.2,3.1,2.8,3.4];
+const API_URL = 'https://script.google.com/macros/s/AKfycby5_WYDWxvEVaTABlIAbCEgsdllyuhzlpD3d4JrR7o2QDsIm8RFqsdGvbnTZO_GIt3NCA/exec';
+const CACHE_KEY = 'energie_data';
+const CACHE_TTL = 60 * 60 * 1000; // 1 Stunde
 
-const chartDefaults = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: { legend: { display: false }, tooltip: {
-    backgroundColor: 'rgba(10,15,30,0.95)', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
-    titleColor: '#94a3b8', bodyColor: '#f1f5f9', padding: 10, cornerRadius: 8
-  }},
-  scales: {
-    x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#475569', font: { size: 9 }, maxTicksLimit: 7, maxRotation: 0 } },
-    y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#475569', font: { size: 9 } } }
-  }
+const M=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+const J=[2021,2022,2023,2024,2025,2026];
+const C=['rgba(100,116,139,0.85)','rgba(99,102,241,0.85)','rgba(20,184,166,0.85)','rgba(245,158,11,0.85)','rgba(59,130,246,0.85)','#f1f5f9'];
+
+const META = {
+  strom: {label:'Strom', unit:'kWh', color:'#f59e0b'},
+  gas:   {label:'Gas',   unit:'m³',  color:'#ef4444'},
+  wasser:{label:'Wasser',unit:'m³',  color:'#3b82f6'},
+  temp:  {label:'Temp',  unit:'°C',  color:'#10b981'}
 };
 
-// STROM
-new Chart(document.getElementById('stromChart'), {
-  type: 'line',
-  data: {
-    labels,
-    datasets: [
-      { data: stromData, borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.12)',
-        fill: true, tension: 0.4, pointRadius: 2, pointBackgroundColor: '#f59e0b', borderWidth: 2, spanGaps: false },
-      { data: new Array(labels.length).fill(4.33), borderColor: '#10b981', borderDash: [5,4],
-        borderWidth: 1.5, pointRadius: 0, fill: false }
-    ]
-  },
-  options: { ...chartDefaults }
-});
+let DB = null;
+let curTab = 'strom';
+let mainChart = null;
 
-// GAS
-new Chart(document.getElementById('gasChart'), {
-  type: 'line',
-  data: {
-    labels,
-    datasets: [
-      { data: gasData, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)',
-        fill: true, tension: 0.4, pointRadius: 2, pointBackgroundColor: '#ef4444', borderWidth: 2, spanGaps: false },
-      { data: new Array(labels.length).fill(4.8), borderColor: '#10b981', borderDash: [5,4],
-        borderWidth: 1.5, pointRadius: 0, fill: false }
-    ]
-  },
-  options: { ...chartDefaults }
-});
+// ── LOAD DATA ──────────────────────────────────────────────
+async function loadData(forceRefresh = false) {
+  const bar = document.getElementById('loadingBar');
+  bar.classList.add('active');
 
-// TEMP IST
-new Chart(document.getElementById('tempIstChart'), {
-  type: 'line',
-  data: {
-    labels: labels.slice(0, tempIst.length),
-    datasets: [{
-      data: tempIst, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.08)',
-      fill: true, tension: 0.4, pointRadius: 2, pointBackgroundColor: '#3b82f6',
-      borderWidth: 1.5, spanGaps: false
-    }]
-  },
-  options: {
-    ...chartDefaults,
-    scales: {
-      x: { ...chartDefaults.scales.x, ticks: { ...chartDefaults.scales.x.ticks, maxTicksLimit: 4 } },
-      y: { ...chartDefaults.scales.y, ticks: { ...chartDefaults.scales.y.ticks, callback: v => v+'°' } }
+  // Try cache first
+  if (!forceRefresh) {
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      try {
+        const {data, ts} = JSON.parse(cached);
+        if (Date.now() - ts < CACHE_TTL) {
+          DB = data;
+          bar.classList.remove('active');
+          applyData();
+          return;
+        }
+      } catch(e) {}
     }
   }
-});
 
-// FORECAST
-new Chart(document.getElementById('tempForecastChart'), {
-  type: 'line',
-  data: {
-    labels: forecastLabels,
-    datasets: [
-      { data: forecastTag, borderColor: '#ec4899', backgroundColor: 'transparent',
-        tension: 0.4, pointRadius: 3, pointBackgroundColor: '#ec4899', borderWidth: 1.5, spanGaps: false },
-      { data: forecastNacht, borderColor: '#64748b', backgroundColor: 'transparent',
-        borderDash: [4,3], tension: 0.4, pointRadius: 2, pointBackgroundColor: '#64748b', borderWidth: 1.5 }
-    ]
-  },
-  options: {
-    ...chartDefaults,
-    scales: {
-      x: { ...chartDefaults.scales.x, ticks: { ...chartDefaults.scales.x.ticks, maxTicksLimit: 4 } },
-      y: { ...chartDefaults.scales.y, ticks: { ...chartDefaults.scales.y.ticks, callback: v => v+'°' } }
+  try {
+    const res = await fetch(API_URL);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    DB = data;
+    localStorage.setItem(CACHE_KEY, JSON.stringify({data, ts: Date.now()}));
+    document.getElementById('errorBanner').style.display = 'none';
+    applyData();
+
+  } catch(err) {
+    const banner = document.getElementById('errorBanner');
+    banner.textContent = '⚠️ Fehler beim Laden: ' + err.message + ' — Zeige gecachte Daten.';
+    banner.style.display = 'block';
+
+    // Fallback to cache even if stale
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      try { DB = JSON.parse(cached).data; applyData(); } catch(e) {}
     }
   }
-});
+
+  bar.classList.remove('active');
+}
+
+function applyData() {
+  if (!DB) return;
+
+  // Last update
+  document.getElementById('lastUpdate').textContent = 'Stand: ' + (DB.lastUpdate || '–');
+
+  // Zählerstände
+  const z = DB.zaehler || {};
+  document.getElementById('z-strom').textContent = z.strom ? Number(z.strom).toLocaleString('de') : '36661';
+  document.getElementById('z-gas').textContent   = z.gas   ? Number(z.gas).toLocaleString('de')   : '7946';
+  document.getElementById('z-wasser').textContent= z.wasser? Number(z.wasser).toLocaleString('de'): '545';
+
+  render();
+}
+
+// ── TABS ───────────────────────────────────────────────────
+function switchTab(t, btn) {
+  curTab = t;
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+// ── RENDER ─────────────────────────────────────────────────
+function render() {
+  if (!DB) return;
+  const key = curTab;
+  const raw = DB[key];
+  if (!raw) return;
+
+  const meta = META[key];
+  const vals  = raw.values || raw;
+  const tots  = raw.totals || {};
+
+  // Find last month with data in 2026
+  const v26 = vals[2026] || [];
+  let lastM = -1;
+  v26.forEach((v, i) => { if (v !== null && v !== '') lastM = i; });
+  if (lastM < 0) lastM = 0;
+
+  // Summary cards
+  const cur26 = tots[2026] || v26.filter(v=>v!==null).reduce((a,b)=>a+b,0);
+  const v26m  = v26[lastM];
+  const v25m  = (vals[2025]||[])[lastM];
+  const pct   = (v25m && v26m !== null) ? ((v26m - v25m) / v25m * 100).toFixed(1) : null;
+  const sign  = pct > 0 ? '+' : '';
+  const tcls  = key==='temp' ? '' : (pct > 0 ? 'trend-up' : 'trend-down');
+
+  // Compare 2026 total vs same months 2025
+  const v25slice = (vals[2025]||[]).slice(0, lastM+1).filter(v=>v!==null);
+  const sum25 = v25slice.reduce((a,b)=>a+b,0);
+  const sum26 = v26.slice(0, lastM+1).filter(v=>v!==null).reduce((a,b)=>a+b,0);
+  const ytdPct = sum25 ? (((sum26 - sum25) / sum25) * 100).toFixed(1) : null;
+  const ytdSign = ytdPct > 0 ? '+' : '';
+  const ytdCls = key==='temp' ? '' : (ytdPct > 0 ? 'trend-up' : 'trend-down');
+
+  document.getElementById('sumCards').innerHTML = `
+    <div class="sum-card">
+      <div class="sum-label">2026 gesamt</div>
+      <div class="sum-val" style="color:${meta.color}">${fmt(sum26)}</div>
+      <div class="sum-sub">${meta.unit} · Jan–${M[lastM]}</div>
+      ${ytdPct!==null ? `<div class="sum-trend ${ytdCls}">${ytdSign}${ytdPct}% vs 2025</div>` : ''}
+    </div>
+    <div class="sum-card">
+      <div class="sum-label">${M[lastM]} 2026</div>
+      <div class="sum-val" style="color:${meta.color}">${v26m !== null ? fmt(v26m) : '–'}</div>
+      <div class="sum-sub">${meta.unit}</div>
+      ${pct!==null ? `<div class="sum-trend ${tcls}">${sign}${pct}% vs ${M[lastM]} 2025</div>` : ''}
+    </div>`;
+
+  // Chart
+  if (mainChart) { mainChart.destroy(); mainChart = null; }
+
+  const datasets = J.map((yr, i) => ({
+    label: String(yr),
+    data: (vals[yr] || []).map(v => v===''||v===undefined ? null : v),
+    borderColor: C[i],
+    backgroundColor: yr===2026 ? 'rgba(241,245,249,0.06)' : 'transparent',
+    borderWidth: yr===2026 ? 2.5 : 1.5,
+    pointRadius: yr===2026 ? 3 : 1.5,
+    pointBackgroundColor: C[i],
+    tension: 0.4, spanGaps: false, fill: yr===2026
+  }));
+
+  document.getElementById('legend').innerHTML = J.map((yr,i) =>
+    `<div class="legend-item ${yr===2026?'hi':''}">
+      <div class="legend-dot" style="background:${C[i]}"></div>${yr}
+    </div>`).join('');
+
+  mainChart = new Chart(document.getElementById('chart').getContext('2d'), {
+    type: 'line',
+    data: { labels: M, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(10,15,30,0.97)',
+          borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
+          titleColor: '#94a3b8', bodyColor: '#f1f5f9', padding: 10, cornerRadius: 8,
+          callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y!==null ? fmt(c.parsed.y) : '–'} ${meta.unit}` }
+        }
+      },
+      scales: {
+        x: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#475569',font:{size:9}} },
+        y: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#475569',font:{size:9},callback:v=>v+' '+meta.unit} }
+      }
+    }
+  });
+
+  // Table
+  const rows = M.map((m, i) => {
+    const rowVals = J.map(yr => {
+      const v = (vals[yr]||[])[i];
+      return (v===null||v===''||v===undefined) ? null : Number(v);
+    });
+    const defined = rowVals.filter(v => v !== null);
+    const minV = defined.length ? Math.min(...defined) : null;
+    const maxV = defined.length ? Math.max(...defined) : null;
+    const cells = J.map((yr, j) => {
+      const v = rowVals[j];
+      if (v === null) return `<td style="color:var(--muted)">–</td>`;
+      const best  = key!=='temp' && v===minV && defined.length>1;
+      const worst = key!=='temp' && v===maxV && defined.length>1;
+      const cls = [yr===2026?'hi':'', best?'best':'', worst?'worst':''].filter(Boolean).join(' ');
+      return `<td class="${cls}">${fmt(v)}</td>`;
+    }).join('');
+    return `<tr class="${i===lastM?'cm':''}"><td>${m}</td>${cells}</tr>`;
+  }).join('');
+
+  const totRow = J.map((yr, i) => {
+    const t = tots[yr];
+    return `<td class="${yr===2026?'hi':''}" style="color:${yr===2026?'var(--text)':C[i]}">${t!=null?fmt(t):'–'}</td>`;
+  }).join('');
+
+  document.getElementById('table').innerHTML = `<table>
+    <thead><tr><th>Mon</th>${J.map((yr,i)=>`<th style="color:${C[i]}">${yr}</th>`).join('')}</tr></thead>
+    <tbody>${rows}
+    <tr style="border-top:2px solid rgba(255,255,255,0.12)">
+      <td style="color:var(--muted);font-weight:700">Σ</td>${totRow}
+    </tr></tbody></table>`;
+}
+
+function fmt(v) {
+  if (v === null || v === undefined) return '–';
+  return Number(v).toLocaleString('de', {maximumFractionDigits: 1});
+}
+
+// ── START ──────────────────────────────────────────────────
+loadData();
 </script>
 </body>
 </html>

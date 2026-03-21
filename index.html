@@ -190,9 +190,7 @@ canvas{display:block;}
 
 <div class="error-banner" id="errorBanner"></div>
 
-<!-- ══════════════════════════════════════════════════
-     PAGE 1: DASHBOARD
-══════════════════════════════════════════════════ -->
+<!-- PAGE 1: DASHBOARD -->
 <div class="page active" id="page-dashboard">
 
   <!-- TAGESKURVE -->
@@ -220,9 +218,10 @@ canvas{display:block;}
       <div class="zcard w"><div class="zlabel">Wasser</div><div class="zval" id="z-wasser">–</div><div class="zunit">m³</div></div>
     </div>
   </div>
+
   <!-- WASSER BALKEN -->
   <div class="section">
-    <div class="section-title">Wasser (Anzahl Tage)</div>
+    <div class="section-title">Wasser (Tage seit letzter Messung)</div>
     <div class="wasser-card">
       <div class="wasser-legend">
         <div class="wleg"><div class="wleg-dot" style="background:#7dd3fc"></div>&lt; 3 Tage</div>
@@ -235,9 +234,7 @@ canvas{display:block;}
   <div style="height:20px"></div>
 </div>
 
-<!-- ══════════════════════════════════════════════════
-     PAGE 2: TRENDS (FORECAST)
-══════════════════════════════════════════════════ -->
+<!-- PAGE 2: TRENDS (FORECAST) -->
 <div class="page" id="page-trends">
   <div class="section">
     <div class="section-title">Wettervorhersage — Linnich</div>
@@ -256,9 +253,7 @@ canvas{display:block;}
   <div style="height:20px"></div>
 </div>
 
-<!-- ══════════════════════════════════════════════════
-     PAGE 3: JAHR
-══════════════════════════════════════════════════ -->
+<!-- PAGE 3: JAHR -->
 <div class="page" id="page-jahr">
   <div class="section">
     <div class="section-title">Jahresvergleich</div>
@@ -273,9 +268,7 @@ canvas{display:block;}
   <div style="height:20px"></div>
 </div>
 
-<!-- ══════════════════════════════════════════════════
-     PAGE 4: EINSTELLUNGEN
-══════════════════════════════════════════════════ -->
+<!-- PAGE 4: EINSTELLUNGEN -->
 <div class="page" id="page-settings">
   <div class="section">
     <div class="section-title">Kategorien</div>
@@ -346,7 +339,10 @@ function defaultPrefs() {
 function loadPrefs() { try { return JSON.parse(localStorage.getItem(PREF_KEY)) || defaultPrefs(); } catch(e) { return defaultPrefs(); } }
 function savePrefs(p) { localStorage.setItem(PREF_KEY, JSON.stringify(p)); }
 
+// ── FIX 1: DataLabels global deaktivieren — nur explizit per Chart aktivieren ──
 Chart.register(ChartDataLabels);
+Chart.defaults.plugins.datalabels.display = false;
+
 let prefs = loadPrefs();
 let DB = null;
 let curPage = 'dashboard';
@@ -445,23 +441,19 @@ function applyData() {
   if (!DB) return;
   document.getElementById('lastRefresh').textContent = 'Letzter Refresh: ' + (DB.lastUpdate || '–');
 
-  // Zähler
   const z = DB.zaehler || {};
   document.getElementById('z-gas').textContent    = (z.gas    != null) ? fmt(z.gas)    : '7946';
   document.getElementById('z-strom').textContent  = (z.strom  != null) ? fmt(z.strom)  : '36661';
   document.getElementById('z-wasser').textContent = (z.wasser != null) ? fmt(z.wasser) : '545';
 
-  // Zähler-Titel mit Datum
   const daily = DB.daily || [];
   if (daily.length > 0) {
     const lastDate = daily[daily.length-1].datum;
-    // Capitalize only first letter, rest lowercase
     const datumRaw = String(lastDate);
     const datumFmt = datumRaw.charAt(0).toUpperCase() + datumRaw.slice(1).toLowerCase();
     document.getElementById('zaehler-title').textContent = 'Zählerstände vom ' + datumFmt;
   }
 
-  // Jahres-Tab initialisieren
   const firstActiveCat = ALL_CATS.find(c => prefs.cats[c.key]);
   if (!yearCat || !prefs.cats[yearCat]) yearCat = firstActiveCat?.key || 'strom';
   buildYearTabs();
@@ -496,7 +488,6 @@ function renderCurve() {
   const target = CURVE_TARGETS[curveMode];
   const isStrom = curveMode === 'strom';
 
-  // Stats
   if (isStrom) {
     const defined = vals.filter(v => v !== null);
     let sun=0, cloud=0, rain=0;
@@ -554,6 +545,8 @@ function renderCurve() {
       responsive:true, maintainAspectRatio:false, animation:false,
       plugins:{
         legend:{display:false},
+        // FIX 1: DataLabels explizit für diesen Chart deaktivieren
+        datalabels: { display: false },
         tooltip:{
           backgroundColor:'rgba(10,15,30,0.97)', borderColor:'rgba(255,255,255,0.1)', borderWidth:1,
           titleColor:'#94a3b8', bodyColor:'#f1f5f9', padding:10, cornerRadius:8,
@@ -640,7 +633,6 @@ function renderForecast(d) {
   document.getElementById('forecastGrid').innerHTML = grid;
   document.getElementById('forecastUpdated').textContent = 'Linnich, Germany · Open-Meteo';
 
-  // Forecast chart
   const labels = (daily.time || daily.date).map((date,i) => i===0?'Heute':DAYS[new Date(date).getDay()]);
   const hi = daily.temperature_2m_max.map(v=>Math.round(v));
   const lo = daily.temperature_2m_min.map(v=>Math.round(v));
@@ -656,6 +648,7 @@ function renderForecast(d) {
       responsive:true, maintainAspectRatio:false,
       plugins:{
         legend:{display:false},
+        datalabels: { display: false },
         tooltip:{backgroundColor:'rgba(10,15,30,0.97)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,titleColor:'#94a3b8',bodyColor:'#f1f5f9',padding:10,cornerRadius:8,callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y}°C`}}
       },
       scales:{
@@ -743,6 +736,7 @@ function renderYear() {
       interaction:{mode:'index',intersect:false},
       plugins:{
         legend:{display:false},
+        datalabels: { display: false },
         tooltip:{backgroundColor:'rgba(10,15,30,0.97)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,titleColor:'#94a3b8',bodyColor:'#f1f5f9',padding:10,cornerRadius:8,
           callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y!==null?fmt(c.parsed.y):'–'} ${meta.unit}`}}
       },
@@ -780,14 +774,32 @@ function renderYear() {
     </tbody></table>`;
 }
 
+// ── WASSER ─────────────────────────────────────────────────
+// Zeigt alle Messtage chronologisch (ältestes links), keine Lückenauffüllung.
 function renderWasser() {
   if (!DB || !DB.wasserDaily) return;
-  const data = DB.wasserDaily;
-  if (!data.length) return;
+  const raw = DB.wasserDaily;
+  if (!raw.length) return;
 
-  const labels = data.map(r => r.datum);
-  const tage   = data.map(r => r.tage);
-  const colors = data.map(r => r.tage < 3 ? '#7dd3fc' : '#f472b6');
+  // Chronologisch sortieren (Sheet liefert oft neuestes zuerst)
+  const sorted = [...raw].sort((a, b) => {
+    return parseDateMs(a.datum) - parseDateMs(b.datum);
+  });
+
+  function parseDateMs(s) {
+    s = String(s).trim();
+    const m = s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{2,4})$/);
+    if (m) {
+      let yr = parseInt(m[3]);
+      if (yr < 100) yr += 2000;
+      return new Date(yr, parseInt(m[2])-1, parseInt(m[1])).getTime();
+    }
+    return new Date(s).getTime();
+  }
+
+  const labels = sorted.map(r => String(r.datum).trim());
+  const tage   = sorted.map(r => r.tage);
+  const colors = tage.map(v => v < 3 ? '#7dd3fc' : '#f472b6');
 
   if (wasserChart) { wasserChart.destroy(); wasserChart = null; }
   wasserChart = new Chart(document.getElementById('wasserChart'), {
@@ -797,17 +809,35 @@ function renderWasser() {
       responsive: true, maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        tooltip: { enabled: false },
+        tooltip: {
+          backgroundColor:'rgba(10,15,30,0.97)', borderColor:'rgba(255,255,255,0.1)', borderWidth:1,
+          titleColor:'#94a3b8', bodyColor:'#f1f5f9', padding:8, cornerRadius:8,
+          callbacks: { label: c => ` ${c.parsed.y} Tag${c.parsed.y !== 1 ? 'e' : ''}` }
+        },
+        // FIX 2: DataLabels nur für Wasser-Chart, aber nur wenn Wert > 0
         datalabels: {
+          display: ctx => ctx.dataset.data[ctx.dataIndex] > 0,
           color: '#fff',
-          font: { size: 11, weight: 'bold', family: 'monospace' },
+          font: { size: 10, weight: 'bold', family: 'monospace' },
           anchor: 'center', align: 'center',
           formatter: v => v
         }
       },
       scales: {
-        x: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#475569',font:{size:9}} },
-        y: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#475569',font:{size:9},callback:v=>v+'d'}, beginAtZero:true }
+        x: {
+          grid:{color:'rgba(255,255,255,0.04)'},
+          ticks:{
+            color:'#475569', font:{size:8},
+            maxTicksLimit: 20,
+            maxRotation: 45,
+            minRotation: 0
+          }
+        },
+        y: {
+          grid:{color:'rgba(255,255,255,0.04)'},
+          ticks:{color:'#475569',font:{size:9},callback:v=>v+'d'},
+          beginAtZero:true
+        }
       }
     }
   });

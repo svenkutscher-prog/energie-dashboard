@@ -18,123 +18,128 @@
   --text:#f1f5f9; --muted:#64748b; --green:#10b981; --r:14px;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;padding-bottom:100px;overscroll-behavior:none;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;min-height:100vh;padding-bottom:90px;overscroll-behavior:none;}
 
 /* TOPBAR */
-.topbar{position:sticky;top:0;z-index:100;background:rgba(10,15,30,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding:14px 18px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
-.topbar h1{font-family:'Space Mono',monospace;font-size:17px;letter-spacing:0.12em;font-weight:700;}
-.topbar p{font-size:11px;color:var(--muted);margin-top:2px;}
-.badge{background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);color:var(--strom);font-family:'Space Mono',monospace;font-size:11px;padding:4px 10px;border-radius:20px;cursor:pointer;}
+.topbar{position:sticky;top:0;z-index:100;background:rgba(10,15,30,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding:16px 18px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.topbar h1{font-family:'Space Mono',monospace;font-size:20px;letter-spacing:0.1em;font-weight:700;}
+.topbar p{font-size:12px;color:var(--muted);margin-top:3px;}
+.refresh-btn{background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);color:var(--strom);font-family:'Space Mono',monospace;font-size:12px;padding:6px 14px;border-radius:20px;cursor:pointer;}
 
 /* LOADING */
 #loadingBar{height:2px;background:linear-gradient(90deg,var(--strom),var(--gas),var(--wasser));background-size:200%;animation:slide 1.2s linear infinite;display:none;}
 #loadingBar.active{display:block;}
 @keyframes slide{0%{background-position:0%}100%{background-position:200%}}
-.error-banner{margin:12px 14px 0;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:rgba(239,100,100,0.9);display:none;}
+.error-banner{margin:12px 14px 0;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:10px 14px;font-size:13px;color:rgba(239,100,100,0.9);display:none;}
 
 /* PAGES */
 .page{display:none;}
 .page.active{display:block;}
 
-/* ── WETTER WIDGET ───────────────────────────────── */
-.wetter-card {
-  margin: 14px 14px 0;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  padding: 14px 16px;
-}
-.wetter-label {
-  font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
-  color: var(--muted); font-weight: 600; margin-bottom: 12px;
-}
-.wetter-grid {
-  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0;
-}
-.wetter-item {
-  text-align: center; padding: 0 8px;
-  border-right: 1px solid var(--border);
-}
-.wetter-item:last-child { border-right: none; }
-.wetter-icon { font-size: 22px; margin-bottom: 5px; }
-.wetter-name {
-  font-size: 10px; color: var(--muted); text-transform: uppercase;
-  letter-spacing: 0.08em; margin-bottom: 5px;
-}
-.wetter-val {
-  font-family: 'Space Mono', monospace; font-size: 26px; font-weight: 700; line-height: 1;
-}
-.wetter-item.sonne .wetter-val  { color: #fbbf24; }
-.wetter-item.wolke .wetter-val  { color: #94a3b8; }
-.wetter-item.regen .wetter-val  { color: var(--wasser); }
+/* SECTION */
+.section{padding:16px 14px 0;}
+.section-title{font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:10px;}
 
-/* ZÄHLER */
-.zaehler-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:14px 14px 0;}
-.zcard{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 10px;text-align:center;position:relative;overflow:hidden;}
+/* ── TAGESKURVE ──────────────────────────────────── */
+.curve-card{margin:14px 14px 0;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px;}
+.curve-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.curve-title{font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);font-weight:600;}
+.curve-tabs{display:flex;gap:6px;}
+.ctab{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.2s;}
+.ctab.active{color:#0a0f1e;border-color:transparent;}
+.ctab.strom.active{background:var(--strom);}
+.ctab.gas.active{background:var(--gas);}
+.ctab.temp.active{background:var(--temp);}
+
+/* WETTER STATS (aus Kurve berechnet) */
+.wetter-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+.wstat{background:var(--bg3);border-radius:10px;padding:10px;text-align:center;}
+.wstat-icon{font-size:20px;margin-bottom:3px;}
+.wstat-label{font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);}
+.wstat-val{font-family:'Space Mono',monospace;font-size:24px;font-weight:700;line-height:1.1;}
+.wstat-sub{font-size:10px;color:var(--muted);margin-top:2px;}
+.simple-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+.sstat{background:var(--bg3);border-radius:10px;padding:10px;text-align:center;}
+.sstat-label{font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:4px;}
+.sstat-val{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;}
+.sstat-sub{font-size:10px;color:var(--muted);margin-top:2px;}
+
+.curve-legend{display:flex;gap:12px;margin-bottom:8px;flex-wrap:wrap;}
+.cleg{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);}
+.cleg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+.curve-wrap{position:relative;height:200px;}
+.curve-range{font-size:10px;color:var(--muted);text-align:center;margin-top:8px;}
+
+/* ── ZÄHLERSTÄNDE ────────────────────────────────── */
+.zaehler-title{font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:10px;}
+.zaehler-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.zcard{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px 10px;text-align:center;position:relative;overflow:hidden;}
 .zcard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
 .zcard.s::before{background:var(--strom);}
 .zcard.g::before{background:var(--gas);}
 .zcard.w::before{background:var(--wasser);}
-.zlabel{font-size:9px;letter-spacing:0.1em;color:var(--muted);text-transform:uppercase;font-weight:500;}
-.zval{font-family:'Space Mono',monospace;font-size:17px;font-weight:700;margin:4px 0 2px;}
+.zlabel{font-size:10px;letter-spacing:0.08em;color:var(--muted);text-transform:uppercase;font-weight:500;}
+.zval{font-family:'Space Mono',monospace;font-size:18px;font-weight:700;margin:5px 0 3px;}
 .zcard.s .zval{color:var(--strom);}
 .zcard.g .zval{color:var(--gas);}
 .zcard.w .zval{color:var(--wasser);}
-.zunit{font-size:9px;color:var(--muted);}
+.zunit{font-size:10px;color:var(--muted);}
 
-/* SECTION */
-.section{padding:16px 14px 0;}
-.section-title{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:10px;}
+/* ── FORECAST ────────────────────────────────────── */
+.forecast-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+.fday{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 4px;text-align:center;}
+.fday-name{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;}
+.fday-icon{font-size:22px;margin:5px 0;}
+.fday-hi{font-family:'Space Mono',monospace;font-size:14px;font-weight:700;color:var(--text);}
+.fday-lo{font-family:'Space Mono',monospace;font-size:12px;color:var(--muted);}
+.fday-rain{font-size:10px;color:var(--wasser);margin-top:3px;}
+.forecast-updated{font-size:10px;color:var(--muted);text-align:center;margin-top:8px;}
 
-/* TABS */
-.tabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none;}
-.tabs::-webkit-scrollbar{display:none;}
-.tab{flex-shrink:0;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.2s;}
-.tab.active{color:#0a0f1e;border-color:transparent;}
-.tab.strom.active{background:var(--strom);}
-.tab.gas.active{background:var(--gas);}
-.tab.wasser.active{background:var(--wasser);}
-.tab.temp.active{background:var(--temp);}
+/* ── JAHRESVERGLEICH ─────────────────────────────── */
+.year-tabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none;}
+.year-tabs::-webkit-scrollbar{display:none;}
+.ytab{flex-shrink:0;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:500;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.2s;}
+.ytab.active{color:#0a0f1e;border-color:transparent;}
+.ytab.strom.active{background:var(--strom);}
+.ytab.gas.active{background:var(--gas);}
+.ytab.wasser.active{background:var(--wasser);}
+.ytab.temp.active{background:var(--temp);}
 
-/* SUMMARY */
 .sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
 .sum-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px;}
-.sum-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;}
-.sum-val{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;}
-.sum-sub{font-size:11px;color:var(--muted);margin-top:4px;}
-.sum-trend{font-size:11px;margin-top:3px;}
+.sum-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;}
+.sum-val{font-family:'Space Mono',monospace;font-size:24px;font-weight:700;}
+.sum-sub{font-size:12px;color:var(--muted);margin-top:4px;}
+.sum-trend{font-size:12px;margin-top:3px;}
 .trend-up{color:var(--gas);}
 .trend-down{color:var(--green);}
 
-/* CHART */
 .chart-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px;}
-.legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
-.legend-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted);}
-.legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
-.legend-item.hi{color:var(--text);font-weight:600;}
+.yr-legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+.yr-leg{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);}
+.yr-leg-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+.yr-leg.hi{color:var(--text);font-weight:600;}
 .chart-wrap{position:relative;height:220px;}
 
-/* TABLE */
 .mtable{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-top:10px;overflow-x:auto;}
-.mtable table{width:100%;border-collapse:collapse;font-family:'Space Mono',monospace;font-size:11px;}
-.mtable th{background:var(--bg3);padding:7px 6px;text-align:right;color:var(--muted);font-size:10px;font-weight:400;white-space:nowrap;}
-.mtable th:first-child{text-align:left;width:30px;}
-.mtable td{padding:7px 6px;text-align:right;border-top:1px solid var(--border);white-space:nowrap;}
+.mtable table{width:100%;border-collapse:collapse;font-family:'Space Mono',monospace;font-size:12px;}
+.mtable th{background:var(--bg3);padding:8px 7px;text-align:right;color:var(--muted);font-size:11px;font-weight:400;white-space:nowrap;}
+.mtable th:first-child{text-align:left;width:32px;}
+.mtable td{padding:8px 7px;text-align:right;border-top:1px solid var(--border);white-space:nowrap;}
 .mtable td:first-child{text-align:left;color:var(--muted);}
 .mtable tr.cm td{background:rgba(255,255,255,0.03);}
 .mtable td.hi{font-weight:700;color:var(--text);}
 .mtable td.best{color:var(--green);}
 .mtable td.worst{color:var(--gas);}
 
-/* SETTINGS */
-.settings-section{padding:16px 14px 0;}
+/* ── SETTINGS ────────────────────────────────────── */
 .settings-group{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
-.settings-row{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:15px 16px;border-bottom:1px solid var(--border);}
 .settings-row:last-child{border-bottom:none;}
 .settings-row-left{display:flex;align-items:center;gap:12px;}
 .settings-icon{font-size:20px;width:28px;text-align:center;}
-.settings-label{font-size:14px;font-weight:500;color:var(--text);}
-.settings-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.settings-label{font-size:15px;font-weight:500;color:var(--text);}
+.settings-sub{font-size:12px;color:var(--muted);margin-top:2px;}
 .toggle{position:relative;width:44px;height:26px;flex-shrink:0;}
 .toggle input{opacity:0;width:0;height:0;position:absolute;}
 .toggle-track{position:absolute;inset:0;border-radius:13px;background:rgba(255,255,255,0.12);transition:background 0.2s;cursor:pointer;}
@@ -142,7 +147,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 .toggle-thumb{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform 0.2s;pointer-events:none;}
 .toggle input:checked ~ .toggle-thumb{transform:translateX(18px);}
 .year-chips{display:flex;flex-wrap:wrap;gap:8px;padding:14px 16px;}
-.year-chip{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.2s;font-family:'Space Mono',monospace;}
+.year-chip{padding:6px 14px;border-radius:20px;font-size:13px;font-weight:500;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.2s;font-family:'Space Mono',monospace;}
 .year-chip.on{color:#0a0f1e;border-color:transparent;}
 .year-chip[data-yr="2021"].on{background:rgba(100,116,139,0.85);}
 .year-chip[data-yr="2022"].on{background:rgba(99,102,241,0.85);}
@@ -150,16 +155,16 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 .year-chip[data-yr="2024"].on{background:rgba(245,158,11,0.85);}
 .year-chip[data-yr="2025"].on{background:rgba(59,130,246,0.85);}
 .year-chip[data-yr="2026"].on{background:#f1f5f9;}
-.settings-hint{margin:10px 14px 0;font-size:11px;color:var(--muted);line-height:1.6;}
+.settings-hint{margin:10px 14px 0;font-size:12px;color:var(--muted);line-height:1.6;}
 .api-row{padding:14px 16px;}
-.api-label{font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.08em;}
+.api-label{font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.08em;}
 .api-url{font-family:'Space Mono',monospace;font-size:10px;color:var(--green);background:var(--bg3);padding:8px 10px;border-radius:8px;word-break:break-all;line-height:1.5;}
 
 /* BOTTOM NAV */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,15,30,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;padding:8px 0 20px;z-index:100;}
-.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0;cursor:pointer;font-size:9px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);transition:color 0.2s;}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0;cursor:pointer;font-size:10px;letter-spacing:0.05em;text-transform:uppercase;color:var(--muted);transition:color 0.2s;}
 .nav-item.active{color:var(--strom);}
-.nav-icon{font-size:20px;}
+.nav-icon{font-size:22px;}
 canvas{display:block;}
 </style>
 </head>
@@ -170,79 +175,100 @@ canvas{display:block;}
 <div class="topbar">
   <div>
     <h1>WAGAEL</h1>
-    <p id="lastUpdate">Lade Daten…</p>
+    <p id="lastRefresh">Lade Daten…</p>
   </div>
-  <div class="badge" onclick="loadData(true)">↻ Refresh</div>
+  <button class="refresh-btn" onclick="loadData(true)">↻ Refresh</button>
 </div>
 
 <div class="error-banner" id="errorBanner"></div>
 
 <!-- ══════════════════════════════════════════════════
-     PAGE: DASHBOARD
+     PAGE 1: DASHBOARD
 ══════════════════════════════════════════════════ -->
 <div class="page active" id="page-dashboard">
 
-  <!-- WETTER -->
-  <div class="wetter-card">
-    <div class="wetter-label">Letzte 30 Strom Einträge</div>
-    <div class="wetter-grid">
-      <div class="wetter-item sonne">
-        <div class="wetter-icon">☀️</div>
-        <div class="wetter-name">Sonnentage</div>
-        <div class="wetter-val" id="w-sonne">–</div>
-      </div>
-      <div class="wetter-item wolke">
-        <div class="wetter-icon">☁️</div>
-        <div class="wetter-name">Bewölkt</div>
-        <div class="wetter-val" id="w-wolke">–</div>
-      </div>
-      <div class="wetter-item regen">
-        <div class="wetter-icon">🌧️</div>
-        <div class="wetter-name">Bad Days</div>
-        <div class="wetter-val" id="w-regen">–</div>
+  <!-- TAGESKURVE -->
+  <div class="curve-card">
+    <div class="curve-header">
+      <div class="curve-title">Letzte 30 Einträge</div>
+      <div class="curve-tabs">
+        <button class="ctab strom active" onclick="switchCurve('strom',this)">Strom</button>
+        <button class="ctab gas" onclick="switchCurve('gas',this)">Gas</button>
+        <button class="ctab temp" onclick="switchCurve('temp',this)">Temp</button>
       </div>
     </div>
+    <div id="curve-stats"></div>
+    <div class="curve-legend" id="curve-legend"></div>
+    <div class="curve-wrap"><canvas id="curveChart"></canvas></div>
+    <div class="curve-range" id="curve-range"></div>
   </div>
 
-  <!-- ZÄHLER -->
-  <div class="zaehler-grid">
-    <div class="zcard g"><div class="zlabel">Gas</div><div class="zval" id="z-gas">–</div><div class="zunit">m³</div></div>
-    <div class="zcard s"><div class="zlabel">Strom</div><div class="zval" id="z-strom">–</div><div class="zunit">kWh</div></div>
-    <div class="zcard w"><div class="zlabel">Wasser</div><div class="zval" id="z-wasser">–</div><div class="zunit">m³</div></div>
-  </div>
-
-  <!-- JAHRESVERGLEICH -->
+  <!-- ZÄHLERSTÄNDE -->
   <div class="section">
-    <div class="section-title">Jahresvergleich</div>
-    <div class="tabs" id="catTabs"></div>
-    <div class="sum-grid" id="sumCards"></div>
-    <div class="chart-card">
-      <div class="legend" id="legend"></div>
-      <div class="chart-wrap"><canvas id="chart"></canvas></div>
+    <div class="zaehler-title" id="zaehler-title">Zählerstände</div>
+    <div class="zaehler-grid">
+      <div class="zcard g"><div class="zlabel">Gas</div><div class="zval" id="z-gas">–</div><div class="zunit">m³</div></div>
+      <div class="zcard s"><div class="zlabel">Strom</div><div class="zval" id="z-strom">–</div><div class="zunit">kWh</div></div>
+      <div class="zcard w"><div class="zlabel">Wasser</div><div class="zval" id="z-wasser">–</div><div class="zunit">m³</div></div>
     </div>
-    <div class="mtable" id="table"></div>
   </div>
   <div style="height:20px"></div>
 </div>
 
 <!-- ══════════════════════════════════════════════════
-     PAGE: EINSTELLUNGEN
+     PAGE 2: TRENDS (FORECAST)
 ══════════════════════════════════════════════════ -->
-<div class="page" id="page-settings">
-  <div class="settings-section">
-    <div class="section-title">Kategorien anzeigen</div>
-    <div class="settings-group" id="catToggles"></div>
+<div class="page" id="page-trends">
+  <div class="section">
+    <div class="section-title">Wettervorhersage — Linnich</div>
+    <div class="forecast-grid" id="forecastGrid">
+      <div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted);font-size:13px;">Lade Forecast…</div>
+    </div>
+    <div class="forecast-updated" id="forecastUpdated"></div>
   </div>
 
-  <div class="settings-section" style="margin-top:16px;">
-    <div class="section-title">Jahre anzeigen</div>
+  <div class="section" style="margin-top:16px;">
+    <div class="section-title" id="fc-chart-title">Temperatur 7 Tage</div>
+    <div class="chart-card">
+      <div class="curve-wrap"><canvas id="forecastChart"></canvas></div>
+    </div>
+  </div>
+  <div style="height:20px"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PAGE 3: JAHR
+══════════════════════════════════════════════════ -->
+<div class="page" id="page-jahr">
+  <div class="section">
+    <div class="section-title">Jahresvergleich</div>
+    <div class="year-tabs" id="yearCatTabs"></div>
+    <div class="sum-grid" id="sumCards"></div>
+    <div class="chart-card">
+      <div class="yr-legend" id="yr-legend"></div>
+      <div class="chart-wrap"><canvas id="yearChart"></canvas></div>
+    </div>
+    <div class="mtable" id="yearTable"></div>
+  </div>
+  <div style="height:20px"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PAGE 4: EINSTELLUNGEN
+══════════════════════════════════════════════════ -->
+<div class="page" id="page-settings">
+  <div class="section">
+    <div class="section-title">Kategorien</div>
+    <div class="settings-group" id="catToggles"></div>
+  </div>
+  <div class="section" style="margin-top:16px;">
+    <div class="section-title">Jahre</div>
     <div class="settings-group">
       <div class="year-chips" id="yearChips"></div>
     </div>
-    <div class="settings-hint">Mindestens 1 Jahr muss aktiv sein. 2026 ist immer hervorgehoben.</div>
+    <div class="settings-hint">Mindestens 1 Jahr muss aktiv sein.</div>
   </div>
-
-  <div class="settings-section" style="margin-top:16px;">
+  <div class="section" style="margin-top:16px;">
     <div class="section-title">Datenquelle</div>
     <div class="settings-group">
       <div class="api-row">
@@ -257,7 +283,7 @@ canvas{display:block;}
             <div class="settings-sub">Holt frische Daten vom Sheet</div>
           </div>
         </div>
-        <button onclick="clearCache()" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#ef4444;padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;font-family:inherit;">Leeren</button>
+        <button onclick="clearCache()" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#ef4444;padding:6px 14px;border-radius:20px;font-size:13px;cursor:pointer;font-family:inherit;">Leeren</button>
       </div>
     </div>
   </div>
@@ -267,19 +293,19 @@ canvas{display:block;}
 <!-- BOTTOM NAV -->
 <div class="bottom-nav">
   <div class="nav-item active" onclick="showPage('dashboard',this)"><div class="nav-icon">📊</div><div>Dashboard</div></div>
-  <div class="nav-item" onclick="showPage('trends',this)"><div class="nav-icon">📈</div><div>Trends</div></div>
-  <div class="nav-item" onclick="showPage('monat',this)"><div class="nav-icon">📅</div><div>Monat</div></div>
+  <div class="nav-item" onclick="showPage('trends',this)"><div class="nav-icon">🌤️</div><div>Trends</div></div>
+  <div class="nav-item" onclick="showPage('jahr',this)"><div class="nav-icon">📅</div><div>Jahr</div></div>
   <div class="nav-item" onclick="showPage('settings',this)"><div class="nav-icon">⚙️</div><div>Einstellungen</div></div>
 </div>
 
 <script>
 const API_URL   = 'https://script.google.com/macros/s/AKfycby81J_a73co29ii9ARqlVmtiM05ac1oblRdBWiuZ1kvkYh1PhcWTcEQjDs3zlxMsW4_hA/exec';
-const CACHE_KEY = 'wagael_data';
-const PREF_KEY  = 'wagael_prefs';
+const CACHE_KEY = 'wagael_v3';
+const PREF_KEY  = 'wagael_prefs_v3';
 const CACHE_TTL = 60 * 60 * 1000;
 
-const M = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
-const ALL_YEARS   = [2021,2022,2023,2024,2025,2026];
+const MON = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+const ALL_YEARS = [2021,2022,2023,2024,2025,2026];
 const YEAR_COLORS = {
   2021:'rgba(100,116,139,0.85)', 2022:'rgba(99,102,241,0.85)',
   2023:'rgba(20,184,166,0.85)',  2024:'rgba(245,158,11,0.85)',
@@ -291,15 +317,21 @@ const ALL_CATS = [
   {key:'wasser',label:'Wasser',     icon:'💧', unit:'m³',  color:'#3b82f6'},
   {key:'temp',  label:'Temperatur', icon:'🌡', unit:'°C',  color:'#10b981'},
 ];
+const CURVE_COLORS = { gas:'#ef4444', temp:'#10b981' };
+const CURVE_TARGETS = { strom:4.33, gas:4.8, temp:null };
 
 function defaultPrefs() {
-  return { cats:{strom:true,gas:true,wasser:true,temp:true}, years:{2021:true,2022:true,2023:true,2024:true,2025:true,2026:true} };
+  return { cats:{strom:true,gas:true,wasser:true,temp:false}, years:{2021:true,2022:true,2023:true,2024:true,2025:true,2026:true} };
 }
 function loadPrefs() { try { return JSON.parse(localStorage.getItem(PREF_KEY)) || defaultPrefs(); } catch(e) { return defaultPrefs(); } }
 function savePrefs(p) { localStorage.setItem(PREF_KEY, JSON.stringify(p)); }
 
 let prefs = loadPrefs();
-let DB = null, curTab = null, mainChart = null, curPage = 'dashboard';
+let DB = null;
+let curPage = 'dashboard';
+let curveMode = 'strom';
+let yearCat = null;
+let curveChart = null, yearChart = null, fcChart = null;
 
 // ── NAVIGATION ─────────────────────────────────────────────
 function showPage(name, navEl) {
@@ -310,7 +342,9 @@ function showPage(name, navEl) {
   if (pg) pg.classList.add('active');
   if (navEl) navEl.classList.add('active');
   if (name === 'settings') renderSettings();
-  if (name === 'dashboard') render();
+  if (name === 'trends') loadForecast();
+  if (name === 'jahr') renderYear();
+  if (name === 'dashboard') renderCurve();
 }
 
 // ── SETTINGS ───────────────────────────────────────────────
@@ -326,66 +360,39 @@ function renderSettings() {
         <div class="toggle-track"></div><div class="toggle-thumb"></div>
       </label>
     </div>`).join('');
-
   document.getElementById('yearChips').innerHTML = ALL_YEARS.map(yr =>
     `<button class="year-chip ${prefs.years[yr]?'on':''}" data-yr="${yr}" onclick="toggleYear(${yr},this)">${yr}</button>`).join('');
-
   document.getElementById('apiUrlDisplay').textContent = API_URL;
-}
-
-function clearCache() {
-  localStorage.removeItem('wagael_data');
-  DB = null;
-  document.getElementById('lastUpdate').textContent = 'Cache geleert — lade neu…';
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const pg = document.getElementById('page-dashboard');
-  if(pg) pg.classList.add('active');
-  document.querySelectorAll('.nav-item')[0].classList.add('active');
-  loadData(true);
 }
 
 function toggleCat(key, on) {
   const active = ALL_CATS.filter(c => c.key !== key && prefs.cats[c.key]);
   if (!on && active.length === 0) { event.target.checked = true; return; }
-  prefs.cats[key] = on; savePrefs(prefs);
-  buildCatTabs();
-  if (!prefs.cats[curTab]) curTab = ALL_CATS.find(c => prefs.cats[c.key])?.key || 'strom';
-  render();
+  prefs.cats[key] = on; savePrefs(prefs); renderYear();
 }
 
 function toggleYear(yr, btn) {
   const active = ALL_YEARS.filter(y => y !== yr && prefs.years[y]);
   if (prefs.years[yr] && active.length === 0) return;
   prefs.years[yr] = !prefs.years[yr]; savePrefs(prefs);
-  btn.classList.toggle('on', prefs.years[yr]);
-  render();
+  btn.classList.toggle('on', prefs.years[yr]); renderYear();
 }
 
-// ── CAT TABS ───────────────────────────────────────────────
-function buildCatTabs() {
-  const active = ALL_CATS.filter(c => prefs.cats[c.key]);
-  if (!curTab || !prefs.cats[curTab]) curTab = active[0]?.key || 'strom';
-  document.getElementById('catTabs').innerHTML = active.map(c =>
-    `<button class="tab ${c.key} ${curTab===c.key?'active':''}" onclick="switchTab('${c.key}',this)">${c.icon} ${c.label}</button>`).join('');
+function clearCache() {
+  localStorage.removeItem(CACHE_KEY); DB = null;
+  document.getElementById('lastRefresh').textContent = 'Cache geleert…';
+  showPage('dashboard', document.querySelectorAll('.nav-item')[0]);
+  loadData(true);
 }
 
-function switchTab(t, btn) {
-  curTab = t;
-  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-  btn.classList.add('active');
-  render();
-}
-
-// ── DATA ───────────────────────────────────────────────────
-async function loadData(forceRefresh = false) {
+// ── DATA LOADING ───────────────────────────────────────────
+async function loadData(force = false) {
   document.getElementById('loadingBar').classList.add('active');
-
-  if (!forceRefresh) {
-    const cached = localStorage.getItem(CACHE_KEY);
-    if (cached) {
+  if (!force) {
+    const c = localStorage.getItem(CACHE_KEY);
+    if (c) {
       try {
-        const {data, ts} = JSON.parse(cached);
+        const {data,ts} = JSON.parse(c);
         if (Date.now() - ts < CACHE_TTL) {
           DB = data;
           document.getElementById('loadingBar').classList.remove('active');
@@ -394,154 +401,338 @@ async function loadData(forceRefresh = false) {
       } catch(e) {}
     }
   }
-
   try {
     const res = await fetch(API_URL);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     if (data.error) throw new Error(data.error);
     DB = data;
-    localStorage.setItem(CACHE_KEY, JSON.stringify({data, ts: Date.now()}));
+    localStorage.setItem(CACHE_KEY, JSON.stringify({data, ts:Date.now()}));
     document.getElementById('errorBanner').style.display = 'none';
     applyData();
   } catch(err) {
     const b = document.getElementById('errorBanner');
     b.textContent = '⚠️ ' + err.message;
     b.style.display = 'block';
-    const cached = localStorage.getItem(CACHE_KEY);
-    if (cached) { try { DB = JSON.parse(cached).data; applyData(); } catch(e){} }
+    const c = localStorage.getItem(CACHE_KEY);
+    if (c) { try { DB = JSON.parse(c).data; applyData(); } catch(e){} }
   }
   document.getElementById('loadingBar').classList.remove('active');
 }
 
 function applyData() {
   if (!DB) return;
-  document.getElementById('lastUpdate').textContent = 'Stand: ' + (DB.lastUpdate || '–');
-
-  // Wetter
-  const w = DB.wetter || {};
-  document.getElementById('w-sonne').textContent = (w.sonnentage != null) ? w.sonnentage : '–';
-  document.getElementById('w-wolke').textContent = (w.bewoelkt   != null) ? w.bewoelkt   : '–';
-  document.getElementById('w-regen').textContent = (w.badDays    != null) ? w.badDays    : '–';
+  document.getElementById('lastRefresh').textContent = 'Letzter Refresh: ' + (DB.lastUpdate || '–');
 
   // Zähler
   const z = DB.zaehler || {};
-  document.getElementById('z-strom').textContent  = (z.strom  != null) ? fmt(z.strom)  : '36661';
   document.getElementById('z-gas').textContent    = (z.gas    != null) ? fmt(z.gas)    : '7946';
+  document.getElementById('z-strom').textContent  = (z.strom  != null) ? fmt(z.strom)  : '36661';
   document.getElementById('z-wasser').textContent = (z.wasser != null) ? fmt(z.wasser) : '545';
 
-  buildCatTabs();
-  render();
+  // Zähler-Titel mit Datum
+  const daily = DB.daily || [];
+  if (daily.length > 0) {
+    const lastDate = daily[daily.length-1].datum;
+    document.getElementById('zaehler-title').textContent = 'Zählerstände vom ' + lastDate;
+  }
+
+  // Jahres-Tab initialisieren
+  const firstActiveCat = ALL_CATS.find(c => prefs.cats[c.key]);
+  if (!yearCat || !prefs.cats[yearCat]) yearCat = firstActiveCat?.key || 'strom';
+  buildYearTabs();
+
+  renderCurve();
+  if (curPage === 'jahr') renderYear();
 }
 
-// ── RENDER ─────────────────────────────────────────────────
-function render() {
-  if (!DB || curPage !== 'dashboard') return;
-  const meta = ALL_CATS.find(c => c.key === curTab);
+// ── TAGESKURVE ─────────────────────────────────────────────
+function switchCurve(m, btn) {
+  curveMode = m;
+  document.querySelectorAll('.ctab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderCurve();
+}
+
+function dayColor(v) {
+  if (v === 0) return '#10b981';
+  if (v < 7)   return '#f59e0b';
+  return '#ef4444';
+}
+
+function renderCurve() {
+  if (!DB) return;
+  const daily = DB.daily || [];
+  if (!daily.length) return;
+
+  const vals   = daily.map(r => r[curveMode]);
+  const labels = daily.map(r => r.datum);
+  const unit   = curveMode === 'strom' ? 'kWh' : curveMode === 'gas' ? 'm³' : '°C';
+  const target = CURVE_TARGETS[curveMode];
+  const isStrom = curveMode === 'strom';
+
+  // Stats
+  if (isStrom) {
+    const defined = vals.filter(v => v !== null);
+    let sun=0, cloud=0, rain=0;
+    defined.forEach(v => { if(v===0) sun++; else if(v<7) cloud++; else rain++; });
+    document.getElementById('curve-stats').innerHTML = `
+      <div class="wetter-stats">
+        <div class="wstat"><div class="wstat-icon">☀️</div><div class="wstat-label">Sonnentage</div><div class="wstat-val" style="color:#10b981">${sun}</div><div class="wstat-sub">= 0 kWh</div></div>
+        <div class="wstat"><div class="wstat-icon">☁️</div><div class="wstat-label">Bewölkt</div><div class="wstat-val" style="color:#f59e0b">${cloud}</div><div class="wstat-sub">&gt;0 bis &lt;7</div></div>
+        <div class="wstat"><div class="wstat-icon">🌧</div><div class="wstat-label">Bad Days</div><div class="wstat-val" style="color:#ef4444">${rain}</div><div class="wstat-sub">≥ 7 kWh</div></div>
+      </div>`;
+    document.getElementById('curve-legend').innerHTML = `
+      <div class="cleg"><div class="cleg-dot" style="background:#10b981"></div>Sonnentag (=0)</div>
+      <div class="cleg"><div class="cleg-dot" style="background:#f59e0b"></div>Bewölkt (&lt;7)</div>
+      <div class="cleg"><div class="cleg-dot" style="background:#ef4444"></div>Bad Day (≥7)</div>
+      <div class="cleg"><div class="cleg-dot" style="background:#475569"></div>Ziel</div>`;
+  } else {
+    const defined = vals.filter(v => v !== null);
+    const avg = defined.length ? (defined.reduce((a,b)=>a+b,0)/defined.length).toFixed(1) : '–';
+    const max = defined.length ? Math.max(...defined).toFixed(1) : '–';
+    const min = defined.length ? Math.min(...defined).toFixed(1) : '–';
+    const col = CURVE_COLORS[curveMode];
+    document.getElementById('curve-stats').innerHTML = `
+      <div class="simple-stats">
+        <div class="sstat"><div class="sstat-label">Ø Schnitt</div><div class="sstat-val" style="color:${col}">${avg}</div><div class="sstat-sub">${unit}</div></div>
+        <div class="sstat"><div class="sstat-label">Maximum</div><div class="sstat-val" style="color:${col}">${max}</div><div class="sstat-sub">${unit}</div></div>
+        <div class="sstat"><div class="sstat-label">Minimum</div><div class="sstat-val" style="color:${col}">${min}</div><div class="sstat-sub">${unit}</div></div>
+      </div>`;
+    document.getElementById('curve-legend').innerHTML = `
+      <div class="cleg"><div class="cleg-dot" style="background:${col}"></div>${curveMode.charAt(0).toUpperCase()+curveMode.slice(1)} ${unit}</div>
+      ${target ? `<div class="cleg"><div class="cleg-dot" style="background:#475569"></div>Ziel ${target} ${unit}</div>` : ''}`;
+  }
+
+  document.getElementById('curve-range').textContent = (labels[0]||'') + ' – ' + (labels[labels.length-1]||'');
+
+  const datasets = [];
+  if (isStrom) {
+    for (let i = 0; i < vals.length - 1; i++) {
+      const v1 = vals[i] ?? 0, v2 = vals[i+1] ?? 0;
+      const col = dayColor((v1+v2)/2);
+      const seg = new Array(vals.length).fill(null);
+      seg[i] = vals[i]; seg[i+1] = vals[i+1];
+      datasets.push({data:seg, borderColor:col, backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.3, spanGaps:false, fill:false});
+    }
+    datasets.push({data:vals, borderColor:'transparent', backgroundColor:vals.map(v=>v!==null?dayColor(v):'#475569'), pointRadius:4, pointHoverRadius:6, borderWidth:0, fill:false, tension:0.3, spanGaps:false});
+  } else {
+    const col = CURVE_COLORS[curveMode];
+    datasets.push({data:vals, borderColor:col, backgroundColor:col+'18', fill:true, tension:0.4, pointRadius:3, pointBackgroundColor:col, borderWidth:2.5, spanGaps:false});
+  }
+  if (target) datasets.push({data:new Array(vals.length).fill(target), borderColor:'#475569', borderDash:[5,4], borderWidth:1.5, pointRadius:0, fill:false});
+
+  if (curveChart) { curveChart.destroy(); curveChart = null; }
+  curveChart = new Chart(document.getElementById('curveChart'), {
+    type:'line', data:{labels, datasets},
+    options:{
+      responsive:true, maintainAspectRatio:false, animation:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'rgba(10,15,30,0.97)', borderColor:'rgba(255,255,255,0.1)', borderWidth:1,
+          titleColor:'#94a3b8', bodyColor:'#f1f5f9', padding:10, cornerRadius:8,
+          filter: item => isStrom ? item.datasetIndex === datasets.length-(target?2:1) : item.datasetIndex===0,
+          callbacks:{label:c=>{
+            const v=c.parsed.y;
+            if(isStrom) return ` ${v.toFixed(1)} kWh  ${v===0?'☀️':v<7?'☁️':'🌧'}`;
+            return ` ${v.toFixed(1)} ${unit}`;
+          }}
+        }
+      },
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#475569',font:{size:10},maxTicksLimit:8,maxRotation:0}},
+        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#475569',font:{size:10},callback:v=>v+' '+unit}}
+      }
+    }
+  });
+}
+
+// ── FORECAST ───────────────────────────────────────────────
+async function loadForecast() {
+  const url = 'https://api.open-meteo.com/v1/forecast?latitude=51.0&longitude=6.27&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=Europe/Berlin&forecast_days=7';
+  try {
+    const res = await fetch(url);
+    const d = await res.json();
+    renderForecast(d);
+  } catch(e) {
+    document.getElementById('forecastGrid').innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--muted)">Forecast nicht verfügbar</div>`;
+  }
+}
+
+function weatherIcon(code) {
+  if (code === 0) return '☀️';
+  if (code <= 2) return '⛅';
+  if (code <= 3) return '☁️';
+  if (code <= 48) return '🌫️';
+  if (code <= 55) return '🌦️';
+  if (code <= 67) return '🌧️';
+  if (code <= 77) return '❄️';
+  if (code <= 82) return '🌧️';
+  if (code <= 99) return '⛈️';
+  return '🌡️';
+}
+
+const DAYS = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+
+function renderForecast(d) {
+  const daily = d.daily;
+  const grid = daily.date.map((date, i) => {
+    const dt = new Date(date);
+    const dayName = i === 0 ? 'Heute' : DAYS[dt.getDay()];
+    const icon = weatherIcon(daily.weathercode[i]);
+    const hi = Math.round(daily.temperature_2m_max[i]);
+    const lo = Math.round(daily.temperature_2m_min[i]);
+    const rain = daily.precipitation_sum[i].toFixed(1);
+    return `<div class="fday">
+      <div class="fday-name">${dayName}</div>
+      <div class="fday-icon">${icon}</div>
+      <div class="fday-hi">${hi}°</div>
+      <div class="fday-lo">${lo}°</div>
+      <div class="fday-rain">${rain}mm</div>
+    </div>`;
+  }).join('');
+  document.getElementById('forecastGrid').innerHTML = grid;
+  document.getElementById('forecastUpdated').textContent = 'Linnich, Germany · Open-Meteo';
+
+  // Forecast chart
+  const labels = daily.date.map((date,i) => i===0?'Heute':DAYS[new Date(date).getDay()]);
+  const hi = daily.temperature_2m_max.map(v=>Math.round(v));
+  const lo = daily.temperature_2m_min.map(v=>Math.round(v));
+
+  if (fcChart) { fcChart.destroy(); fcChart = null; }
+  fcChart = new Chart(document.getElementById('forecastChart'), {
+    type:'line',
+    data:{labels, datasets:[
+      {label:'Max',data:hi,borderColor:'#ef4444',backgroundColor:'rgba(239,68,68,0.08)',fill:true,tension:0.4,pointRadius:4,pointBackgroundColor:'#ef4444',borderWidth:2},
+      {label:'Min',data:lo,borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,0.08)',fill:true,tension:0.4,pointRadius:4,pointBackgroundColor:'#3b82f6',borderWidth:2}
+    ]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{backgroundColor:'rgba(10,15,30,0.97)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,titleColor:'#94a3b8',bodyColor:'#f1f5f9',padding:10,cornerRadius:8,callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y}°C`}}
+      },
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#475569',font:{size:10}}},
+        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#475569',font:{size:10},callback:v=>v+'°'}}
+      }
+    }
+  });
+}
+
+// ── JAHRESVERGLEICH ────────────────────────────────────────
+function buildYearTabs() {
+  const active = ALL_CATS.filter(c => prefs.cats[c.key]);
+  if (!yearCat || !prefs.cats[yearCat]) yearCat = active[0]?.key || 'strom';
+  document.getElementById('yearCatTabs').innerHTML = active.map(c =>
+    `<button class="ytab ${c.key} ${yearCat===c.key?'active':''}" onclick="switchYearCat('${c.key}',this)">${c.icon} ${c.label}</button>`).join('');
+}
+
+function switchYearCat(key, btn) {
+  yearCat = key;
+  document.querySelectorAll('.ytab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderYear();
+}
+
+function renderYear() {
+  if (!DB || curPage !== 'jahr') return;
+  buildYearTabs();
+  const meta = ALL_CATS.find(c => c.key === yearCat);
   if (!meta) return;
-  const raw  = DB[curTab]; if (!raw) return;
-  const vals = raw.values || raw;
+  const raw  = DB[yearCat]; if (!raw) return;
+  const vals = raw.values || {};
   const tots = raw.totals || {};
   const activeYears = ALL_YEARS.filter(yr => prefs.years[yr]);
 
   const v26 = vals[2026] || [];
   let lastM = -1;
-  v26.forEach((v, i) => { if (v !== null && v !== '') lastM = i; });
+  v26.forEach((v,i) => { if(v!==null&&v!=='') lastM=i; });
   if (lastM < 0) lastM = 0;
 
   const v26m = v26[lastM];
   const v25m = (vals[2025]||[])[lastM];
-  const pct  = (v25m && v26m !== null) ? ((v26m-v25m)/v25m*100).toFixed(1) : null;
+  const pct  = (v25m && v26m!==null) ? ((v26m-v25m)/v25m*100).toFixed(1) : null;
   const sign = pct > 0 ? '+' : '';
-  const tcls = curTab==='temp' ? '' : (pct>0?'trend-up':'trend-down');
+  const tcls = yearCat==='temp' ? '' : (pct>0?'trend-up':'trend-down');
   const sum26 = v26.slice(0,lastM+1).filter(v=>v!==null).reduce((a,b)=>a+b,0);
   const sum25 = (vals[2025]||[]).slice(0,lastM+1).filter(v=>v!==null).reduce((a,b)=>a+b,0);
   const ytdPct = sum25 ? (((sum26-sum25)/sum25)*100).toFixed(1) : null;
   const ytdSign = ytdPct > 0 ? '+' : '';
-  const ytdCls = curTab==='temp' ? '' : (ytdPct>0?'trend-up':'trend-down');
+  const ytdCls = yearCat==='temp' ? '' : (ytdPct>0?'trend-up':'trend-down');
 
   document.getElementById('sumCards').innerHTML = `
     <div class="sum-card">
       <div class="sum-label">2026 gesamt</div>
       <div class="sum-val" style="color:${meta.color}">${fmt(sum26)}</div>
-      <div class="sum-sub">${meta.unit} · Jan–${M[lastM]}</div>
+      <div class="sum-sub">${meta.unit} · Jan–${MON[lastM]}</div>
       ${ytdPct!==null?`<div class="sum-trend ${ytdCls}">${ytdSign}${ytdPct}% vs 2025</div>`:''}
     </div>
     <div class="sum-card">
-      <div class="sum-label">${M[lastM]} 2026</div>
+      <div class="sum-label">${MON[lastM]} 2026</div>
       <div class="sum-val" style="color:${meta.color}">${v26m!==null?fmt(v26m):'–'}</div>
       <div class="sum-sub">${meta.unit}</div>
-      ${pct!==null?`<div class="sum-trend ${tcls}">${sign}${pct}% vs ${M[lastM]} '25</div>`:''}
+      ${pct!==null?`<div class="sum-trend ${tcls}">${sign}${pct}% vs ${MON[lastM]} '25</div>`:''}
     </div>`;
-
-  if (mainChart) { mainChart.destroy(); mainChart = null; }
 
   const datasets = activeYears.map(yr => ({
     label: String(yr),
-    data: (vals[yr]||[]).map(v=>(v===null||v===''||v===undefined)?null:Number(v)),
+    data: (vals[yr]||[]).map(v=>(v===null||v==='')?null:Number(v)),
     borderColor: YEAR_COLORS[yr],
     backgroundColor: yr===2026?'rgba(241,245,249,0.06)':'transparent',
     borderWidth: yr===2026?2.5:1.5,
     pointRadius: yr===2026?3:1.5,
     pointBackgroundColor: YEAR_COLORS[yr],
-    tension: 0.4, spanGaps: false, fill: yr===2026
+    tension:0.4, spanGaps:false, fill:yr===2026
   }));
 
-  document.getElementById('legend').innerHTML = activeYears.map(yr =>
-    `<div class="legend-item ${yr===2026?'hi':''}">
-      <div class="legend-dot" style="background:${YEAR_COLORS[yr]}"></div>${yr}
-    </div>`).join('');
+  document.getElementById('yr-legend').innerHTML = activeYears.map(yr =>
+    `<div class="yr-leg ${yr===2026?'hi':''}"><div class="yr-leg-dot" style="background:${YEAR_COLORS[yr]}"></div>${yr}</div>`).join('');
 
-  mainChart = new Chart(document.getElementById('chart').getContext('2d'), {
-    type:'line', data:{labels:M, datasets},
+  if (yearChart) { yearChart.destroy(); yearChart = null; }
+  yearChart = new Chart(document.getElementById('yearChart'), {
+    type:'line', data:{labels:MON, datasets},
     options:{
       responsive:true, maintainAspectRatio:false,
       interaction:{mode:'index',intersect:false},
       plugins:{
         legend:{display:false},
-        tooltip:{
-          backgroundColor:'rgba(10,15,30,0.97)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,
-          titleColor:'#94a3b8',bodyColor:'#f1f5f9',padding:10,cornerRadius:8,
-          callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y!==null?fmt(c.parsed.y):'–'} ${meta.unit}`}
-        }
+        tooltip:{backgroundColor:'rgba(10,15,30,0.97)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,titleColor:'#94a3b8',bodyColor:'#f1f5f9',padding:10,cornerRadius:8,
+          callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y!==null?fmt(c.parsed.y):'–'} ${meta.unit}`}}
       },
       scales:{
-        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#475569',font:{size:9}}},
-        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#475569',font:{size:9},callback:v=>v+' '+meta.unit}}
+        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#475569',font:{size:10}}},
+        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#475569',font:{size:10},callback:v=>v+' '+meta.unit}}
       }
     }
   });
 
-  const rows = M.map((m,i) => {
-    const rowVals = activeYears.map(yr => {
-      const v=(vals[yr]||[])[i];
-      return (v===null||v===''||v===undefined)?null:Number(v);
-    });
-    const defined = rowVals.filter(v=>v!==null);
-    const minV = defined.length?Math.min(...defined):null;
-    const maxV = defined.length?Math.max(...defined):null;
-    const cells = activeYears.map((yr,j) => {
-      const v=rowVals[j];
+  const rows = MON.map((m,i) => {
+    const rv = activeYears.map(yr=>{const v=(vals[yr]||[])[i];return(v===null||v==='')?null:Number(v);});
+    const def = rv.filter(v=>v!==null);
+    const minV=def.length?Math.min(...def):null, maxV=def.length?Math.max(...def):null;
+    const cells = activeYears.map((yr,j)=>{
+      const v=rv[j];
       if(v===null) return `<td style="color:var(--muted)">–</td>`;
-      const best=curTab!=='temp'&&v===minV&&defined.length>1;
-      const worst=curTab!=='temp'&&v===maxV&&defined.length>1;
+      const best=yearCat!=='temp'&&v===minV&&def.length>1;
+      const worst=yearCat!=='temp'&&v===maxV&&def.length>1;
       const cls=[yr===2026?'hi':'',best?'best':'',worst?'worst':''].filter(Boolean).join(' ');
       return `<td class="${cls}">${fmt(v)}</td>`;
     }).join('');
     return `<tr class="${i===lastM?'cm':''}"><td>${m}</td>${cells}</tr>`;
   }).join('');
 
-  const totRow = activeYears.map(yr => {
+  const totRow = activeYears.map(yr=>{
     const t=tots[yr];
     return `<td class="${yr===2026?'hi':''}" style="color:${yr===2026?'var(--text)':YEAR_COLORS[yr]}">${t!=null?fmt(t):'–'}</td>`;
   }).join('');
 
-  document.getElementById('table').innerHTML = `<table>
+  document.getElementById('yearTable').innerHTML = `<table>
     <thead><tr><th>Mon</th>${activeYears.map(yr=>`<th style="color:${YEAR_COLORS[yr]}">${yr}</th>`).join('')}</tr></thead>
     <tbody>${rows}
-    <tr style="border-top:2px solid rgba(255,255,255,0.12)">
-      <td style="color:var(--muted);font-weight:700">Σ</td>${totRow}
-    </tr></tbody></table>`;
+    <tr style="border-top:2px solid rgba(255,255,255,0.15)"><td style="color:var(--muted);font-weight:700">Σ</td>${totRow}</tr>
+    </tbody></table>`;
 }
 
 function fmt(v) {

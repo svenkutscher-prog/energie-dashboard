@@ -284,6 +284,24 @@ canvas{display:block;}
     <div class="settings-hint">Mindestens 1 Jahr muss aktiv sein.</div>
   </div>
   <div class="section" style="margin-top:16px;">
+    <div class="section-title">Darstellung</div>
+    <div class="settings-group">
+      <div class="settings-row">
+        <div class="settings-row-left">
+          <div class="settings-icon">📅</div>
+          <div>
+            <div class="settings-label">Wochenende hervorheben</div>
+            <div class="settings-sub">Sa blau · So lila in der Kurve</div>
+          </div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="toggle-weekend" onchange="toggleWeekendBg(this.checked)">
+          <div class="toggle-track"></div><div class="toggle-thumb"></div>
+        </label>
+      </div>
+    </div>
+  </div>
+  <div class="section" style="margin-top:16px;">
     <div class="section-title">Datenquelle</div>
     <div class="settings-group">
       <div class="api-row">
@@ -336,7 +354,7 @@ const CURVE_COLORS = { gas:'#ef4444', temp:'#10b981', wasser:'#3b82f6' };
 const CURVE_TARGETS = { strom:4.33, gas:4.8, temp:null, wasser:null };
 
 function defaultPrefs() {
-  return { cats:{strom:true,gas:true,wasser:true,temp:false}, years:{2021:true,2022:true,2023:true,2024:true,2025:true,2026:true} };
+  return { cats:{strom:true,gas:true,wasser:true,temp:false}, years:{2021:true,2022:true,2023:true,2024:true,2025:true,2026:true}, weekendBg:true };
 }
 function loadPrefs() { try { return JSON.parse(localStorage.getItem(PREF_KEY)) || defaultPrefs(); } catch(e) { return defaultPrefs(); } }
 function savePrefs(p) { localStorage.setItem(PREF_KEY, JSON.stringify(p)); }
@@ -382,6 +400,7 @@ function renderSettings() {
   document.getElementById('yearChips').innerHTML = ALL_YEARS.map(yr =>
     `<button class="year-chip ${prefs.years[yr]?'on':''}" data-yr="${yr}" onclick="toggleYear(${yr},this)">${yr}</button>`).join('');
   document.getElementById('apiUrlDisplay').textContent = API_URL;
+  const wbEl = document.getElementById('toggle-weekend'); if(wbEl) wbEl.checked = prefs.weekendBg !== false;
 }
 
 function toggleCat(key, on) {
@@ -395,6 +414,11 @@ function toggleYear(yr, btn) {
   if (prefs.years[yr] && active.length === 0) return;
   prefs.years[yr] = !prefs.years[yr]; savePrefs(prefs);
   btn.classList.toggle('on', prefs.years[yr]); renderYear();
+}
+
+function toggleWeekendBg(on) {
+  prefs.weekendBg = on; savePrefs(prefs);
+  renderCurve();
 }
 
 function clearCache() {
@@ -464,6 +488,27 @@ function applyData() {
   renderWasser();
   if (curPage === 'jahr') renderYear();
 }
+
+// ── WOCHENENDE HELPERS ─────────────────────────────────────
+function isSa(lbl){ return String(lbl).includes('Sa'); }
+function isSo(lbl){ return String(lbl).includes('So'); }
+function isWeekend(lbl){ return isSa(lbl)||isSo(lbl); }
+
+const weekendBgPlugin = {
+  id: 'weekendBg',
+  beforeDraw(chart) {
+    if (!prefs.weekendBg) return;
+    const {ctx, chartArea:{top,bottom}, scales:{x}} = chart;
+    if (!x) return;
+    chart.data.labels.forEach((lbl, i) => {
+      if (!isWeekend(lbl)) return;
+      const xPos = x.getPixelForValue(i);
+      const w = Math.max((x.getPixelForValue(1)||0) - (x.getPixelForValue(0)||0), 10);
+      ctx.fillStyle = isSa(lbl) ? 'rgba(59,130,246,0.10)' : 'rgba(139,92,246,0.10)';
+      ctx.fillRect(xPos - w/2, top, w, bottom - top);
+    });
+  }
+};
 
 // ── TAGESKURVE ─────────────────────────────────────────────
 function switchCurve(m, btn) {
@@ -546,7 +591,7 @@ function renderCurve() {
 
   if (curveChart) { curveChart.destroy(); curveChart = null; }
   curveChart = new Chart(document.getElementById('curveChart'), {
-    type:'line', data:{labels, datasets},
+    type:'line', plugins:[weekendBgPlugin], data:{labels, datasets},
     options:{
       responsive:true, maintainAspectRatio:false, animation:false,
       plugins:{

@@ -213,25 +213,25 @@ canvas{display:block;}
 
   <!-- TACHO -->
   <div class="section">
-    <div class="section-title">Tageswerte</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+    <div class="section-title" id="tacho-title">Min / Max</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px;text-align:center">
-        <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">⚡ Strom</div>
-        <canvas id="tachoStrom" width="160" height="95" style="max-width:100%"></canvas>
-        <div style="font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:var(--strom);margin-top:4px" id="tachoStromVal">–</div>
-        <div style="font-size:10px;color:var(--muted)" id="tachoStromSub">kWh</div>
+        <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px">⚡ Strom</div>
+        <canvas id="tachoStrom" width="160" height="100" style="max-width:100%"></canvas>
+        <div style="display:flex;justify-content:center;gap:12px;margin-top:4px">
+          <div style="font-size:10px;color:#10b981;font-family:monospace" id="tachoStromMin">–</div>
+          <div style="font-size:10px;color:#ef4444;font-family:monospace" id="tachoStromMax">–</div>
+        </div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">kWh</div>
       </div>
       <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px;text-align:center">
-        <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">🔥 Gas</div>
-        <canvas id="tachoGas" width="160" height="95" style="max-width:100%"></canvas>
-        <div style="font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:var(--gas);margin-top:4px" id="tachoGasVal">–</div>
-        <div style="font-size:10px;color:var(--muted)" id="tachoGasSub">m³</div>
-      </div>
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px;text-align:center">
-        <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">🌡 Temp</div>
-        <canvas id="tachoTemp" width="160" height="95" style="max-width:100%"></canvas>
-        <div style="font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:var(--temp);margin-top:4px" id="tachoTempVal">–</div>
-        <div style="font-size:10px;color:var(--muted)" id="tachoTempSub">°C</div>
+        <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px">🔥 Gas</div>
+        <canvas id="tachoGas" width="160" height="100" style="max-width:100%"></canvas>
+        <div style="display:flex;justify-content:center;gap:12px;margin-top:4px">
+          <div style="font-size:10px;color:#10b981;font-family:monospace" id="tachoGasMin">–</div>
+          <div style="font-size:10px;color:#ef4444;font-family:monospace" id="tachoGasMax">–</div>
+        </div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">m³</div>
       </div>
     </div>
   </div>
@@ -381,7 +381,7 @@ canvas{display:block;}
 const API_URL   = 'https://script.google.com/macros/s/AKfycbyc4vn6bE2diHbaTKTvoigGmh1OleySIBNJog6ZA9wHvNjfQdZC4zdlUwYT9dzbTFMwQw/exec';
 const CACHE_KEY = 'wagael_v3';
 const PREF_KEY  = 'wagael_prefs_v3';
-const CACHE_TTL = 4* 60 * 60 * 1000;
+const CACHE_TTL = 4 * 60 * 60 * 1000;
 
 const MON = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
 const ALL_YEARS = [2021,2022,2023,2024,2025,2026];
@@ -595,110 +595,99 @@ function parseDailyDatum(s) {
 
 
 // ── TACHO ──────────────────────────────────────────────────
-function drawTacho(canvasId, value, min, max, target, color) {
+function drawTachoMinMax(canvasId, scaleMin, scaleMax, valMin, valMax, color) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   const W = canvas.width, H = canvas.height;
   const cx = W / 2, cy = H - 8;
-  const r = Math.min(W * 0.42, H * 0.85);
-  const startAngle = Math.PI, endAngle = 2 * Math.PI;
+  const r = Math.min(W * 0.42, H * 0.88);
 
   ctx.clearRect(0, 0, W, H);
 
   function valToAngle(v) {
-    const pct = Math.max(0, Math.min(1, (v - min) / (max - min)));
-    return startAngle + pct * Math.PI;
+    const pct = Math.max(0, Math.min(1, (v - scaleMin) / (scaleMax - scaleMin)));
+    return Math.PI + pct * Math.PI;
   }
 
-  // Hintergrund
+  // Hintergrundbogen
   ctx.beginPath();
-  ctx.arc(cx, cy, r, startAngle, endAngle);
+  ctx.arc(cx, cy, r, Math.PI, 2*Math.PI);
   ctx.strokeStyle = 'rgba(255,255,255,0.07)';
   ctx.lineWidth = 12; ctx.lineCap = 'round'; ctx.stroke();
 
-  // Farbiger Bogen
+  // Farbiger Bogen zwischen Min und Max
   ctx.beginPath();
-  ctx.arc(cx, cy, r, startAngle, valToAngle(value));
-  ctx.strokeStyle = color;
+  ctx.arc(cx, cy, r, valToAngle(valMin), valToAngle(valMax));
+  ctx.strokeStyle = color + '55';
   ctx.lineWidth = 12; ctx.lineCap = 'round'; ctx.stroke();
 
-  // Ziel-Linie
-  if (target !== null && target >= min && target <= max) {
-    const ta = valToAngle(target);
-    ctx.save(); ctx.translate(cx, cy); ctx.rotate(ta);
-    ctx.beginPath(); ctx.moveTo(r-18, 0); ctx.lineTo(r+2, 0);
-    ctx.strokeStyle = 'rgba(255,255,255,0.45)';
-    ctx.lineWidth = 2; ctx.setLineDash([3,3]); ctx.stroke();
-    ctx.restore();
-  }
+  // Nadel MIN (grün)
+  const minAngle = valToAngle(valMin);
+  ctx.save(); ctx.translate(cx, cy); ctx.rotate(minAngle);
+  ctx.beginPath(); ctx.moveTo(-5, 0); ctx.lineTo(r-10, 0);
+  ctx.strokeStyle = '#10b981'; ctx.lineWidth = 2.5;
+  ctx.setLineDash([]); ctx.lineCap = 'round'; ctx.stroke();
+  ctx.restore();
 
-  // Min-Nadel (blau, dünn)
-  const minV = min + (max - min) * 0.0;
-  if (value !== minV) {
-    const minAngle = valToAngle(min);
-    ctx.save(); ctx.translate(cx, cy); ctx.rotate(minAngle);
-    ctx.beginPath(); ctx.moveTo(-4, 0); ctx.lineTo(r-20, 0);
-    ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 1.5;
-    ctx.setLineDash([]); ctx.stroke(); ctx.restore();
-  }
-
-  // Max-Nadel (rot, dünn)
-  const maxAngle = valToAngle(max);
+  // Nadel MAX (rot)
+  const maxAngle = valToAngle(valMax);
   ctx.save(); ctx.translate(cx, cy); ctx.rotate(maxAngle);
-  ctx.beginPath(); ctx.moveTo(-4, 0); ctx.lineTo(r-20, 0);
-  ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1.5;
-  ctx.setLineDash([]); ctx.stroke(); ctx.restore();
-
-  // Haupt-Nadel (weiß)
-  ctx.save(); ctx.translate(cx, cy); ctx.rotate(valToAngle(value));
-  ctx.beginPath(); ctx.moveTo(-6, 0); ctx.lineTo(r-14, 0);
-  ctx.strokeStyle = '#f1f5f9'; ctx.lineWidth = 2.5;
-  ctx.setLineDash([]); ctx.lineCap = 'round'; ctx.stroke(); ctx.restore();
+  ctx.beginPath(); ctx.moveTo(-5, 0); ctx.lineTo(r-10, 0);
+  ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2.5;
+  ctx.setLineDash([]); ctx.lineCap = 'round'; ctx.stroke();
+  ctx.restore();
 
   // Mittelpunkt
   ctx.beginPath(); ctx.arc(cx, cy, 4, 0, 2*Math.PI);
-  ctx.fillStyle = '#f1f5f9'; ctx.fill();
+  ctx.fillStyle = '#475569'; ctx.fill();
 
-  // Min/Max Labels
+  // Skala Min/Max
   ctx.fillStyle = '#475569'; ctx.font = '9px monospace';
-  ctx.textAlign = 'left';  ctx.fillText(min % 1 === 0 ? min : min.toFixed(1), 4, cy);
-  ctx.textAlign = 'right'; ctx.fillText(max % 1 === 0 ? max : max.toFixed(1), W-4, cy);
+  ctx.textAlign = 'left';  ctx.fillText(scaleMin, 4, cy + 2);
+  ctx.textAlign = 'right'; ctx.fillText(scaleMax, W-4, cy + 2);
+
+  // Werte an den Nadeln
+  function labelAtAngle(angle, text, col) {
+    const lx = cx + (r - 26) * Math.cos(angle);
+    const ly = cy + (r - 26) * Math.sin(angle);
+    ctx.fillStyle = col;
+    ctx.font = 'bold 9px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(text, lx, ly - 3);
+  }
+  labelAtAngle(minAngle, valMin.toFixed(1), '#10b981');
+  labelAtAngle(maxAngle, valMax.toFixed(1), '#ef4444');
 }
 
 function renderTacho() {
   if (!DB || !DB.daily || !DB.daily.length) return;
-  const daily = DB.dailyExpanded || DB.daily;
+  const maxDays = prefs.curveDays || 60;
+  const daily = (DB.dailyExpanded || DB.daily).slice(-maxDays);
 
-  // Letzter Wert
-  const last = DB.daily[DB.daily.length - 1];
+  const stromVals = daily.map(r => r.strom).filter(v => v !== null && v !== undefined && !isNaN(v));
+  const gasVals   = daily.map(r => r.gas).filter(v => v !== null && v !== undefined && !isNaN(v));
 
-  // Min/Max aus expanded (alle verfügbaren Tage)
-  const stromVals = daily.map(r => r.strom).filter(v => v !== null && v !== undefined);
-  const gasVals   = daily.map(r => r.gas).filter(v => v !== null && v !== undefined);
-  const tempVals  = daily.map(r => r.temp).filter(v => v !== null && v !== undefined);
+  if (!stromVals.length || !gasVals.length) return;
 
-  const sMin = stromVals.length ? Math.min(...stromVals) : 0;
-  const sMax = stromVals.length ? Math.max(...stromVals) : 20;
-  const gMin = gasVals.length   ? Math.min(...gasVals)   : 0;
-  const gMax = gasVals.length   ? Math.max(...gasVals)   : 20;
-  const tMin = tempVals.length  ? Math.floor(Math.min(...tempVals)) : -5;
-  const tMax = tempVals.length  ? Math.ceil(Math.max(...tempVals))  : 35;
+  const sMin = Math.min(...stromVals), sMax = Math.max(...stromVals);
+  const gMin = Math.min(...gasVals),   gMax = Math.max(...gasVals);
 
-  const sv = last.strom !== null ? last.strom : 0;
-  const gv = last.gas   !== null ? last.gas   : 0;
-  const tv = last.temp  !== null ? last.temp  : 0;
+  // Skala immer 0 bis aufgerundetes Max
+  const sScale = Math.ceil(sMax * 1.1);
+  const gScale = Math.ceil(gMax * 1.1);
 
-  drawTacho('tachoStrom', sv, 0,    Math.ceil(sMax*1.1),  4.33,  '#f59e0b');
-  drawTacho('tachoGas',   gv, 0,    Math.ceil(gMax*1.1),  4.8,   '#ef4444');
-  drawTacho('tachoTemp',  tv, tMin, tMax,                  null,  '#10b981');
+  drawTachoMinMax('tachoStrom', 0, sScale, sMin, sMax, '#f59e0b');
+  drawTachoMinMax('tachoGas',   0, gScale, gMin, gMax, '#ef4444');
 
-  document.getElementById('tachoStromVal').textContent = sv.toFixed(2);
-  document.getElementById('tachoGasVal').textContent   = gv.toFixed(2);
-  document.getElementById('tachoTempVal').textContent  = tv.toFixed(1);
-  document.getElementById('tachoStromSub').textContent = `Min ${sMin.toFixed(1)} · Max ${sMax.toFixed(1)} kWh`;
-  document.getElementById('tachoGasSub').textContent   = `Min ${gMin.toFixed(1)} · Max ${gMax.toFixed(1)} m³`;
-  document.getElementById('tachoTempSub').textContent  = `Min ${tMin} · Max ${tMax} °C`;
+  document.getElementById('tachoStromMin').textContent = 'Min ' + sMin.toFixed(1);
+  document.getElementById('tachoStromMax').textContent = 'Max ' + sMax.toFixed(1);
+  document.getElementById('tachoGasMin').textContent   = 'Min ' + gMin.toFixed(1);
+  document.getElementById('tachoGasMax').textContent   = 'Max ' + gMax.toFixed(1);
+
+  // Titel mit Anzahl Tage
+  const titleEl = document.getElementById('tacho-title');
+  if (titleEl) titleEl.textContent = 'Min / Max — letzte ' + maxDays + ' Tage';
 }
 
 // ── WOCHENENDE HELPERS ─────────────────────────────────────
@@ -757,18 +746,11 @@ function renderCurve() {
     const defined = vals.filter(v => v !== null);
     let sun=0, cloud=0, rain=0;
     defined.forEach(v => { if(v===0) sun++; else if(v<7) cloud++; else rain++; });
-    const nonZero = defined.filter(v => v > 0);
-    const stromAvg = nonZero.length ? (nonZero.reduce((a,b)=>a+b,0)/nonZero.length).toFixed(1) : '–';
-    const stromMax = defined.length ? Math.max(...defined).toFixed(1) : '–';
     document.getElementById('curve-stats').innerHTML = `
       <div class="wetter-stats">
         <div class="wstat"><div class="wstat-icon">☀️</div><div class="wstat-label">Sonnentage</div><div class="wstat-val" style="color:#10b981">${sun}</div><div class="wstat-sub">= 0 kWh</div></div>
         <div class="wstat"><div class="wstat-icon">☁️</div><div class="wstat-label">Bewölkt</div><div class="wstat-val" style="color:#f59e0b">${cloud}</div><div class="wstat-sub">&gt;0 bis &lt;7</div></div>
         <div class="wstat"><div class="wstat-icon">🌧</div><div class="wstat-label">Bad Days</div><div class="wstat-val" style="color:#ef4444">${rain}</div><div class="wstat-sub">≥ 7 kWh</div></div>
-      </div>
-      <div class="simple-stats" style="margin-top:8px">
-        <div class="sstat"><div class="sstat-label">Ø Verbrauchstag</div><div class="sstat-val" style="color:#f59e0b">${stromAvg}</div><div class="sstat-sub">kWh (ohne Sonnentage)</div></div>
-        <div class="sstat"><div class="sstat-label">Maximum</div><div class="sstat-val" style="color:#f59e0b">${stromMax}</div><div class="sstat-sub">kWh</div></div>
       </div>`;
     document.getElementById('curve-legend').innerHTML = `
       <div class="cleg"><div class="cleg-dot" style="background:#10b981"></div>Sonnentag (=0)</div>

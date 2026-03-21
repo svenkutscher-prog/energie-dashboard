@@ -936,8 +936,8 @@ function renderStromPrognose() {
     const badge = s.isSolar ? 'Solar ✓' : s.sunH >= 2 ? 'Grenzwertig' : 'Kein Solar';
     const bgCol = s.isSolar ? 'rgba(16,185,129,0.12)' : s.sunH >= 2 ? 'rgba(245,158,11,0.12)' : 'rgba(239,68,68,0.12)';
     return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:12px;">
-      <span style="color:var(--muted)">${s.dayName} ${s.date}.${(curMonth+1).toString().padStart(2,'0')}.</span>
-      <span style="color:${col};font-family:monospace">${s.sunH.toFixed(1)}h ☀️</span>
+      <span style="color:var(--text)">${s.dayName} ${s.date}.${(curMonth+1).toString().padStart(2,'0')}.</span>
+      <span style="color:var(--muted);font-family:monospace">${s.sunH.toFixed(1)}h ☀️</span>
       <span style="background:${bgCol};color:${col};font-size:10px;padding:2px 8px;border-radius:20px">${badge}</span>
     </div>`;
   }).join('');
@@ -946,17 +946,17 @@ function renderStromPrognose() {
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
       <div style="background:var(--bg3);border-radius:10px;padding:10px;text-align:center">
         <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:4px">IST bisher</div>
-        <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:#f59e0b">${Math.round(istKwh)}</div>
+        <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:var(--text)">${Math.round(istKwh)}</div>
         <div style="font-size:10px;color:var(--muted);margin-top:2px">kWh · ${istTage} Tage</div>
       </div>
       <div style="background:var(--bg3);border-radius:10px;padding:10px;text-align:center">
         <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:4px">Ø pro Tag</div>
-        <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:#94a3b8">${avgPerDay.toFixed(2)}</div>
+        <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:#f1f5f9">${avgPerDay.toFixed(2)}</div>
         <div style="font-size:10px;color:var(--muted);margin-top:2px">kWh/Tag</div>
       </div>
       <div style="background:var(--bg3);border-radius:10px;padding:10px;text-align:center">
         <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:4px">Resttage</div>
-        <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:#3b82f6">${restTage}</div>
+        <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:var(--text)">${restTage}</div>
         <div style="font-size:10px;color:var(--muted);margin-top:2px">bis ${daysInMonth}. ${MON_NAMES[curMonth]}</div>
       </div>
     </div>
@@ -966,17 +966,17 @@ function renderStromPrognose() {
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
         <div style="background:var(--bg3);border-radius:10px;padding:10px;text-align:center">
           <div style="font-size:10px;color:var(--muted);margin-bottom:4px">Ohne Solar</div>
-          <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:#94a3b8">${Math.round(prognoseOhneSolar)}</div>
+          <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:#f1f5f9">${Math.round(prognoseOhneSolar)}</div>
           <div style="font-size:10px;color:var(--muted)">kWh</div>
         </div>
-        <div style="background:var(--bg3);border:1px solid rgba(16,185,129,0.3);border-radius:10px;padding:10px;text-align:center">
+        <div style="background:var(--bg3);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:10px;text-align:center">
           <div style="font-size:10px;color:var(--muted);margin-bottom:4px">Mit Solar ☀️</div>
-          <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:#10b981">${Math.round(prognoseMitSolar)}</div>
-          <div style="font-size:10px;color:var(--muted)">${solarTageRest} Sonnentage</div>
+          <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:var(--text)">${Math.round(prognoseMitSolar)}</div>
+          <div style="font-size:10px;color:var(--muted)">${solarTageRest} Sonnentage (7-Tage Forecast)</div>
         </div>
         <div style="background:var(--bg3);border-radius:10px;padding:10px;text-align:center">
           <div style="font-size:10px;color:var(--muted);margin-bottom:4px">Vorjahr ${MON_NAMES[curMonth]}</div>
-          <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:#64748b">${vorjahrKwh !== null ? Math.round(vorjahrKwh) : '–'}</div>
+          <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:#f1f5f9">${vorjahrKwh !== null ? Math.round(vorjahrKwh) : '–'}</div>
           <div style="font-size:10px;color:${diffPct!==null?(diffPct>0?'#ef4444':'#10b981'):'var(--muted)'}">${diffPct!==null?(diffPct>0?'+':'')+diffPct+'% vs 2025':'–'}</div>
         </div>
       </div>

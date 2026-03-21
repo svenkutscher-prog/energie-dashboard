@@ -233,6 +233,14 @@ canvas{display:block;}
     </div>
   </div>
 
+  <!-- STROM PROGNOSE -->
+  <div class="section">
+    <div class="section-title">⚡ Strom — Monatsprognose</div>
+    <div class="wasser-card" id="stromPrognose">
+      <div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">Lade…</div>
+    </div>
+  </div>
+
   <div style="height:20px"></div>
 </div>
 
@@ -486,6 +494,7 @@ function applyData() {
 
   renderCurve();
   renderWasser();
+  renderStromPrognose();
   if (curPage === 'jahr') renderYear();
 }
 
@@ -619,11 +628,12 @@ function renderCurve() {
 
 // ── FORECAST ───────────────────────────────────────────────
 let forecastLoaded = false;
+let forecastData = null;
 
 async function loadForecast() {
   if (forecastLoaded) return;
 
-  const url = 'https://api.open-meteo.com/v1/forecast?latitude=51.0018&longitude=6.2681&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max&timezone=Europe%2FBerlin&forecast_days=7';
+  const url = 'https://api.open-meteo.com/v1/forecast?latitude=51.0018&longitude=6.2681&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,sunshine_duration&timezone=Europe%2FBerlin&forecast_days=7';
 
   document.getElementById('forecastGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted);font-size:13px;">Lade Forecast…</div>';
 
@@ -632,7 +642,9 @@ async function loadForecast() {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const d = await res.json();
     forecastLoaded = true;
+    forecastData = d;
     renderForecast(d);
+    renderStromPrognose();
   } catch(e) {
     document.getElementById('forecastGrid').innerHTML = `
       <div style="grid-column:1/-1;text-align:center;padding:30px 20px;">
@@ -856,6 +868,125 @@ function renderYear() {
     </tbody></table>`;
 }
 
+
+
+// ── STROM MONATSPROGNOSE ───────────────────────────────────
+function renderStromPrognose() {
+  const el = document.getElementById('stromPrognose');
+  if (!el) return;
+  if (!DB || !DB.daily || !DB.daily.length) { el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">Keine Daten</div>'; return; }
+
+  // Aktueller Monat aus letztem Daily-Eintrag
+  const now = new Date();
+  const curMonth = now.getMonth(); // 0-basiert
+  const curYear  = now.getFullYear();
+  const daysInMonth = new Date(curYear, curMonth + 1, 0).getDate();
+  const today = now.getDate();
+  const restTage = daysInMonth - today;
+
+  // IST: Strom-Summe aus daily für aktuellen Monat
+  function parseEntryDate(datum) {
+    const m = String(datum).match(/(\d{1,2})\.(\d{1,2})/);
+    if (!m) return null;
+    return { day: parseInt(m[1]), mon: parseInt(m[2]) - 1 };
+  }
+
+  let istKwh = 0, istTage = 0, sumAll = 0, countAll = 0;
+  DB.daily.forEach(r => {
+    if (r.strom === null) return;
+    const d = parseEntryDate(r.datum);
+    if (!d) return;
+    sumAll += r.strom; countAll++;
+    if (d.mon === curMonth) { istKwh += r.strom; istTage++; }
+  });
+
+  const avgPerDay = countAll > 0 ? sumAll / countAll : 0;
+
+  // Sonnentage aus Forecast (sunshine_duration > 4h = 14400 Sek)
+  let solarTageRest = 0, solarDetails = [];
+  if (forecastData && forecastData.daily && forecastData.daily.sunshine_duration) {
+    const fd = forecastData.daily;
+    const SOLAR_SCHWELLE = 4 * 3600; // 4 Stunden in Sekunden
+    (fd.time || fd.date).forEach((date, i) => {
+      const dt = new Date(date);
+      if (dt.getMonth() === curMonth) {
+        const sun = fd.sunshine_duration[i] || 0;
+        const sunH = Math.round(sun / 360) / 10;
+        const isSolar = sun >= SOLAR_SCHWELLE;
+        const dayName = i === 0 ? 'Heute' : DAYS[dt.getDay()];
+        solarDetails.push({ dayName, sunH, isSolar, date: dt.getDate() });
+        if (isSolar) solarTageRest++;
+      }
+    });
+  }
+
+  const bewolktRest = restTage - solarTageRest;
+  const prognoseOhneSolar = istKwh + avgPerDay * restTage;
+  const prognoseMitSolar  = istKwh + avgPerDay * bewolktRest; // Sonnentage = 0 kWh
+
+  // Vorjahr gleicher Monat
+  const vorjahrKwh = DB.strom && DB.strom.values['2025'] ? (DB.strom.values['2025'][curMonth] || null) : null;
+  const diffPct = vorjahrKwh ? ((prognoseMitSolar - vorjahrKwh) / vorjahrKwh * 100).toFixed(0) : null;
+
+  const MON_NAMES = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+
+  // Solar-Forecast Zeilen
+  const solarRows = solarDetails.map(s => {
+    const col  = s.isSolar ? '#10b981' : s.sunH >= 2 ? '#f59e0b' : '#ef4444';
+    const badge = s.isSolar ? 'Solar ✓' : s.sunH >= 2 ? 'Grenzwertig' : 'Kein Solar';
+    const bgCol = s.isSolar ? 'rgba(16,185,129,0.12)' : s.sunH >= 2 ? 'rgba(245,158,11,0.12)' : 'rgba(239,68,68,0.12)';
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:12px;">
+      <span style="color:var(--muted)">${s.dayName} ${s.date}.${(curMonth+1).toString().padStart(2,'0')}.</span>
+      <span style="color:${col};font-family:monospace">${s.sunH.toFixed(1)}h ☀️</span>
+      <span style="background:${bgCol};color:${col};font-size:10px;padding:2px 8px;border-radius:20px">${badge}</span>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+      <div style="background:var(--bg3);border-radius:10px;padding:10px;text-align:center">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:4px">IST bisher</div>
+        <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:#f59e0b">${Math.round(istKwh)}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">kWh · ${istTage} Tage</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:10px;padding:10px;text-align:center">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:4px">Ø pro Tag</div>
+        <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:#94a3b8">${avgPerDay.toFixed(2)}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">kWh/Tag</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:10px;padding:10px;text-align:center">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:4px">Resttage</div>
+        <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:#3b82f6">${restTage}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">bis ${daysInMonth}. ${MON_NAMES[curMonth]}</div>
+      </div>
+    </div>
+
+    <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:12px;margin-bottom:12px">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px">Hochrechnung Monatsende</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+        <div style="background:var(--bg3);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px">Ohne Solar</div>
+          <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:#94a3b8">${Math.round(prognoseOhneSolar)}</div>
+          <div style="font-size:10px;color:var(--muted)">kWh</div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid rgba(16,185,129,0.3);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px">Mit Solar ☀️</div>
+          <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:#10b981">${Math.round(prognoseMitSolar)}</div>
+          <div style="font-size:10px;color:var(--muted)">${solarTageRest} Sonnentage</div>
+        </div>
+        <div style="background:var(--bg3);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px">Vorjahr ${MON_NAMES[curMonth]}</div>
+          <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:#64748b">${vorjahrKwh !== null ? Math.round(vorjahrKwh) : '–'}</div>
+          <div style="font-size:10px;color:${diffPct!==null?(diffPct>0?'#ef4444':'#10b981'):'var(--muted)'}">${diffPct!==null?(diffPct>0?'+':'')+diffPct+'% vs 2025':'–'}</div>
+        </div>
+      </div>
+    </div>
+
+    ${solarRows ? `<div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:10px">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px">☀️ Solar-Forecast Resttage (Schwelle &gt;4h)</div>
+      ${solarRows}
+    </div>` : ''}`;
+}
 
 // ── WASSER MONATSKURVE ─────────────────────────────────────
 function renderCurveWasser() {

@@ -343,7 +343,7 @@ canvas{display:block;}
 const API_URL   = 'https://script.google.com/macros/s/AKfycbyzjksZWv5IFGdc4NpTcCtPGftxQ2OiF61zzvLB_DKs4zEkw294AUgI9r8cp-JPS116XA/exec';
 const CACHE_KEY = 'wagael_v3';
 const PREF_KEY  = 'wagael_prefs_v3';
-const CACHE_TTL = 4 * 60 * 60 * 1000;
+const CACHE_TTL = 4* 60 * 60 * 1000;
 
 const MON = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
 const ALL_YEARS = [2021,2022,2023,2024,2025,2026];
@@ -492,11 +492,57 @@ function applyData() {
   if (!yearCat || !prefs.cats[yearCat]) yearCat = firstActiveCat?.key || 'strom';
   buildYearTabs();
 
+  // Daily-Daten expandieren (Lücken auffüllen)
+  if (DB.daily) DB.dailyExpanded = expandDaily(DB.daily);
+
   renderCurve();
   renderWasser();
   renderStromPrognose();
   loadForecast();
   if (curPage === 'jahr') renderYear();
+}
+
+
+// ── DAILY EXPANDIEREN ──────────────────────────────────────
+// Jeden Eintrag rückwärts auffüllen: Erfasst am - tage + 1 bis Erfasst am
+function expandDaily(daily) {
+  const expanded = [];
+
+  daily.forEach(entry => {
+    const tage = entry.tage || 1;
+    const endDate = parseDailyDatum(entry.datum);
+    if (!endDate) { expanded.push(entry); return; }
+
+    for (let d = tage - 1; d >= 0; d--) {
+      const dt = new Date(endDate);
+      dt.setDate(dt.getDate() - d);
+      const label = dt.getDate() + '.' + (dt.getMonth()+1).toString().padStart(2,'0') + '.';
+      const dow = ['So','Mo','Di','Mi','Do','Fr','Sa'][dt.getDay()];
+      expanded.push({
+        datum: label + dow + '.',
+        gas:   entry.gas,
+        strom: entry.strom,
+        temp:  entry.temp,
+        _expanded: d > 0  // true = aufgefüllter Tag, false = originaler Messtag
+      });
+    }
+  });
+
+  return expanded;
+}
+
+function parseDailyDatum(s) {
+  s = String(s || '').trim();
+  // DD.MM.Format (z.B. "19.03.Do.")
+  const m = s.match(/^(\d{1,2})\.(\d{1,2})\./);
+  if (m) {
+    const now = new Date();
+    let yr = now.getFullYear();
+    const mon = parseInt(m[2]) - 1;
+    if (mon > now.getMonth()) yr -= 1;
+    return new Date(yr, mon, parseInt(m[1]));
+  }
+  return null;
 }
 
 // ── WOCHENENDE HELPERS ─────────────────────────────────────
@@ -540,7 +586,7 @@ function renderCurve() {
   // Wasser: Monatsdaten aus DB.wasser statt daily
   if (curveMode === 'wasser') { renderCurveWasser(); return; }
 
-  const daily = DB.daily || [];
+  const daily = DB.dailyExpanded || DB.daily || [];
   if (!daily.length) return;
 
   const vals   = daily.map(r => r[curveMode] !== null ? Math.round(r[curveMode]*100)/100 : null);
@@ -892,8 +938,9 @@ function renderStromPrognose() {
     return { day: parseInt(m[1]), mon: parseInt(m[2]) - 1 };
   }
 
+  const dailyData = DB.dailyExpanded || DB.daily || [];
   let istKwh = 0, istTage = 0, sumAll = 0, countAll = 0;
-  DB.daily.forEach(r => {
+  dailyData.forEach(r => {
     if (r.strom === null) return;
     const d = parseEntryDate(r.datum);
     if (!d) return;

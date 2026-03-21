@@ -194,6 +194,7 @@ canvas{display:block;}
 <!-- PAGE 1: DASHBOARD -->
 <div class="page active" id="page-dashboard">
 
+  <div data-block="kurve">
   <!-- TAGESKURVE -->
   <div class="curve-card">
     <div class="curve-header">
@@ -210,7 +211,9 @@ canvas{display:block;}
     <div class="curve-wrap"><canvas id="curveChart"></canvas></div>
     <div class="curve-range" id="curve-range"></div>
   </div>
+  </div>
 
+  <div data-block="tacho">
   <!-- TACHO -->
   <div class="section">
     <div class="section-title" id="tacho-title">Min / Max</div>
@@ -235,7 +238,9 @@ canvas{display:block;}
       </div>
     </div>
   </div>
+  </div>
 
+  <div data-block="zaehler">
   <!-- ZÄHLERSTÄNDE -->
   <div class="section">
     <div class="zaehler-title" id="zaehler-title">Zählerstände</div>
@@ -245,7 +250,9 @@ canvas{display:block;}
       <div class="zcard w"><div class="zlabel">Wasser</div><div class="zval" id="z-wasser">–</div><div class="zunit">m³</div></div>
     </div>
   </div>
+  </div>
 
+  <div data-block="wasser">
   <!-- WASSER BALKEN -->
   <div class="section">
     <div class="section-title">Wasser (Tage seit letzter Messung)</div>
@@ -257,13 +264,16 @@ canvas{display:block;}
       <div class="wasser-wrap"><canvas id="wasserChart"></canvas></div>
     </div>
   </div>
+  </div>
 
+  <div data-block="prognose">
   <!-- STROM PROGNOSE -->
   <div class="section">
     <div class="section-title">⚡ Strom — Monatsprognose</div>
     <div class="wasser-card" id="stromPrognose">
       <div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">Lade…</div>
     </div>
+  </div>
   </div>
 
   <div style="height:20px"></div>
@@ -315,6 +325,10 @@ canvas{display:block;}
       <div class="year-chips" id="yearChips"></div>
     </div>
     <div class="settings-hint">Mindestens 1 Jahr muss aktiv sein.</div>
+  </div>
+  <div class="section" style="margin-top:16px;">
+    <div class="section-title">Block-Reihenfolge</div>
+    <div class="settings-group" id="blockOrderList"></div>
   </div>
   <div class="section" style="margin-top:16px;">
     <div class="section-title">Darstellung</div>
@@ -400,7 +414,7 @@ const CURVE_COLORS = { gas:'#ef4444', temp:'#10b981', wasser:'#3b82f6' };
 const CURVE_TARGETS = { strom:4.33, gas:4.8, temp:null, wasser:null };
 
 function defaultPrefs() {
-  return { cats:{strom:true,gas:true,wasser:true,temp:false}, years:{2021:true,2022:true,2023:true,2024:true,2025:true,2026:true}, weekendBg:true, curveDays:60 };
+  return { cats:{strom:true,gas:true,wasser:true,temp:false}, years:{2021:true,2022:true,2023:true,2024:true,2025:true,2026:true}, weekendBg:true, curveDays:60, blockOrder:['kurve','tacho','zaehler','wasser','prognose'] };
 }
 function loadPrefs() { try { return JSON.parse(localStorage.getItem(PREF_KEY)) || defaultPrefs(); } catch(e) { return defaultPrefs(); } }
 function savePrefs(p) { localStorage.setItem(PREF_KEY, JSON.stringify(p)); }
@@ -447,6 +461,7 @@ function renderSettings() {
     `<button class="year-chip ${prefs.years[yr]?'on':''}" data-yr="${yr}" onclick="toggleYear(${yr},this)">${yr}</button>`).join('');
   document.getElementById('apiUrlDisplay').textContent = API_URL;
   const wbEl = document.getElementById('toggle-weekend'); if(wbEl) wbEl.checked = prefs.weekendBg !== false;
+  renderBlockOrderList();
   const sl = document.getElementById('curveDays-slider'); if(sl) { sl.value = prefs.curveDays || 60; document.getElementById('curveDays-label').textContent = (prefs.curveDays||60) + ' Tage'; }
 }
 
@@ -542,6 +557,7 @@ function applyData() {
   // Daily-Daten expandieren (Lücken auffüllen)
   if (DB.daily) DB.dailyExpanded = expandDaily(DB.daily);
 
+  applyBlockOrder();
   renderCurve();
   renderTacho();
   renderWasser();
@@ -593,6 +609,66 @@ function parseDailyDatum(s) {
   return null;
 }
 
+
+
+// ── BLOCK REIHENFOLGE ──────────────────────────────────────
+const BLOCK_META = {
+  kurve:    { icon:'📈', name:'Tageskurve',      sub:'Strom · Gas · Temp · Wasser' },
+  tacho:    { icon:'🎯', name:'Min / Max Tacho', sub:'Strom · Gas' },
+  zaehler:  { icon:'🔢', name:'Zählerstände',    sub:'Gas · Strom · Wasser' },
+  wasser:   { icon:'💧', name:'Wasser Balken',   sub:'Tage seit Messung' },
+  prognose: { icon:'⚡', name:'Strom Prognose',  sub:'Hochrechnung · Solar' },
+};
+
+function getBlockOrder() {
+  return prefs.blockOrder || ['kurve','tacho','zaehler','wasser','prognose'];
+}
+
+function applyBlockOrder() {
+  const dashboard = document.getElementById('page-dashboard');
+  const order = getBlockOrder();
+  const spacer = dashboard.querySelector('div[style*="height:20px"]');
+  order.forEach(id => {
+    const el = dashboard.querySelector('[data-block="' + id + '"]');
+    if (el) dashboard.insertBefore(el, spacer);
+  });
+  // Charts neu zeichnen nach DOM-Änderung
+  if (DB) {
+    renderCurve();
+    renderTacho();
+    renderWasser();
+  }
+}
+
+function moveBlock(idx, dir) {
+  const order = getBlockOrder();
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= order.length) return;
+  [order[idx], order[newIdx]] = [order[newIdx], order[idx]];
+  prefs.blockOrder = order;
+  savePrefs(prefs);
+  applyBlockOrder();
+  renderBlockOrderList();
+}
+
+function renderBlockOrderList() {
+  const el = document.getElementById('blockOrderList');
+  if (!el) return;
+  const order = getBlockOrder();
+  el.innerHTML = order.map((id, i) => {
+    const m = BLOCK_META[id] || {icon:'?', name:id, sub:''};
+    return `<div class="settings-row">
+      <div class="settings-row-left">
+        <div class="settings-icon">${m.icon}</div>
+        <div><div class="settings-label">${m.name}</div><div class="settings-sub">${m.sub}</div></div>
+      </div>
+      <div style="display:flex;gap:4px">
+        <button onclick="moveBlock(${i},-1)" ${i===0?'disabled':''} style="background:var(--bg3);border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:8px;font-size:13px;cursor:pointer;opacity:${i===0?'0.3':'1'}">▲</button>
+        <button onclick="moveBlock(${i}, 1)" ${i===order.length-1?'disabled':''} style="background:var(--bg3);border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:8px;font-size:13px;cursor:pointer;opacity:${i===order.length-1?'0.3':'1'}">▼</button>
+      </div>
+    </div>`;
+  }).join('');
+}
 
 // ── TACHO ──────────────────────────────────────────────────
 function drawTachoMinMax(canvasId, scaleMin, scaleMax, valMin, valMax, color) {

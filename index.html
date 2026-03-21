@@ -9,6 +9,7 @@
 <meta name="theme-color" content="#0a0f1e">
 <title>WAGAEL</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap');
 :root {
@@ -160,6 +161,13 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .api-label{font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.08em;}
 .api-url{font-family:'Space Mono',monospace;font-size:10px;color:var(--green);background:var(--bg3);padding:8px 10px;border-radius:8px;word-break:break-all;line-height:1.5;}
 
+/* WASSER CHART */
+.wasser-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px;}
+.wasser-legend{display:flex;gap:14px;margin-bottom:10px;}
+.wleg{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);}
+.wleg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+.wasser-wrap{position:relative;height:180px;}
+
 /* BOTTOM NAV */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,15,30,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;padding:8px 0 20px;z-index:100;}
 .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0;cursor:pointer;font-size:10px;letter-spacing:0.05em;text-transform:uppercase;color:var(--muted);transition:color 0.2s;}
@@ -212,6 +220,18 @@ canvas{display:block;}
       <div class="zcard w"><div class="zlabel">Wasser</div><div class="zval" id="z-wasser">–</div><div class="zunit">m³</div></div>
     </div>
   </div>
+  <!-- WASSER BALKEN -->
+  <div class="section">
+    <div class="section-title">Wasser (Anzahl Tage)</div>
+    <div class="wasser-card">
+      <div class="wasser-legend">
+        <div class="wleg"><div class="wleg-dot" style="background:#7dd3fc"></div>&lt; 3 Tage</div>
+        <div class="wleg"><div class="wleg-dot" style="background:#f472b6"></div>≥ 3 Tage</div>
+      </div>
+      <div class="wasser-wrap"><canvas id="wasserChart"></canvas></div>
+    </div>
+  </div>
+
   <div style="height:20px"></div>
 </div>
 
@@ -299,7 +319,7 @@ canvas{display:block;}
 </div>
 
 <script>
-const API_URL   = 'https://script.google.com/macros/s/AKfycbz1th0HDc0kWtQ_pwMZoR5SHVCyC11fFQOcEYxWoghc6Yn7Leo4gLS1jdTHShkSXeErRQ/exec';
+const API_URL   = 'https://script.google.com/macros/s/AKfycbyzjksZWv5IFGdc4NpTcCtPGftxQ2OiF61zzvLB_DKs4zEkw294AUgI9r8cp-JPS116XA/exec';
 const CACHE_KEY = 'wagael_v3';
 const PREF_KEY  = 'wagael_prefs_v3';
 const CACHE_TTL = 60 * 60 * 1000;
@@ -326,12 +346,13 @@ function defaultPrefs() {
 function loadPrefs() { try { return JSON.parse(localStorage.getItem(PREF_KEY)) || defaultPrefs(); } catch(e) { return defaultPrefs(); } }
 function savePrefs(p) { localStorage.setItem(PREF_KEY, JSON.stringify(p)); }
 
+Chart.register(ChartDataLabels);
 let prefs = loadPrefs();
 let DB = null;
 let curPage = 'dashboard';
 let curveMode = 'strom';
 let yearCat = null;
-let curveChart = null, yearChart = null, fcChart = null;
+let curveChart = null, yearChart = null, fcChart = null, wasserChart = null;
 
 // ── NAVIGATION ─────────────────────────────────────────────
 function showPage(name, navEl) {
@@ -443,6 +464,7 @@ function applyData() {
   buildYearTabs();
 
   renderCurve();
+  renderWasser();
   if (curPage === 'jahr') renderYear();
 }
 
@@ -549,15 +571,34 @@ function renderCurve() {
 }
 
 // ── FORECAST ───────────────────────────────────────────────
+let forecastLoaded = false;
+
 async function loadForecast() {
-  const url = 'https://api.open-meteo.com/v1/forecast?latitude=51.0&longitude=6.27&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=Europe/Berlin&forecast_days=7';
+  if (forecastLoaded) return;
+
+  const url = 'https://api.open-meteo.com/v1/forecast?latitude=51.0018&longitude=6.2681&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max&timezone=Europe%2FBerlin&forecast_days=7';
+
+  document.getElementById('forecastGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted);font-size:13px;">Lade Forecast…</div>';
+
   try {
     const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const d = await res.json();
+    forecastLoaded = true;
     renderForecast(d);
   } catch(e) {
-    document.getElementById('forecastGrid').innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--muted)">Forecast nicht verfügbar</div>`;
+    document.getElementById('forecastGrid').innerHTML = `
+      <div style="grid-column:1/-1;text-align:center;padding:30px 20px;">
+        <div style="font-size:32px;margin-bottom:8px">🌤️</div>
+        <div style="color:var(--muted);font-size:13px;margin-bottom:12px">Fehler: ${e.message}</div>
+        <button onclick="retryForecast()" style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);color:var(--strom);padding:8px 18px;border-radius:20px;font-size:13px;cursor:pointer;font-family:inherit;">↻ Nochmal versuchen</button>
+      </div>`;
   }
+}
+
+function retryForecast() {
+  forecastLoaded = false;
+  loadForecast();
 }
 
 function weatherIcon(code) {
@@ -577,26 +618,27 @@ const DAYS = ['So','Mo','Di','Mi','Do','Fr','Sa'];
 
 function renderForecast(d) {
   const daily = d.daily;
-  const grid = daily.date.map((date, i) => {
+  const grid = (daily.time || daily.date).map((date, i) => {
     const dt = new Date(date);
     const dayName = i === 0 ? 'Heute' : DAYS[dt.getDay()];
     const icon = weatherIcon(daily.weathercode[i]);
     const hi = Math.round(daily.temperature_2m_max[i]);
     const lo = Math.round(daily.temperature_2m_min[i]);
-    const rain = daily.precipitation_sum[i].toFixed(1);
+    const rain = (daily.precipitation_sum[i] || 0).toFixed(1);
+    const prob = daily.precipitation_probability_max ? (daily.precipitation_probability_max[i] || 0) : 0;
     return `<div class="fday">
       <div class="fday-name">${dayName}</div>
       <div class="fday-icon">${icon}</div>
       <div class="fday-hi">${hi}°</div>
       <div class="fday-lo">${lo}°</div>
-      <div class="fday-rain">${rain}mm</div>
+      <div class="fday-rain">${rain}mm ${prob>0?'('+prob+'%)':''}</div>
     </div>`;
   }).join('');
   document.getElementById('forecastGrid').innerHTML = grid;
   document.getElementById('forecastUpdated').textContent = 'Linnich, Germany · Open-Meteo';
 
   // Forecast chart
-  const labels = daily.date.map((date,i) => i===0?'Heute':DAYS[new Date(date).getDay()]);
+  const labels = (daily.time || daily.date).map((date,i) => i===0?'Heute':DAYS[new Date(date).getDay()]);
   const hi = daily.temperature_2m_max.map(v=>Math.round(v));
   const lo = daily.temperature_2m_min.map(v=>Math.round(v));
 
@@ -733,6 +775,39 @@ function renderYear() {
     <tbody>${rows}
     <tr style="border-top:2px solid rgba(255,255,255,0.15)"><td style="color:var(--muted);font-weight:700">Σ</td>${totRow}</tr>
     </tbody></table>`;
+}
+
+function renderWasser() {
+  if (!DB || !DB.wasserDaily) return;
+  const data = DB.wasserDaily;
+  if (!data.length) return;
+
+  const labels = data.map(r => r.datum);
+  const tage   = data.map(r => r.tage);
+  const colors = data.map(r => r.tage < 3 ? '#7dd3fc' : '#f472b6');
+
+  if (wasserChart) { wasserChart.destroy(); wasserChart = null; }
+  wasserChart = new Chart(document.getElementById('wasserChart'), {
+    type: 'bar',
+    data: { labels, datasets: [{ data: tage, backgroundColor: colors, borderRadius: 4, borderSkipped: false }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { enabled: false },
+        datalabels: {
+          color: '#fff',
+          font: { size: 11, weight: 'bold', family: 'monospace' },
+          anchor: 'center', align: 'center',
+          formatter: v => v
+        }
+      },
+      scales: {
+        x: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#475569',font:{size:9}} },
+        y: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#475569',font:{size:9},callback:v=>v+'d'}, beginAtZero:true }
+      }
+    }
+  });
 }
 
 function fmt(v) {

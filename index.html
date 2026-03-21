@@ -816,3 +816,49 @@ function renderWasser() {
   });
   const tage   = sorted.map(r => Math.round(Number(r.tage)));
   const colors = tage.map(v => v < 3 ? '#7dd3fc' : '#f472b6');
+
+  if (wasserChart) { wasserChart.destroy(); wasserChart = null; }
+  wasserChart = new Chart(document.getElementById('wasserChart'), {
+    type: 'bar',
+    data: { labels, datasets: [{ data: tage, backgroundColor: colors, borderRadius: 4, borderSkipped: false }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor:'rgba(10,15,30,0.97)', borderColor:'rgba(255,255,255,0.1)', borderWidth:1,
+          titleColor:'#94a3b8', bodyColor:'#f1f5f9', padding:8, cornerRadius:8,
+          callbacks: { label: c => ` ${c.parsed.y} Tag${c.parsed.y !== 1 ? 'e' : ''}` }
+        },
+        datalabels: {
+          display: ctx => ctx.dataset.data[ctx.dataIndex] > 0,
+          color: '#fff',
+          font: { size: 10, weight: 'bold', family: 'monospace' },
+          anchor: 'center', align: 'center',
+          formatter: v => v
+        }
+      },
+      scales: {
+        x: {
+          grid:{color:'rgba(255,255,255,0.04)'},
+          ticks:{ color:'#475569', font:{size:8}, maxTicksLimit:20, maxRotation:45, minRotation:0 }
+        },
+        y: {
+          grid:{color:'rgba(255,255,255,0.04)'},
+          ticks:{color:'#475569',font:{size:9},callback:v=>v+'d'},
+          beginAtZero:true
+        }
+      }
+    }
+  });
+}
+
+function fmt(v) {
+  if(v===null||v===undefined) return '–';
+  return Number(v).toLocaleString('de',{maximumFractionDigits:1});
+}
+
+loadData();
+</script>
+</body>
+</html>

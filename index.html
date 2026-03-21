@@ -16,7 +16,7 @@
   --bg:#0a0f1e; --bg3:#1a2236; --card:#161d2e;
   --border:rgba(255,255,255,0.07);
   --strom:#f59e0b; --gas:#ef4444; --wasser:#3b82f6; --temp:#10b981;
-  --text:#f1f5f9; --muted:#64748b; --green:#10b981; --r:14px;
+  --text:#f1f5f9; --muted:#94a3b8; --green:#10b981; --r:14px;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;min-height:100vh;padding-bottom:90px;overscroll-behavior:none;}
@@ -559,8 +559,8 @@ function renderCurve() {
         }
       },
       scales:{
-        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#475569',font:{size:10},maxTicksLimit:8,maxRotation:0}},
-        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#475569',font:{size:10},callback:v=>v+' '+unit}}
+        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#94a3b8',font:{size:10},maxTicksLimit:8,maxRotation:0}},
+        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#94a3b8',font:{size:10},callback:v=>v+' '+unit}}
       }
     }
   });
@@ -652,8 +652,8 @@ function renderForecast(d) {
         tooltip:{backgroundColor:'rgba(10,15,30,0.97)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,titleColor:'#94a3b8',bodyColor:'#f1f5f9',padding:10,cornerRadius:8,callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y}°C`}}
       },
       scales:{
-        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#475569',font:{size:10}}},
-        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#475569',font:{size:10},callback:v=>v+'°'}}
+        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#94a3b8',font:{size:10}}},
+        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#94a3b8',font:{size:10},callback:v=>v+'°'}}
       }
     }
   });
@@ -722,11 +722,36 @@ function renderYear() {
     borderWidth: yr===2026?2.5:1.5,
     pointRadius: yr===2026?3:1.5,
     pointBackgroundColor: YEAR_COLORS[yr],
-    tension:0.4, spanGaps:false, fill:yr===2026
+    tension:0.4, spanGaps:false, fill:yr===2026,
+    yAxisID: 'y'
   }));
 
-  document.getElementById('yr-legend').innerHTML = activeYears.map(yr =>
-    `<div class="yr-leg ${yr===2026?'hi':''}"><div class="yr-leg-dot" style="background:${YEAR_COLORS[yr]}"></div>${yr}</div>`).join('');
+  // Bei Gas: Temperatur 2026 als zweite Kurve auf rechter Achse
+  const showTemp = yearCat === 'gas';
+  if (showTemp && DB.temp) {
+    const tempVals = DB.temp.values || {};
+    activeYears.forEach(yr => {
+      datasets.push({
+        label: 'Temp ' + yr,
+        data: (tempVals[yr]||[]).map(v=>(v===null||v==='')?null:Number(v)),
+        borderColor: '#10b981',
+        backgroundColor: 'transparent',
+        borderWidth: yr===2026 ? 2 : 1,
+        borderDash: [4,3],
+        pointRadius: yr===2026 ? 2 : 0,
+        pointBackgroundColor: '#10b981',
+        tension:0.4, spanGaps:false, fill:false,
+        yAxisID: 'yTemp',
+        opacity: yr===2026 ? 1 : 0.4
+      });
+    });
+  }
+
+  document.getElementById('yr-legend').innerHTML = [
+    ...activeYears.map(yr =>
+      `<div class="yr-leg ${yr===2026?'hi':''}"><div class="yr-leg-dot" style="background:${YEAR_COLORS[yr]}"></div>${yr}</div>`),
+    showTemp ? `<div class="yr-leg"><div class="yr-leg-dot" style="background:#10b981;border:1px dashed #10b981"></div>Temp °C</div>` : ''
+  ].join('');
 
   if (yearChart) { yearChart.destroy(); yearChart = null; }
   yearChart = new Chart(document.getElementById('yearChart'), {
@@ -738,11 +763,17 @@ function renderYear() {
         legend:{display:false},
         datalabels: { display: false },
         tooltip:{backgroundColor:'rgba(10,15,30,0.97)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,titleColor:'#94a3b8',bodyColor:'#f1f5f9',padding:10,cornerRadius:8,
-          callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y!==null?fmt(c.parsed.y):'–'} ${meta.unit}`}}
+          callbacks:{label:ctx=>{
+            const v = ctx.parsed.y;
+            if (v === null) return null;
+            if (ctx.dataset.yAxisID === 'yTemp') return ` ${ctx.dataset.label}: ${fmt(v)} °C`;
+            return ` ${ctx.dataset.label}: ${fmt(v)} ${meta.unit}`;
+          }}}
       },
       scales:{
-        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#475569',font:{size:10}}},
-        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#475569',font:{size:10},callback:v=>v+' '+meta.unit}}
+        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#94a3b8',font:{size:10}}},
+        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#94a3b8',font:{size:10},callback:v=>v+' '+meta.unit}},
+        ...(showTemp ? {yTemp:{position:'right',grid:{display:false},ticks:{color:'#10b981',font:{size:10},callback:v=>v+'°'},title:{display:true,text:'°C',color:'#10b981',font:{size:10}}}} : {})
       }
     }
   });
@@ -789,9 +820,15 @@ function renderWasser() {
       if (yr < 100) yr += 2000;
       return new Date(yr, parseInt(m[2])-1, parseInt(m[1])).getTime();
     }
-    // DD.MM. ohne Jahr -> aktuelles Jahr
+    // DD.MM. ohne Jahr: wenn Monat > aktueller Monat -> Vorjahr
     m = s.match(/^(\d{1,2})\.(\d{1,2})\./);
-    if (m) return new Date(new Date().getFullYear(), parseInt(m[2])-1, parseInt(m[1])).getTime();
+    if (m) {
+      const now = new Date();
+      let yr = now.getFullYear();
+      const mon = parseInt(m[2]) - 1;
+      if (mon > now.getMonth()) yr -= 1;
+      return new Date(yr, mon, parseInt(m[1])).getTime();
+    }
     return 0;
   }
 
@@ -841,11 +878,11 @@ function renderWasser() {
       scales: {
         x: {
           grid:{color:'rgba(255,255,255,0.04)'},
-          ticks:{ color:'#475569', font:{size:8}, maxTicksLimit:20, maxRotation:45, minRotation:0 }
+          ticks:{ color:'#94a3b8', font:{size:8}, maxTicksLimit:20, maxRotation:45, minRotation:0 }
         },
         y: {
           grid:{color:'rgba(255,255,255,0.04)'},
-          ticks:{color:'#475569',font:{size:9},callback:v=>v+'d'},
+          ticks:{color:'#94a3b8',font:{size:9},callback:v=>v+'d'},
           beginAtZero:true
         }
       }

@@ -184,7 +184,7 @@ canvas{display:block;}
 
   <!-- WETTER -->
   <div class="wetter-card">
-    <div class="wetter-label">Letzte 30 Tage</div>
+    <div class="wetter-label">Letzte 30 Strom Einträge</div>
     <div class="wetter-grid">
       <div class="wetter-item sonne">
         <div class="wetter-icon">☀️</div>
@@ -249,6 +249,16 @@ canvas{display:block;}
         <div class="api-label">Apps Script URL</div>
         <div class="api-url" id="apiUrlDisplay"></div>
       </div>
+      <div class="settings-row">
+        <div class="settings-row-left">
+          <div class="settings-icon">🗑️</div>
+          <div>
+            <div class="settings-label">Cache leeren & neu laden</div>
+            <div class="settings-sub">Holt frische Daten vom Sheet</div>
+          </div>
+        </div>
+        <button onclick="clearCache()" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#ef4444;padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;font-family:inherit;">Leeren</button>
+      </div>
     </div>
   </div>
   <div style="height:20px"></div>
@@ -263,7 +273,7 @@ canvas{display:block;}
 </div>
 
 <script>
-const API_URL   = 'https://script.google.com/macros/s/AKfycby81J_a73co29ii9ARqlVmtiM05ac1oblRdBWiuZ1kvkYh1PhcWTcEQjDs3zlxMsW4_hA/exec';
+const API_URL   = 'https://script.google.com/macros/s/AKfycby5_WYDWxvEVaTABlIAbCEgsdllyuhzlpD3d4JrR7o2QDsIm8RFqsdGvbnTZO_GIt3NCA/exec';
 const CACHE_KEY = 'wagael_data';
 const PREF_KEY  = 'wagael_prefs';
 const CACHE_TTL = 60 * 60 * 1000;
@@ -321,6 +331,18 @@ function renderSettings() {
     `<button class="year-chip ${prefs.years[yr]?'on':''}" data-yr="${yr}" onclick="toggleYear(${yr},this)">${yr}</button>`).join('');
 
   document.getElementById('apiUrlDisplay').textContent = API_URL;
+}
+
+function clearCache() {
+  localStorage.removeItem('wagael_data');
+  DB = null;
+  document.getElementById('lastUpdate').textContent = 'Cache geleert — lade neu…';
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const pg = document.getElementById('page-dashboard');
+  if(pg) pg.classList.add('active');
+  document.querySelectorAll('.nav-item')[0].classList.add('active');
+  loadData(true);
 }
 
 function toggleCat(key, on) {
@@ -398,15 +420,15 @@ function applyData() {
 
   // Wetter
   const w = DB.wetter || {};
-  document.getElementById('w-sonne').textContent = w.sonnentage ?? '–';
-  document.getElementById('w-wolke').textContent = w.bewoelkt   ?? '–';
-  document.getElementById('w-regen').textContent = w.badDays    ?? '–';
+  document.getElementById('w-sonne').textContent = (w.sonnentage != null) ? w.sonnentage : '–';
+  document.getElementById('w-wolke').textContent = (w.bewoelkt   != null) ? w.bewoelkt   : '–';
+  document.getElementById('w-regen').textContent = (w.badDays    != null) ? w.badDays    : '–';
 
   // Zähler
   const z = DB.zaehler || {};
-  document.getElementById('z-strom').textContent  = z.strom  ? fmt(z.strom)  : '36661';
-  document.getElementById('z-gas').textContent    = z.gas    ? fmt(z.gas)    : '7946';
-  document.getElementById('z-wasser').textContent = z.wasser ? fmt(z.wasser) : '545';
+  document.getElementById('z-strom').textContent  = (z.strom  != null) ? fmt(z.strom)  : '36661';
+  document.getElementById('z-gas').textContent    = (z.gas    != null) ? fmt(z.gas)    : '7946';
+  document.getElementById('z-wasser').textContent = (z.wasser != null) ? fmt(z.wasser) : '545';
 
   buildCatTabs();
   render();

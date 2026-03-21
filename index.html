@@ -197,7 +197,7 @@ canvas{display:block;}
   <!-- TAGESKURVE -->
   <div class="curve-card">
     <div class="curve-header">
-      <div class="curve-title">Letzte 30 Einträge</div>
+      <div class="curve-title" id="curve-title">Letzte 60 Tage</div>
       <div class="curve-tabs">
         <button class="ctab strom active" onclick="switchCurve('strom',this)">Strom</button>
         <button class="ctab gas" onclick="switchCurve('gas',this)">Gas</button>
@@ -209,6 +209,31 @@ canvas{display:block;}
     <div class="curve-legend" id="curve-legend"></div>
     <div class="curve-wrap"><canvas id="curveChart"></canvas></div>
     <div class="curve-range" id="curve-range"></div>
+  </div>
+
+  <!-- TACHO -->
+  <div class="section">
+    <div class="section-title">Tageswerte</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px;text-align:center">
+        <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">⚡ Strom</div>
+        <canvas id="tachoStrom" width="160" height="95" style="max-width:100%"></canvas>
+        <div style="font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:var(--strom);margin-top:4px" id="tachoStromVal">–</div>
+        <div style="font-size:10px;color:var(--muted)" id="tachoStromSub">kWh</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px;text-align:center">
+        <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">🔥 Gas</div>
+        <canvas id="tachoGas" width="160" height="95" style="max-width:100%"></canvas>
+        <div style="font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:var(--gas);margin-top:4px" id="tachoGasVal">–</div>
+        <div style="font-size:10px;color:var(--muted)" id="tachoGasSub">m³</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px;text-align:center">
+        <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">🌡 Temp</div>
+        <canvas id="tachoTemp" width="160" height="95" style="max-width:100%"></canvas>
+        <div style="font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:var(--temp);margin-top:4px" id="tachoTempVal">–</div>
+        <div style="font-size:10px;color:var(--muted)" id="tachoTempSub">°C</div>
+      </div>
+    </div>
   </div>
 
   <!-- ZÄHLERSTÄNDE -->
@@ -307,6 +332,19 @@ canvas{display:block;}
           <div class="toggle-track"></div><div class="toggle-thumb"></div>
         </label>
       </div>
+      <div class="settings-row">
+        <div class="settings-row-left">
+          <div class="settings-icon">📊</div>
+          <div>
+            <div class="settings-label">Tage in der Grafik</div>
+            <div class="settings-sub" id="curveDays-label">60 Tage</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <input type="range" id="curveDays-slider" min="14" max="180" step="7" value="60"
+            style="width:100px" oninput="setCurveDays(this.value)">
+        </div>
+      </div>
     </div>
   </div>
   <div class="section" style="margin-top:16px;">
@@ -362,7 +400,7 @@ const CURVE_COLORS = { gas:'#ef4444', temp:'#10b981', wasser:'#3b82f6' };
 const CURVE_TARGETS = { strom:4.33, gas:4.8, temp:null, wasser:null };
 
 function defaultPrefs() {
-  return { cats:{strom:true,gas:true,wasser:true,temp:false}, years:{2021:true,2022:true,2023:true,2024:true,2025:true,2026:true}, weekendBg:true };
+  return { cats:{strom:true,gas:true,wasser:true,temp:false}, years:{2021:true,2022:true,2023:true,2024:true,2025:true,2026:true}, weekendBg:true, curveDays:60 };
 }
 function loadPrefs() { try { return JSON.parse(localStorage.getItem(PREF_KEY)) || defaultPrefs(); } catch(e) { return defaultPrefs(); } }
 function savePrefs(p) { localStorage.setItem(PREF_KEY, JSON.stringify(p)); }
@@ -409,6 +447,7 @@ function renderSettings() {
     `<button class="year-chip ${prefs.years[yr]?'on':''}" data-yr="${yr}" onclick="toggleYear(${yr},this)">${yr}</button>`).join('');
   document.getElementById('apiUrlDisplay').textContent = API_URL;
   const wbEl = document.getElementById('toggle-weekend'); if(wbEl) wbEl.checked = prefs.weekendBg !== false;
+  const sl = document.getElementById('curveDays-slider'); if(sl) { sl.value = prefs.curveDays || 60; document.getElementById('curveDays-label').textContent = (prefs.curveDays||60) + ' Tage'; }
 }
 
 function toggleCat(key, on) {
@@ -426,6 +465,14 @@ function toggleYear(yr, btn) {
 
 function toggleWeekendBg(on) {
   prefs.weekendBg = on; savePrefs(prefs);
+  renderCurve();
+}
+
+function setCurveDays(v) {
+  prefs.curveDays = parseInt(v);
+  savePrefs(prefs);
+  const lbl = document.getElementById('curveDays-label');
+  if (lbl) lbl.textContent = v + ' Tage';
   renderCurve();
 }
 
@@ -496,6 +543,7 @@ function applyData() {
   if (DB.daily) DB.dailyExpanded = expandDaily(DB.daily);
 
   renderCurve();
+  renderTacho();
   renderWasser();
   renderStromPrognose();
   loadForecast();
@@ -545,6 +593,114 @@ function parseDailyDatum(s) {
   return null;
 }
 
+
+// ── TACHO ──────────────────────────────────────────────────
+function drawTacho(canvasId, value, min, max, target, color) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W / 2, cy = H - 8;
+  const r = Math.min(W * 0.42, H * 0.85);
+  const startAngle = Math.PI, endAngle = 2 * Math.PI;
+
+  ctx.clearRect(0, 0, W, H);
+
+  function valToAngle(v) {
+    const pct = Math.max(0, Math.min(1, (v - min) / (max - min)));
+    return startAngle + pct * Math.PI;
+  }
+
+  // Hintergrund
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, startAngle, endAngle);
+  ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+  ctx.lineWidth = 12; ctx.lineCap = 'round'; ctx.stroke();
+
+  // Farbiger Bogen
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, startAngle, valToAngle(value));
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 12; ctx.lineCap = 'round'; ctx.stroke();
+
+  // Ziel-Linie
+  if (target !== null && target >= min && target <= max) {
+    const ta = valToAngle(target);
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(ta);
+    ctx.beginPath(); ctx.moveTo(r-18, 0); ctx.lineTo(r+2, 0);
+    ctx.strokeStyle = 'rgba(255,255,255,0.45)';
+    ctx.lineWidth = 2; ctx.setLineDash([3,3]); ctx.stroke();
+    ctx.restore();
+  }
+
+  // Min-Nadel (blau, dünn)
+  const minV = min + (max - min) * 0.0;
+  if (value !== minV) {
+    const minAngle = valToAngle(min);
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(minAngle);
+    ctx.beginPath(); ctx.moveTo(-4, 0); ctx.lineTo(r-20, 0);
+    ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 1.5;
+    ctx.setLineDash([]); ctx.stroke(); ctx.restore();
+  }
+
+  // Max-Nadel (rot, dünn)
+  const maxAngle = valToAngle(max);
+  ctx.save(); ctx.translate(cx, cy); ctx.rotate(maxAngle);
+  ctx.beginPath(); ctx.moveTo(-4, 0); ctx.lineTo(r-20, 0);
+  ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1.5;
+  ctx.setLineDash([]); ctx.stroke(); ctx.restore();
+
+  // Haupt-Nadel (weiß)
+  ctx.save(); ctx.translate(cx, cy); ctx.rotate(valToAngle(value));
+  ctx.beginPath(); ctx.moveTo(-6, 0); ctx.lineTo(r-14, 0);
+  ctx.strokeStyle = '#f1f5f9'; ctx.lineWidth = 2.5;
+  ctx.setLineDash([]); ctx.lineCap = 'round'; ctx.stroke(); ctx.restore();
+
+  // Mittelpunkt
+  ctx.beginPath(); ctx.arc(cx, cy, 4, 0, 2*Math.PI);
+  ctx.fillStyle = '#f1f5f9'; ctx.fill();
+
+  // Min/Max Labels
+  ctx.fillStyle = '#475569'; ctx.font = '9px monospace';
+  ctx.textAlign = 'left';  ctx.fillText(min % 1 === 0 ? min : min.toFixed(1), 4, cy);
+  ctx.textAlign = 'right'; ctx.fillText(max % 1 === 0 ? max : max.toFixed(1), W-4, cy);
+}
+
+function renderTacho() {
+  if (!DB || !DB.daily || !DB.daily.length) return;
+  const daily = DB.dailyExpanded || DB.daily;
+
+  // Letzter Wert
+  const last = DB.daily[DB.daily.length - 1];
+
+  // Min/Max aus expanded (alle verfügbaren Tage)
+  const stromVals = daily.map(r => r.strom).filter(v => v !== null && v !== undefined);
+  const gasVals   = daily.map(r => r.gas).filter(v => v !== null && v !== undefined);
+  const tempVals  = daily.map(r => r.temp).filter(v => v !== null && v !== undefined);
+
+  const sMin = stromVals.length ? Math.min(...stromVals) : 0;
+  const sMax = stromVals.length ? Math.max(...stromVals) : 20;
+  const gMin = gasVals.length   ? Math.min(...gasVals)   : 0;
+  const gMax = gasVals.length   ? Math.max(...gasVals)   : 20;
+  const tMin = tempVals.length  ? Math.floor(Math.min(...tempVals)) : -5;
+  const tMax = tempVals.length  ? Math.ceil(Math.max(...tempVals))  : 35;
+
+  const sv = last.strom !== null ? last.strom : 0;
+  const gv = last.gas   !== null ? last.gas   : 0;
+  const tv = last.temp  !== null ? last.temp  : 0;
+
+  drawTacho('tachoStrom', sv, 0,    Math.ceil(sMax*1.1),  4.33,  '#f59e0b');
+  drawTacho('tachoGas',   gv, 0,    Math.ceil(gMax*1.1),  4.8,   '#ef4444');
+  drawTacho('tachoTemp',  tv, tMin, tMax,                  null,  '#10b981');
+
+  document.getElementById('tachoStromVal').textContent = sv.toFixed(2);
+  document.getElementById('tachoGasVal').textContent   = gv.toFixed(2);
+  document.getElementById('tachoTempVal').textContent  = tv.toFixed(1);
+  document.getElementById('tachoStromSub').textContent = `Min ${sMin.toFixed(1)} · Max ${sMax.toFixed(1)} kWh`;
+  document.getElementById('tachoGasSub').textContent   = `Min ${gMin.toFixed(1)} · Max ${gMax.toFixed(1)} m³`;
+  document.getElementById('tachoTempSub').textContent  = `Min ${tMin} · Max ${tMax} °C`;
+}
+
 // ── WOCHENENDE HELPERS ─────────────────────────────────────
 function isSa(lbl){ return String(lbl).includes('Sa'); }
 function isSo(lbl){ return String(lbl).includes('So'); }
@@ -586,8 +742,10 @@ function renderCurve() {
   // Wasser: Monatsdaten aus DB.wasser statt daily
   if (curveMode === 'wasser') { renderCurveWasser(); return; }
 
-  const daily = DB.dailyExpanded || DB.daily || [];
-  if (!daily.length) return;
+  const dailyAll = DB.dailyExpanded || DB.daily || [];
+  if (!dailyAll.length) return;
+  const maxDays = prefs.curveDays || 60;
+  const daily = dailyAll.slice(-maxDays);
 
   const vals   = daily.map(r => r[curveMode] !== null ? Math.round(r[curveMode]*100)/100 : null);
   const labels = daily.map(r => r.datum);
@@ -599,11 +757,18 @@ function renderCurve() {
     const defined = vals.filter(v => v !== null);
     let sun=0, cloud=0, rain=0;
     defined.forEach(v => { if(v===0) sun++; else if(v<7) cloud++; else rain++; });
+    const nonZero = defined.filter(v => v > 0);
+    const stromAvg = nonZero.length ? (nonZero.reduce((a,b)=>a+b,0)/nonZero.length).toFixed(1) : '–';
+    const stromMax = defined.length ? Math.max(...defined).toFixed(1) : '–';
     document.getElementById('curve-stats').innerHTML = `
       <div class="wetter-stats">
         <div class="wstat"><div class="wstat-icon">☀️</div><div class="wstat-label">Sonnentage</div><div class="wstat-val" style="color:#10b981">${sun}</div><div class="wstat-sub">= 0 kWh</div></div>
         <div class="wstat"><div class="wstat-icon">☁️</div><div class="wstat-label">Bewölkt</div><div class="wstat-val" style="color:#f59e0b">${cloud}</div><div class="wstat-sub">&gt;0 bis &lt;7</div></div>
         <div class="wstat"><div class="wstat-icon">🌧</div><div class="wstat-label">Bad Days</div><div class="wstat-val" style="color:#ef4444">${rain}</div><div class="wstat-sub">≥ 7 kWh</div></div>
+      </div>
+      <div class="simple-stats" style="margin-top:8px">
+        <div class="sstat"><div class="sstat-label">Ø Verbrauchstag</div><div class="sstat-val" style="color:#f59e0b">${stromAvg}</div><div class="sstat-sub">kWh (ohne Sonnentage)</div></div>
+        <div class="sstat"><div class="sstat-label">Maximum</div><div class="sstat-val" style="color:#f59e0b">${stromMax}</div><div class="sstat-sub">kWh</div></div>
       </div>`;
     document.getElementById('curve-legend').innerHTML = `
       <div class="cleg"><div class="cleg-dot" style="background:#10b981"></div>Sonnentag (=0)</div>
@@ -628,6 +793,7 @@ function renderCurve() {
   }
 
   document.getElementById('curve-range').textContent = (labels[0]||'') + ' – ' + (labels[labels.length-1]||'');
+  const titleEl = document.getElementById('curve-title'); if(titleEl) titleEl.textContent = (prefs.curveDays||60) + ' Tage';
 
   const datasets = [];
   if (isStrom) {
@@ -939,7 +1105,9 @@ function renderStromPrognose() {
   }
 
   const dailyData = DB.dailyExpanded || DB.daily || [];
+  const dailyOrig = DB.daily || []; // Original für Ø-Berechnung
   let istKwh = 0, istTage = 0, sumAll = 0, countAll = 0;
+  // IST aus expanded (korrekte Tagessumme)
   dailyData.forEach(r => {
     if (r.strom === null) return;
     const d = parseEntryDate(r.datum);
@@ -948,7 +1116,12 @@ function renderStromPrognose() {
     if (d.mon === curMonth) { istKwh += r.strom; istTage++; }
   });
 
-  const avgPerDay = countAll > 0 ? sumAll / countAll : 0;
+  // Ø aus Original-Daily (letzte 30 Eintraege) fuer realistische Prognose
+  let origSum = 0, origCount = 0;
+  dailyOrig.slice(-30).forEach(r => {
+    if (r.strom !== null && r.strom !== undefined) { origSum += r.strom; origCount++; }
+  });
+  const avgPerDay = origCount > 0 ? origSum / origCount : (countAll > 0 ? sumAll / countAll : 0);
 
   // Sonnentage aus Forecast (sunshine_duration > 4h = 14400 Sek)
   let solarTageRest = 0, solarDetails = [];

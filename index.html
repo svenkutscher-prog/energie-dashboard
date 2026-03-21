@@ -455,7 +455,10 @@ function applyData() {
   const daily = DB.daily || [];
   if (daily.length > 0) {
     const lastDate = daily[daily.length-1].datum;
-    document.getElementById('zaehler-title').textContent = 'Zählerstände vom ' + lastDate;
+    // Capitalize only first letter, rest lowercase
+    const datumRaw = String(lastDate);
+    const datumFmt = datumRaw.charAt(0).toUpperCase() + datumRaw.slice(1).toLowerCase();
+    document.getElementById('zaehler-title').textContent = 'Zählerstände vom ' + datumFmt;
   }
 
   // Jahres-Tab initialisieren
@@ -487,7 +490,7 @@ function renderCurve() {
   const daily = DB.daily || [];
   if (!daily.length) return;
 
-  const vals   = daily.map(r => r[curveMode]);
+  const vals   = daily.map(r => r[curveMode] !== null ? Math.round(r[curveMode]*100)/100 : null);
   const labels = daily.map(r => r.datum);
   const unit   = curveMode === 'strom' ? 'kWh' : curveMode === 'gas' ? 'm³' : '°C';
   const target = CURVE_TARGETS[curveMode];
@@ -556,9 +559,9 @@ function renderCurve() {
           titleColor:'#94a3b8', bodyColor:'#f1f5f9', padding:10, cornerRadius:8,
           filter: item => isStrom ? item.datasetIndex === datasets.length-(target?2:1) : item.datasetIndex===0,
           callbacks:{label:c=>{
-            const v=c.parsed.y;
-            if(isStrom) return ` ${v.toFixed(1)} kWh  ${v===0?'☀️':v<7?'☁️':'🌧'}`;
-            return ` ${v.toFixed(1)} ${unit}`;
+            const v=Math.round(c.parsed.y*100)/100;
+            if(isStrom) return ` ${v.toFixed(2)} kWh  ${v===0?'☀️':v<7?'☁️':'🌧'}`;
+            return ` ${v.toFixed(2)} ${unit}`;
           }}
         }
       },

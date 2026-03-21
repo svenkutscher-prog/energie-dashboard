@@ -51,6 +51,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .ctab.strom.active{background:var(--strom);}
 .ctab.gas.active{background:var(--gas);}
 .ctab.temp.active{background:var(--temp);}
+.ctab.wasser.active{background:var(--wasser);}
 
 /* WETTER STATS (aus Kurve berechnet) */
 .wetter-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
@@ -201,6 +202,7 @@ canvas{display:block;}
         <button class="ctab strom active" onclick="switchCurve('strom',this)">Strom</button>
         <button class="ctab gas" onclick="switchCurve('gas',this)">Gas</button>
         <button class="ctab temp" onclick="switchCurve('temp',this)">Temp</button>
+        <button class="ctab wasser" onclick="switchCurve('wasser',this)">Wasser</button>
       </div>
     </div>
     <div id="curve-stats"></div>
@@ -315,7 +317,7 @@ canvas{display:block;}
 const API_URL   = 'https://script.google.com/macros/s/AKfycbyzjksZWv5IFGdc4NpTcCtPGftxQ2OiF61zzvLB_DKs4zEkw294AUgI9r8cp-JPS116XA/exec';
 const CACHE_KEY = 'wagael_v3';
 const PREF_KEY  = 'wagael_prefs_v3';
-const CACHE_TTL = 4* 60 * 60 * 1000;
+const CACHE_TTL = 60 * 60 * 1000;
 
 const MON = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
 const ALL_YEARS = [2021,2022,2023,2024,2025,2026];
@@ -330,8 +332,8 @@ const ALL_CATS = [
   {key:'wasser',label:'Wasser',     icon:'💧', unit:'m³',  color:'#3b82f6'},
   {key:'temp',  label:'Temperatur', icon:'🌡', unit:'°C',  color:'#10b981'},
 ];
-const CURVE_COLORS = { gas:'#ef4444', temp:'#10b981' };
-const CURVE_TARGETS = { strom:4.33, gas:4.8, temp:null };
+const CURVE_COLORS = { gas:'#ef4444', temp:'#10b981', wasser:'#3b82f6' };
+const CURVE_TARGETS = { strom:4.33, gas:4.8, temp:null, wasser:null };
 
 function defaultPrefs() {
   return { cats:{strom:true,gas:true,wasser:true,temp:false}, years:{2021:true,2022:true,2023:true,2024:true,2025:true,2026:true} };
@@ -479,12 +481,16 @@ function dayColor(v) {
 
 function renderCurve() {
   if (!DB) return;
+
+  // Wasser: Monatsdaten aus DB.wasser statt daily
+  if (curveMode === 'wasser') { renderCurveWasser(); return; }
+
   const daily = DB.daily || [];
   if (!daily.length) return;
 
   const vals   = daily.map(r => r[curveMode] !== null ? Math.round(r[curveMode]*100)/100 : null);
   const labels = daily.map(r => r.datum);
-  const unit   = curveMode === 'strom' ? 'kWh' : curveMode === 'gas' ? 'm³' : '°C';
+  const unit   = curveMode === 'strom' ? 'kWh' : curveMode === 'gas' ? 'm³' : curveMode === 'wasser' ? 'm³' : '°C';
   const target = CURVE_TARGETS[curveMode];
   const isStrom = curveMode === 'strom';
 
@@ -803,6 +809,75 @@ function renderYear() {
     <tbody>${rows}
     <tr style="border-top:2px solid rgba(255,255,255,0.15)"><td style="color:var(--muted);font-weight:700">Σ</td>${totRow}</tr>
     </tbody></table>`;
+}
+
+
+// ── WASSER MONATSKURVE ─────────────────────────────────────
+function renderCurveWasser() {
+  if (!DB || !DB.wasser) return;
+  const vals2026 = (DB.wasser.values['2026'] || []);
+  const vals2025 = (DB.wasser.values['2025'] || []);
+  const activeYears = ALL_YEARS.filter(yr => prefs.years[yr]);
+
+  // Stats aus 2026
+  const def = vals2026.filter(v => v !== null);
+  const sum = def.reduce((a,b)=>a+b,0);
+  const avg = def.length ? (sum/def.length).toFixed(1) : '–';
+  const max = def.length ? Math.max(...def) : '–';
+  const min = def.length ? Math.min(...def) : '–';
+
+  document.getElementById('curve-stats').innerHTML = `
+    <div class="simple-stats">
+      <div class="sstat"><div class="sstat-label">Ø Monat</div><div class="sstat-val" style="color:#3b82f6">${avg}</div><div class="sstat-sub">m³</div></div>
+      <div class="sstat"><div class="sstat-label">Maximum</div><div class="sstat-val" style="color:#3b82f6">${max}</div><div class="sstat-sub">m³</div></div>
+      <div class="sstat"><div class="sstat-label">Minimum</div><div class="sstat-val" style="color:#3b82f6">${min}</div><div class="sstat-sub">m³</div></div>
+    </div>`;
+
+  document.getElementById('curve-legend').innerHTML = activeYears.map(yr =>
+    `<div class="cleg"><div class="cleg-dot" style="background:${YEAR_COLORS[yr]}"></div>${yr}</div>`
+  ).join('');
+
+  // Letzter Monat mit Daten
+  let lastM = -1;
+  vals2026.forEach((v,i) => { if(v!==null) lastM=i; });
+  document.getElementById('curve-range').textContent = lastM >= 0 ? `Jan – ${MON[lastM]} 2026` : '';
+
+  const datasets = activeYears.map(yr => ({
+    label: String(yr),
+    data: (DB.wasser.values[yr]||[]).map(v=>(v===null||v==='')?null:Number(v)),
+    borderColor: YEAR_COLORS[yr],
+    backgroundColor: yr===2026 ? 'rgba(59,130,246,0.08)' : 'transparent',
+    borderWidth: yr===2026 ? 2.5 : 1.5,
+    pointRadius: yr===2026 ? 3 : 1.5,
+    pointBackgroundColor: YEAR_COLORS[yr],
+    tension:0.4, spanGaps:false,
+    fill: yr===2026
+  }));
+
+  if (curveChart) { curveChart.destroy(); curveChart = null; }
+  curveChart = new Chart(document.getElementById('curveChart'), {
+    type:'line', data:{labels:MON, datasets},
+    options:{
+      responsive:true, maintainAspectRatio:false, animation:false,
+      interaction:{mode:'index', intersect:false},
+      plugins:{
+        legend:{display:false},
+        datalabels:{display:false},
+        tooltip:{
+          backgroundColor:'rgba(10,15,30,0.97)', borderColor:'rgba(255,255,255,0.1)', borderWidth:1,
+          titleColor:'#94a3b8', bodyColor:'#f1f5f9', padding:10, cornerRadius:8,
+          callbacks:{label:ctx=>{
+            const v=ctx.parsed.y;
+            return v!==null ? ` ${ctx.dataset.label}: ${fmt(v)} m³` : null;
+          }}
+        }
+      },
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#94a3b8',font:{size:10}}},
+        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#94a3b8',font:{size:10},callback:v=>v+' m³'},beginAtZero:true}
+      }
+    }
+  });
 }
 
 // ── WASSER ─────────────────────────────────────────────────

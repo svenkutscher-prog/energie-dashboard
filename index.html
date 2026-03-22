@@ -271,36 +271,7 @@ canvas{display:block;}
   </div>
   </div>
 
-  <div data-block="wasser">
-  <!-- WASSER BALKEN -->
-  <div class="section">
-    <div class="section-title">💧 Wasser — m³ pro Tag</div>
-    <div class="wasser-card">
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
-        <div style="background:var(--bg3);border-radius:10px;padding:8px;text-align:center">
-          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:2px">Ø/Tag</div>
-          <div style="font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:#3b82f6" id="wasserAvg">–</div>
-          <div style="font-size:10px;color:var(--muted)">m³</div>
-        </div>
-        <div style="background:var(--bg3);border-radius:10px;padding:8px;text-align:center">
-          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:2px">Maximum</div>
-          <div style="font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:#3b82f6" id="wasserMax">–</div>
-          <div style="font-size:10px;color:var(--muted)">m³</div>
-        </div>
-        <div style="background:var(--bg3);border-radius:10px;padding:8px;text-align:center">
-          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:2px">Minimum</div>
-          <div style="font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:#3b82f6" id="wasserMin">–</div>
-          <div style="font-size:10px;color:var(--muted)">m³</div>
-        </div>
-      </div>
-      <div class="wasser-legend">
-        <div class="wleg"><div class="wleg-dot" style="background:#7dd3fc"></div>unter Ø (sparsam)</div>
-        <div class="wleg"><div class="wleg-dot" style="background:#3b82f6"></div>über Ø (viel)</div>
-      </div>
-      <div class="wasser-wrap"><canvas id="wasserChart"></canvas></div>
-    </div>
-  </div>
-  </div>
+
 
   <div data-block="prognose">
   <!-- STROM PROGNOSE -->
@@ -507,7 +478,7 @@ const CURVE_COLORS = { gas:'#ef4444', temp:'#10b981', wasser:'#3b82f6' };
 const CURVE_TARGETS = { strom:4.33, gas:4.8, temp:null, wasser:null };
 
 function defaultPrefs() {
-  return { cats:{strom:true,gas:true,wasser:true,temp:false}, years:{2021:true,2022:true,2023:true,2024:true,2025:true,2026:true}, weekendBg:true, curveDays:60, blockOrder:['kurve','tacho','zaehler','wasser','prognose','ki'], blockDisabled:{} };
+  return { cats:{strom:true,gas:true,wasser:true,temp:false}, years:{2021:true,2022:true,2023:true,2024:true,2025:true,2026:true}, weekendBg:true, curveDays:60, blockOrder:['kurve','tacho','zaehler','prognose','ki'], blockDisabled:{} };
 }
 function loadPrefs() { try { return JSON.parse(localStorage.getItem(PREF_KEY)) || defaultPrefs(); } catch(e) { return defaultPrefs(); } }
 function savePrefs(p) { localStorage.setItem(PREF_KEY, JSON.stringify(p)); }
@@ -660,7 +631,6 @@ function applyData() {
   initKi();
   renderCurve();
   renderTacho();
-  renderWasser();
   renderStromPrognose();
   loadForecast();
   if (curPage === 'jahr') renderYear();
@@ -716,13 +686,12 @@ const BLOCK_META = {
   kurve:    { icon:'📈', name:'Tageskurve',      sub:'Strom · Gas · Temp · Wasser' },
   tacho:    { icon:'🎯', name:'Min / Max Tacho', sub:'Strom · Gas' },
   zaehler:  { icon:'🔢', name:'Zählerstände',    sub:'Gas · Strom · Wasser' },
-  wasser:   { icon:'💧', name:'Wasser Balken',   sub:'Tage seit Messung' },
   prognose: { icon:'⚡', name:'Strom Prognose',  sub:'Hochrechnung · Solar' },
   ki:       { icon:'🤖', name:'KI Analyse',       sub:'14 Tage Bewertung' },
 };
 
 function getBlockOrder() {
-  const order = prefs.blockOrder || ['kurve','tacho','zaehler','wasser','prognose','ki'];
+  const order = prefs.blockOrder || ['kurve','tacho','zaehler','prognose','ki'];
   // KI hinzufügen falls noch nicht vorhanden (Migration)
   if (!order.includes('ki')) order.push('ki');
   return order;
@@ -740,7 +709,7 @@ function applyBlockOrder() {
       el.style.display = disabled[id] ? 'none' : '';
     }
   });
-  if (DB) { renderCurve(); renderTacho(); renderWasser(); }
+  if (DB) { renderCurve(); renderTacho(); }
 }
 
 function toggleBlock(id) {
@@ -1501,8 +1470,11 @@ function buildKiPrompt() {
   const prompt = `${basePrompt}
 
 WICHTIG zur Interpretation der Wasserdaten:
-- Die Wasserablesung zeigt Tage ohne Zähleränderung. Je höher, desto sparsamer.
-- m³/Tag = tatsächlicher Tagesverbrauch (falls vorhanden).
+- Wasserverbrauch wird in Tage/m³ gemessen: je mehr Tage pro m³, desto sparsamer.
+- 🚿 Duschig = 1 Tag/m³ (hoher Verbrauch, rot)
+- 💧 Normal = 2–4 Tage/m³ (durchschnittlich, gelb)
+- 🌊 Sparsam = >4 Tage/m³ (sehr sparsam, blau)
+- Der Zählerstand steigt pro m³ Verbrauch um 1.
 
 Tagesdaten letzte 14 Tage (Strom = Netzbezug in kWh, 0 = reiner Solartag):
 ${lines}
@@ -1586,198 +1558,119 @@ function initKi() {
   }
 }
 
-// ── WASSER MONATSKURVE ─────────────────────────────────────
+// ── WASSER TAGESKURVE ─────────────────────────────────────
 function renderCurveWasser() {
-  if (!DB || !DB.wasser) return;
-  const vals2026 = (DB.wasser.values['2026'] || []);
-  const vals2025 = (DB.wasser.values['2025'] || []);
-  const activeYears = ALL_YEARS.filter(yr => prefs.years[yr]);
+  if (!DB || !DB.daily || !DB.daily.length) return;
+  const daily = DB.daily; // Original, nicht expanded
 
-  // Stats aus 2026
-  const def = vals2026.filter(v => v !== null);
-  const sum = def.reduce((a,b)=>a+b,0);
-  const avg = def.length ? (sum/def.length).toFixed(1) : '–';
-  const max = def.length ? Math.max(...def) : '–';
-  const min = def.length ? Math.min(...def) : '–';
+  // Nur Eintraege mit Wasserstand
+  const withW = daily.filter(r => r.wasser !== null && r.wasser !== undefined);
+  if (!withW.length) return;
+
+  // Tage/m³ berechnen für Farbkategorien
+  function tageProM3(r, prev) {
+    if (!prev) return null;
+    const diff = r.wasser - prev.wasser;
+    if (diff <= 0) return Infinity;
+    return r.tage / diff;
+  }
+
+  function segColor(tpm) {
+    if (tpm === null) return '#475569';
+    if (tpm === Infinity || tpm > 4) return '#3b82f6'; // Sparsam
+    if (tpm >= 2) return '#f59e0b';                    // Normal
+    return '#ef4444';                                  // Duschig
+  }
+
+  // Stats
+  let duschig=0, normal=0, sparsam=0;
+  withW.forEach((r,i) => {
+    if (i===0) return;
+    const tpm = tageProM3(r, withW[i-1]);
+    if (tpm===null) return;
+    if (tpm > 4 || tpm===Infinity) sparsam++;
+    else if (tpm >= 2) normal++;
+    else duschig++;
+  });
 
   document.getElementById('curve-stats').innerHTML = `
-    <div class="simple-stats">
-      <div class="sstat"><div class="sstat-label">Ø Monat</div><div class="sstat-val" style="color:#3b82f6">${avg}</div><div class="sstat-sub">m³</div></div>
-      <div class="sstat"><div class="sstat-label">Maximum</div><div class="sstat-val" style="color:#3b82f6">${max}</div><div class="sstat-sub">m³</div></div>
-      <div class="sstat"><div class="sstat-label">Minimum</div><div class="sstat-val" style="color:#3b82f6">${min}</div><div class="sstat-sub">m³</div></div>
+    <div class="wetter-stats">
+      <div class="wstat"><div class="wstat-icon">🚿</div><div class="wstat-label">Duschig</div><div class="wstat-val" style="color:#ef4444">${duschig}</div><div class="wstat-sub">1 Tag/m³</div></div>
+      <div class="wstat"><div class="wstat-icon">💧</div><div class="wstat-label">Normal</div><div class="wstat-val" style="color:#f59e0b">${normal}</div><div class="wstat-sub">2–4 Tage/m³</div></div>
+      <div class="wstat"><div class="wstat-icon">🌊</div><div class="wstat-label">Sparsam</div><div class="wstat-val" style="color:#3b82f6">${sparsam}</div><div class="wstat-sub">&gt;4 Tage/m³</div></div>
     </div>`;
 
-  document.getElementById('curve-legend').innerHTML = activeYears.map(yr =>
-    `<div class="cleg"><div class="cleg-dot" style="background:${YEAR_COLORS[yr]}"></div>${yr}</div>`
-  ).join('');
+  document.getElementById('curve-legend').innerHTML = `
+    <div class="cleg"><div class="cleg-dot" style="background:#ef4444"></div>🚿 Duschig (1d/m³)</div>
+    <div class="cleg"><div class="cleg-dot" style="background:#f59e0b"></div>💧 Normal (2–4d/m³)</div>
+    <div class="cleg"><div class="cleg-dot" style="background:#3b82f6"></div>🌊 Sparsam (&gt;4d/m³)</div>`;
 
-  // Letzter Monat mit Daten
-  let lastM = -1;
-  vals2026.forEach((v,i) => { if(v!==null) lastM=i; });
-  document.getElementById('curve-range').textContent = lastM >= 0 ? `Jan – ${MON[lastM]} 2026` : '';
+  const maxDays = prefs.curveDays || 60;
+  const sliced  = withW.slice(-maxDays);
+  const labels  = sliced.map(r => r.datum);
+  const vals    = sliced.map(r => r.wasser);
 
-  const datasets = activeYears.map(yr => ({
-    label: String(yr),
-    data: (DB.wasser.values[yr]||[]).map(v=>(v===null||v==='')?null:Number(v)),
-    borderColor: YEAR_COLORS[yr],
-    backgroundColor: yr===2026 ? 'rgba(59,130,246,0.08)' : 'transparent',
-    borderWidth: yr===2026 ? 2.5 : 1.5,
-    pointRadius: yr===2026 ? 3 : 1.5,
-    pointBackgroundColor: YEAR_COLORS[yr],
-    tension:0.4, spanGaps:false,
-    fill: yr===2026
-  }));
+  const first = sliced[0]?.wasser || 0;
+  const last  = sliced[sliced.length-1]?.wasser || 0;
+  const totalDays = sliced.reduce((a,r)=>a+(r.tage||1),0);
+  document.getElementById('curve-range').textContent =
+    `Zähler: ${first} → ${last} m³  ·  Verbrauch: ${last-first} m³  ·  Ø ${((last-first)/totalDays).toFixed(3)} m³/Tag`;
+
+  // Farbige Segmente wie Stromkurve
+  const datasets = [];
+  for (let i = 0; i < sliced.length - 1; i++) {
+    const tpm = tageProM3(sliced[i+1], sliced[i]);
+    const col = segColor(tpm);
+    const seg = new Array(sliced.length).fill(null);
+    seg[i] = vals[i]; seg[i+1] = vals[i+1];
+    datasets.push({
+      data: seg, borderColor: col, backgroundColor: 'transparent',
+      borderWidth: 2.5, pointRadius: 0, tension: 0.3, spanGaps: false, fill: false
+    });
+  }
+  // Punkte
+  datasets.push({
+    data: vals,
+    borderColor: 'transparent',
+    backgroundColor: sliced.map((r,i) => i===0 ? '#475569' : segColor(tageProM3(r, sliced[i-1]))),
+    pointRadius: 4, pointHoverRadius: 6, borderWidth: 0,
+    fill: false, tension: 0.3, spanGaps: false
+  });
+
+  const titleEl = document.getElementById('curve-title');
+  if (titleEl) titleEl.textContent = (prefs.curveDays||60) + ' Tage';
 
   if (curveChart) { curveChart.destroy(); curveChart = null; }
   curveChart = new Chart(document.getElementById('curveChart'), {
-    type:'line', data:{labels:MON, datasets},
-    options:{
-      responsive:true, maintainAspectRatio:false, animation:false,
-      interaction:{mode:'index', intersect:false},
-      plugins:{
-        legend:{display:false},
-        datalabels:{display:false},
-        tooltip:{
-          backgroundColor:'rgba(10,15,30,0.97)', borderColor:'rgba(255,255,255,0.1)', borderWidth:1,
-          titleColor:'#94a3b8', bodyColor:'#f1f5f9', padding:10, cornerRadius:8,
-          callbacks:{label:ctx=>{
-            const v=ctx.parsed.y;
-            return v!==null ? ` ${ctx.dataset.label}: ${fmt(v)} m³` : null;
+    type: 'line', plugins: [weekendBgPlugin], data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: false,
+      plugins: {
+        legend: { display: false },
+        datalabels: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(10,15,30,0.97)', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
+          titleColor: '#94a3b8', bodyColor: '#f1f5f9', padding: 10, cornerRadius: 8,
+          filter: item => item.datasetIndex === datasets.length - 1,
+          callbacks: { label: ctx => {
+            const i = ctx.dataIndex;
+            const tpm = i > 0 ? tageProM3(sliced[i], sliced[i-1]) : null;
+            const tpmStr = tpm === null ? '–' : tpm === Infinity ? '∞' : tpm.toFixed(1);
+            const cat = tpm === null ? '' : tpm > 4 || tpm===Infinity ? ' 🌊' : tpm >= 2 ? ' 💧' : ' 🚿';
+            return ` ${ctx.parsed.y} m³  (${tpmStr} Tage/m³)${cat}`;
           }}
         }
       },
-      scales:{
-        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#94a3b8',font:{size:10}}},
-        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#94a3b8',font:{size:10},callback:v=>v+' m³'},beginAtZero:true}
+      scales: {
+        x: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#94a3b8',font:{size:10},maxTicksLimit:8,maxRotation:0} },
+        y: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#94a3b8',font:{size:10},callback:v=>v+' m³'}, min: first - 1 }
       }
     }
   });
 }
+
 
 // ── WASSER ─────────────────────────────────────────────────
-function renderWasser() {
-  if (!DB || !DB.wasserDaily) return;
-  const raw = DB.wasserDaily;
-  if (!raw.length) return;
-
-  function parseDateMs(s) {
-    s = String(s || '').trim();
-    let m = s.match(/(\d{1,2})\.(\d{1,2})\.(\d{2,4})/);
-    if (m) {
-      let yr = parseInt(m[3]);
-      if (yr < 100) yr += 2000;
-      return new Date(yr, parseInt(m[2])-1, parseInt(m[1])).getTime();
-    }
-    m = s.match(/^(\d{1,2})\.(\d{1,2})\./);
-    if (m) {
-      const now = new Date();
-      let yr = now.getFullYear();
-      const mon = parseInt(m[2]) - 1;
-      if (mon > now.getMonth()) yr -= 1;
-      return new Date(yr, mon, parseInt(m[1])).getTime();
-    }
-    return 0;
-  }
-
-  // Nur Eintraege mit Datum, tage > 0 UND wasser (Zählerstand)
-  const valid = raw.filter(r => {
-    const d = String(r.datum || '').trim();
-    return d.length > 2 && parseDateMs(d) > 0
-        && r.tage !== null && !isNaN(r.tage) && Number(r.tage) > 0
-        && r.wasser !== null && !isNaN(r.wasser);
-  });
-
-  if (valid.length < 2) {
-    // Fallback: alte Darstellung mit tage wenn kein Wasserstand
-    renderWasserFallback(raw);
-    return;
-  }
-
-  // Chronologisch sortieren
-  const sorted = [...valid].sort((a, b) => parseDateMs(a.datum) - parseDateMs(b.datum));
-
-  // m³/Tag berechnen: Differenz Zählerstand / Tage
-  const data = sorted.map((r, i) => {
-    if (i === 0) return null;
-    const diff = Number(r.wasser) - Number(sorted[i-1].wasser);
-    const t    = Number(r.tage);
-    if (t <= 0) return null;
-    const val  = Math.round((diff / t) * 1000) / 1000;
-    const s = String(r.datum).trim();
-    const m = s.match(/(\d{1,2}\.\d{1,2}\.)/);
-    return { label: m ? m[1] : s.substring(0,6), val: val >= 0 ? val : 0 };
-  }).filter(Boolean);
-
-  if (!data.length) { renderWasserFallback(raw); return; }
-
-  const vals = data.map(r => r.val);
-  const avg  = vals.reduce((a,b)=>a+b,0) / vals.length;
-  const maxx = Math.max(...vals);
-  const minn = Math.min(...vals);
-  const colors = vals.map(v => v > avg ? '#3b82f6' : '#7dd3fc');
-
-  // Stats updaten
-  const avgEl = document.getElementById('wasserAvg');
-  const maxEl = document.getElementById('wasserMax');
-  const minEl = document.getElementById('wasserMin');
-  if (avgEl) avgEl.textContent = avg.toFixed(3);
-  if (maxEl) maxEl.textContent = maxx.toFixed(3);
-  if (minEl) minEl.textContent  = minn.toFixed(3);
-
-  if (wasserChart) { wasserChart.destroy(); wasserChart = null; }
-  wasserChart = new Chart(document.getElementById('wasserChart'), {
-    type: 'bar',
-    data: { labels: data.map(r=>r.label), datasets: [{
-      data: vals, backgroundColor: colors, borderRadius: 4, borderSkipped: false
-    }]},
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor:'rgba(10,15,30,0.97)', borderColor:'rgba(255,255,255,0.1)', borderWidth:1,
-          titleColor:'#94a3b8', bodyColor:'#f1f5f9', padding:8, cornerRadius:8,
-          callbacks: { label: c => ` ${c.parsed.y.toFixed(3)} m³/Tag` }
-        },
-        datalabels: {
-          display: true,
-          color: '#fff',
-          font: { size: 9, weight: 'bold', family: 'monospace' },
-          anchor: 'center', align: 'center',
-          formatter: v => v > 0 ? v.toFixed(2) : '0'
-        }
-      },
-      scales: {
-        x: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#94a3b8',font:{size:8},maxTicksLimit:20,maxRotation:45} },
-        y: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#94a3b8',font:{size:9},callback:v=>v+' m³'}, beginAtZero:true }
-      }
-    }
-  });
-}
-
-// Fallback: alte Tage-Darstellung wenn kein Wasserstand vorhanden
-function renderWasserFallback(raw) {
-  function parseDateMs(s) {
-    s = String(s || '').trim();
-    let m = s.match(/(\d{1,2})\.(\d{1,2})\.(\d{2,4})/);
-    if (m) { let yr=parseInt(m[3]); if(yr<100)yr+=2000; return new Date(yr,parseInt(m[2])-1,parseInt(m[1])).getTime(); }
-    m = s.match(/^(\d{1,2})\.(\d{1,2})\./);
-    if (m) { const now=new Date(); let yr=now.getFullYear(); const mon=parseInt(m[2])-1; if(mon>now.getMonth())yr-=1; return new Date(yr,mon,parseInt(m[1])).getTime(); }
-    return 0;
-  }
-  const valid = raw.filter(r => { const d=String(r.datum||'').trim(); const v=r.tage; return d.length>2&&parseDateMs(d)>0&&v!==null&&!isNaN(v)&&Number(v)>0; });
-  if (!valid.length) return;
-  const sorted = [...valid].sort((a,b)=>parseDateMs(a.datum)-parseDateMs(b.datum));
-  const labels = sorted.map(r => { const s=String(r.datum).trim(); const m=s.match(/(\d{1,2}\.\d{1,2}\.)/); return m?m[1]:s.substring(0,6); });
-  const tage = sorted.map(r=>Math.round(Number(r.tage)));
-  const colors = tage.map(v=>v<3?'#7dd3fc':'#f472b6');
-  if (wasserChart) { wasserChart.destroy(); wasserChart=null; }
-  wasserChart = new Chart(document.getElementById('wasserChart'), {
-    type:'bar', data:{labels,datasets:[{data:tage,backgroundColor:colors,borderRadius:4,borderSkipped:false}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{display:ctx=>ctx.dataset.data[ctx.dataIndex]>0,color:'#fff',font:{size:10,weight:'bold',family:'monospace'},anchor:'center',align:'center',formatter:v=>v},tooltip:{callbacks:{label:c=>` ${c.parsed.y} Tage`}}},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#94a3b8',font:{size:8},maxRotation:45}},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#94a3b8',font:{size:9},callback:v=>v+'d'},beginAtZero:true}}}
-  });
-}
-
 function fmt(v) {
   if(v===null||v===undefined) return '–';
   return Number(v).toLocaleString('de',{maximumFractionDigits:1});

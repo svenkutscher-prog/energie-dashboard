@@ -198,6 +198,34 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .ki-mini-title{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;}
 .ki-mini-text{font-size:13px;color:var(--text);line-height:1.6;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
 .ki-mini-link{font-size:11px;color:#a78bfa;margin-top:6px;}
+
+/* ── ACCORDION SETTINGS ─────────────────────────── */
+.acc-group{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:10px;}
+.acc-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;}
+.acc-header:active{background:rgba(255,255,255,0.03);}
+.acc-left{display:flex;align-items:center;gap:12px;}
+.acc-icon{font-size:20px;width:28px;text-align:center;}
+.acc-name{font-size:15px;font-weight:500;color:var(--text);}
+.acc-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+.acc-right{display:flex;align-items:center;gap:8px;}
+.acc-chevron{font-size:11px;color:var(--muted);transition:transform 0.2s;display:inline-block;}
+.acc-chevron.open{transform:rotate(180deg);}
+.acc-badge{background:rgba(239,68,68,0.2);color:#ef4444;font-size:10px;font-weight:600;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;font-family:'Space Mono',monospace;}
+.acc-body{border-top:1px solid var(--border);display:none;}
+.acc-body.open{display:block;}
+
+/* ── NAV BADGE ──────────────────────────────────── */
+.nav-item{position:relative;}
+.nav-badge{position:absolute;top:0;right:calc(50% - 18px);background:#ef4444;color:#fff;font-size:10px;font-weight:600;min-width:16px;height:16px;border-radius:8px;display:none;align-items:center;justify-content:center;padding:0 3px;font-family:'Space Mono',monospace;border:2px solid var(--bg);}
+.nav-badge.show{display:flex;}
+
+/* ── DATENCHECK ─────────────────────────────────── */
+.check-item{display:flex;gap:10px;align-items:flex-start;padding:10px 16px;border-bottom:1px solid var(--border);}
+.check-item:last-child{border-bottom:none;}
+.check-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.check-title{font-size:13px;font-weight:500;color:var(--text);}
+.check-detail{font-size:11px;color:var(--muted);margin-top:2px;font-family:'Space Mono',monospace;}
+.check-ok{padding:14px 16px;text-align:center;font-size:13px;color:var(--green);}
 /* BOTTOM NAV */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,15,30,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;padding:8px 0 20px;z-index:100;}
 .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0;cursor:pointer;font-size:10px;letter-spacing:0.05em;text-transform:uppercase;color:var(--muted);transition:color 0.2s;}
@@ -287,7 +315,7 @@ canvas{display:block;}
   <!-- KI MINI -->
   <div class="section">
     <div class="section-title">🤖 KI Analyse</div>
-    <div class="ki-mini" onclick="showPage('ki', document.querySelectorAll('.nav-item')[4])">
+    <div class="ki-mini" onclick="showPage('ki', document.querySelectorAll('.nav-item')[3])">
       <div class="ki-mini-title">
         <span>14 Tage Bewertung</span>
         <span id="ki-mini-date" style="color:var(--muted);font-size:10px"></span>
@@ -338,88 +366,96 @@ canvas{display:block;}
 <!-- PAGE 4: EINSTELLUNGEN -->
 <div class="page" id="page-settings">
   <div class="section">
-    <div class="section-title">Kategorien</div>
-    <div class="settings-group" id="catToggles"></div>
-  </div>
-  <div class="section" style="margin-top:16px;">
-    <div class="section-title">Jahre</div>
-    <div class="settings-group">
-      <div class="year-chips" id="yearChips"></div>
+
+    <!-- ANZEIGE -->
+    <div class="acc-group">
+      <div class="acc-header" onclick="toggleAcc(this)">
+        <div class="acc-left"><div class="acc-icon">🎨</div><div><div class="acc-name">Anzeige</div><div class="acc-sub">Darstellung · Block-Reihenfolge</div></div></div>
+        <div class="acc-right"><span class="acc-chevron">▼</span></div>
+      </div>
+      <div class="acc-body">
+        <div class="settings-row">
+          <div class="settings-row-left"><div class="settings-icon">📅</div><div><div class="settings-label">Wochenende hervorheben</div><div class="settings-sub">Sa blau · So lila in der Kurve</div></div></div>
+          <label class="toggle"><input type="checkbox" id="toggle-weekend" onchange="toggleWeekendBg(this.checked)"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-left"><div class="settings-icon">📊</div><div><div class="settings-label">Tage in der Grafik</div><div class="settings-sub" id="curveDays-label">60 Tage</div></div></div>
+          <input type="range" id="curveDays-slider" min="14" max="180" step="7" value="60" style="width:100px" oninput="setCurveDays(this.value)">
+        </div>
+        <div class="settings-row" style="border-bottom:none">
+          <div class="settings-row-left"><div class="settings-icon">🔢</div><div><div class="settings-label">Block-Reihenfolge</div><div class="settings-sub">Blöcke verschieben & ein/ausschalten</div></div></div>
+        </div>
+        <div id="blockOrderList"></div>
+      </div>
     </div>
-    <div class="settings-hint">Mindestens 1 Jahr muss aktiv sein.</div>
-  </div>
-  <div class="section" style="margin-top:16px;">
-    <div class="section-title">Block-Reihenfolge</div>
-    <div class="settings-group" id="blockOrderList"></div>
-  </div>
-  <div class="section" style="margin-top:16px;">
-    <div class="section-title">Darstellung</div>
-    <div class="settings-group">
-      <div class="settings-row">
-        <div class="settings-row-left">
-          <div class="settings-icon">📅</div>
-          <div>
-            <div class="settings-label">Wochenende hervorheben</div>
-            <div class="settings-sub">Sa blau · So lila in der Kurve</div>
+
+    <!-- DATEN -->
+    <div class="acc-group">
+      <div class="acc-header" onclick="toggleAcc(this)">
+        <div class="acc-left"><div class="acc-icon">📈</div><div><div class="acc-name">Daten</div><div class="acc-sub">Kategorien · Jahre</div></div></div>
+        <div class="acc-right"><span class="acc-chevron">▼</span></div>
+      </div>
+      <div class="acc-body">
+        <div id="catToggles"></div>
+        <div style="padding:10px 16px 4px;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)">Jahre</div>
+        <div class="year-chips" id="yearChips"></div>
+        <div style="padding:4px 16px 10px;font-size:12px;color:var(--muted)">Mindestens 1 Jahr muss aktiv sein.</div>
+      </div>
+    </div>
+
+    <!-- KI PROMPT -->
+    <div class="acc-group">
+      <div class="acc-header" onclick="toggleAcc(this)">
+        <div class="acc-left"><div class="acc-icon">🤖</div><div><div class="acc-name">KI Analyse</div><div class="acc-sub">Prompt anpassen · Testen</div></div></div>
+        <div class="acc-right"><span class="acc-chevron">▼</span></div>
+      </div>
+      <div class="acc-body">
+        <div class="api-row">
+          <div class="api-label">Standard-Prompt (readonly)</div>
+          <textarea class="prompt-textarea" id="prompt-default" readonly rows="4"></textarea>
+        </div>
+        <div style="padding:0 16px 14px">
+          <div class="api-label">Eigener Prompt <span style="color:var(--muted);font-weight:400">(leer = Standard)</span></div>
+          <textarea class="prompt-textarea" id="prompt-custom" rows="4" placeholder="Hier eigenen Prompt eingeben…" oninput="saveCustomPrompt()"></textarea>
+          <div class="prompt-btns">
+            <button class="prompt-btn primary" onclick="testCustomPrompt()">▶ Testen</button>
+            <button class="prompt-btn primary" onclick="copyPrompt()">📋 Kopieren</button>
+            <button class="prompt-btn danger" onclick="resetCustomPrompt()">↺ Reset</button>
           </div>
-        </div>
-        <label class="toggle">
-          <input type="checkbox" id="toggle-weekend" onchange="toggleWeekendBg(this.checked)">
-          <div class="toggle-track"></div><div class="toggle-thumb"></div>
-        </label>
-      </div>
-      <div class="settings-row">
-        <div class="settings-row-left">
-          <div class="settings-icon">📊</div>
-          <div>
-            <div class="settings-label">Tage in der Grafik</div>
-            <div class="settings-sub" id="curveDays-label">60 Tage</div>
-          </div>
-        </div>
-        <div style="display:flex;align-items:center;gap:10px">
-          <input type="range" id="curveDays-slider" min="14" max="180" step="7" value="60"
-            style="width:100px" oninput="setCurveDays(this.value)">
+          <div class="prompt-copied" id="prompt-copied">✓ Kopiert!</div>
         </div>
       </div>
     </div>
-  </div>
-  <div class="section" style="margin-top:16px;">
-    <div class="section-title">🤖 KI Prompt</div>
-    <div class="settings-group">
-      <div class="api-row">
-        <div class="api-label">Standard-Prompt (readonly)</div>
-        <textarea class="prompt-textarea" id="prompt-default" readonly rows="5"></textarea>
+
+    <!-- DATENCHECK -->
+    <div class="acc-group" id="acc-datencheck">
+      <div class="acc-header" onclick="toggleAcc(this)">
+        <div class="acc-left"><div class="acc-icon">🔍</div><div><div class="acc-name">Datencheck</div><div class="acc-sub">Ausreißer · Datenfehler</div></div></div>
+        <div class="acc-right"><span class="acc-badge" id="check-badge" style="display:none">0</span><span class="acc-chevron">▼</span></div>
       </div>
-      <div style="border-top:1px solid var(--border);padding:14px 16px 0">
-        <div class="api-label">Eigener Prompt <span style="color:var(--muted);font-weight:400">(leer = Standard wird verwendet)</span></div>
-        <textarea class="prompt-textarea" id="prompt-custom" rows="5" placeholder="Hier eigenen Prompt eingeben…" oninput="saveCustomPrompt()"></textarea>
-        <div class="prompt-btns">
-          <button class="prompt-btn primary" onclick="testCustomPrompt()">▶ Testen</button>
-          <button class="prompt-btn primary" onclick="copyPrompt()">📋 Kopieren & Teilen</button>
-          <button class="prompt-btn danger" onclick="resetCustomPrompt()">↺ Zurücksetzen</button>
-        </div>
-        <div class="prompt-copied" id="prompt-copied">✓ In Zwischenablage kopiert!</div>
+      <div class="acc-body" id="check-body">
+        <div class="check-ok" id="check-ok">✓ Keine Probleme gefunden</div>
       </div>
     </div>
-  </div>
-  <div class="section" style="margin-top:16px;">
-    <div class="section-title">Datenquelle</div>
-    <div class="settings-group">
-      <div class="api-row">
-        <div class="api-label">Apps Script URL</div>
-        <div class="api-url" id="apiUrlDisplay"></div>
+
+    <!-- DATENQUELLE -->
+    <div class="acc-group">
+      <div class="acc-header" onclick="toggleAcc(this)">
+        <div class="acc-left"><div class="acc-icon">🔗</div><div><div class="acc-name">Datenquelle</div><div class="acc-sub">API URL · Cache leeren</div></div></div>
+        <div class="acc-right"><span class="acc-chevron">▼</span></div>
       </div>
-      <div class="settings-row">
-        <div class="settings-row-left">
-          <div class="settings-icon">🗑️</div>
-          <div>
-            <div class="settings-label">Cache leeren & neu laden</div>
-            <div class="settings-sub">Holt frische Daten vom Sheet</div>
-          </div>
+      <div class="acc-body">
+        <div class="api-row">
+          <div class="api-label">Apps Script URL</div>
+          <div class="api-url" id="apiUrlDisplay"></div>
         </div>
-        <button onclick="clearCache()" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#ef4444;padding:6px 14px;border-radius:20px;font-size:13px;cursor:pointer;font-family:inherit;">Leeren</button>
+        <div class="settings-row" style="border-bottom:none">
+          <div class="settings-row-left"><div class="settings-icon">🗑️</div><div><div class="settings-label">Cache leeren & neu laden</div><div class="settings-sub">Holt frische Daten vom Sheet</div></div></div>
+          <button onclick="clearCache()" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#ef4444;padding:6px 14px;border-radius:20px;font-size:13px;cursor:pointer;font-family:inherit;">Leeren</button>
+        </div>
       </div>
     </div>
+
   </div>
   <div style="height:20px"></div>
 </div>
@@ -451,8 +487,8 @@ canvas{display:block;}
   <div class="nav-item active" onclick="showPage('dashboard',this)"><div class="nav-icon">📊</div><div>Dashboard</div></div>
   <div class="nav-item" onclick="showPage('trends',this)"><div class="nav-icon">🌤️</div><div>Trends</div></div>
   <div class="nav-item" onclick="showPage('jahr',this)"><div class="nav-icon">📅</div><div>Jahr</div></div>
-  <div class="nav-item" onclick="showPage('settings',this)"><div class="nav-icon">⚙️</div><div>Einstellungen</div></div>
   <div class="nav-item" onclick="showPage('ki',this)"><div class="nav-icon">🤖</div><div>KI</div></div>
+  <div class="nav-item" onclick="showPage('settings',this)"><div class="nav-icon">⚙️</div><div>Einstellungen</div><div class="nav-badge" id="settings-badge">0</div></div>
 </div>
 
 <script>
@@ -511,7 +547,8 @@ function showPage(name, navEl) {
 
 // ── SETTINGS ───────────────────────────────────────────────
 function renderSettings() {
-  document.getElementById('catToggles').innerHTML = ALL_CATS.map(c => `
+  const catEl = document.getElementById('catToggles'); if(!catEl) return;
+  catEl.innerHTML = ALL_CATS.map(c => `
     <div class="settings-row">
       <div class="settings-row-left">
         <div class="settings-icon">${c.icon}</div>
@@ -522,9 +559,9 @@ function renderSettings() {
         <div class="toggle-track"></div><div class="toggle-thumb"></div>
       </label>
     </div>`).join('');
-  document.getElementById('yearChips').innerHTML = ALL_YEARS.map(yr =>
+  const ycEl = document.getElementById('yearChips'); if(ycEl) ycEl.innerHTML = ALL_YEARS.map(yr =>
     `<button class="year-chip ${prefs.years[yr]?'on':''}" data-yr="${yr}" onclick="toggleYear(${yr},this)">${yr}</button>`).join('');
-  document.getElementById('apiUrlDisplay').textContent = API_URL;
+  const apiEl = document.getElementById('apiUrlDisplay'); if(apiEl) apiEl.textContent = API_URL;
   const wbEl = document.getElementById('toggle-weekend'); if(wbEl) wbEl.checked = prefs.weekendBg !== false;
   renderBlockOrderList();
   // Prompt Felder befüllen
@@ -629,6 +666,7 @@ function applyData() {
 
   applyBlockOrder();
   initKi();
+  runDataCheck();
   renderCurve();
   renderTacho();
   renderStromPrognose();
@@ -680,6 +718,129 @@ function parseDailyDatum(s) {
 }
 
 
+
+
+// ── ACCORDION ──────────────────────────────────────────────
+function toggleAcc(header) {
+  const body = header.nextElementSibling;
+  const chev = header.querySelector('.acc-chevron');
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  if (chev) chev.classList.toggle('open', !isOpen);
+}
+
+function openAcc(groupId) {
+  const group = document.getElementById(groupId);
+  if (!group) return;
+  const body = group.querySelector('.acc-body');
+  const chev = group.querySelector('.acc-chevron');
+  if (body) body.classList.add('open');
+  if (chev) chev.classList.add('open');
+}
+
+// ── DATENCHECK ─────────────────────────────────────────────
+function runDataCheck() {
+  if (!DB) return;
+  const issues = [];
+
+  // Check 1: Monatswerte Ausreißer (> 3× Ø oder < Ø/3)
+  ['strom','gas','wasser','temp'].forEach(cat => {
+    const vals = DB[cat] && DB[cat].values ? DB[cat].values : {};
+    Object.keys(vals).forEach(yr => {
+      const months = vals[yr].filter(v => v !== null);
+      if (months.length < 3) return;
+      const avg = months.reduce((a,b)=>a+b,0) / months.length;
+      vals[yr].forEach((v, i) => {
+        if (v === null) return;
+        const MON = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+        if (v > avg * 4) {
+          issues.push({
+            level: 'error',
+            title: `${cat.charAt(0).toUpperCase()+cat.slice(1)} ${MON[i]} ${yr} — ${Math.round(v/avg)}× über Ø`,
+            detail: `Wert: ${v} · Monatsdurchschnitt: ${avg.toFixed(1)}`
+          });
+        } else if (v < avg / 4 && avg > 5) {
+          issues.push({
+            level: 'warn',
+            title: `${cat.charAt(0).toUpperCase()+cat.slice(1)} ${MON[i]} ${yr} — weit unter Ø`,
+            detail: `Wert: ${v} · Monatsdurchschnitt: ${avg.toFixed(1)}`
+          });
+        }
+      });
+    });
+  });
+
+  // Check 2: Doppelte Daily-Einträge
+  if (DB.daily) {
+    const seen = {};
+    DB.daily.forEach(r => {
+      if (seen[r.datum]) {
+        issues.push({
+          level: 'error',
+          title: `Daily — Doppelter Eintrag ${r.datum}`,
+          detail: `Strom: ${r.strom} · Gas: ${r.gas?.toFixed(2)} · Temp: ${r.temp}`
+        });
+      }
+      seen[r.datum] = true;
+    });
+  }
+
+  // Check 3: tage=0 in Daily
+  if (DB.daily) {
+    DB.daily.filter(r => r.tage === 0).forEach(r => {
+      issues.push({
+        level: 'warn',
+        title: `Daily — tage=0 bei ${r.datum}`,
+        detail: `Gas: ${r.gas?.toFixed(2)} · Wasser: ${r.wasser}`
+      });
+    });
+  }
+
+  // Check 4: Zukünftige Monatswerte im aktuellen Jahr
+  const curMonth = new Date().getMonth();
+  const curYear  = new Date().getFullYear();
+  ['strom','gas','wasser'].forEach(cat => {
+    const vals = DB[cat]?.values?.[curYear] || [];
+    vals.forEach((v, i) => {
+      if (v !== null && i > curMonth) {
+        const MON = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+        issues.push({
+          level: 'warn',
+          title: `${cat.charAt(0).toUpperCase()+cat.slice(1)} ${MON[i]} ${curYear} — Zukünftiger Wert`,
+          detail: `Wert: ${v} · Monat ${MON[i]} liegt in der Zukunft`
+        });
+      }
+    });
+  });
+
+  // Anzeigen
+  const body   = document.getElementById('check-body');
+  const badge  = document.getElementById('check-badge');
+  const navBadge = document.getElementById('settings-badge');
+  const okEl   = document.getElementById('check-ok');
+
+  const errCount = issues.filter(i=>i.level==='error').length;
+  const total    = issues.length;
+
+  if (total === 0) {
+    if (body) body.innerHTML = '<div class="check-ok">✓ Keine Probleme gefunden</div>';
+    if (badge) badge.style.display = 'none';
+    if (navBadge) { navBadge.textContent = ''; navBadge.classList.remove('show'); }
+  } else {
+    if (body) body.innerHTML = issues.map(iss => `
+      <div class="check-item">
+        <div class="check-dot" style="background:${iss.level==='error'?'#ef4444':'#f59e0b'}"></div>
+        <div>
+          <div class="check-title">${iss.title}</div>
+          <div class="check-detail">${iss.detail}</div>
+        </div>
+      </div>`).join('');
+    if (badge) { badge.textContent = total; badge.style.display = 'flex'; }
+    if (navBadge) { navBadge.textContent = total; navBadge.classList.add('show'); }
+    // Datencheck automatisch aufklappen
+    openAcc('acc-datencheck');
+  }
+}
 
 // ── BLOCK REIHENFOLGE ──────────────────────────────────────
 const BLOCK_META = {
@@ -1391,7 +1552,7 @@ function copyPrompt() {
 
 function testCustomPrompt() {
   // Zum KI-Tab wechseln und Analyse starten
-  showPage('ki', document.querySelectorAll('.nav-item')[4]);
+  showPage('ki', document.querySelectorAll('.nav-item')[3]);
   setTimeout(() => runKiAnalysis(), 300);
 }
 

@@ -1358,10 +1358,38 @@ function getNextAnalysisText(ts) {
 function buildKiPrompt() {
   if (!DB || !DB.daily) return null;
   const daily = (DB.dailyExpanded || DB.daily).slice(-14);
+
+  // 14 Tage Tagesdaten
   const lines = daily.map(r =>
     `${r.datum}: Strom=${r.strom!==null?r.strom.toFixed(2):'–'} kWh, Gas=${r.gas!==null?r.gas.toFixed(2):'–'} m³, Temp=${r.temp!==null?r.temp:'–'}°C`
   ).join('\n');
-  return `Du bist ein Energie-Assistent. Analysiere die übergebenen Verbrauchsdaten (Strom, Gas, Wasser) der letzten 14 Tage. Antworte auf Deutsch, maximal 150 Wörter, keine Einleitung. Struktur: je ein kurzer Abschnitt pro Kategorie mit Emoji, nur wenn etwas auffällt. Abschluss: eine Zeile Gesamtfazit.\n\nDaten:\n${lines}`;
+
+  // YTD Jahresdaten 2025 vs 2026
+  const now = new Date();
+  const curMonth = now.getMonth(); // 0-basiert
+  function ytdSum(cat, yr) {
+    const vals = DB[cat] && DB[cat].values && DB[cat].values[yr] ? DB[cat].values[yr] : [];
+    return vals.slice(0, curMonth + 1).filter(v => v !== null).reduce((a,b) => a+b, 0);
+  }
+  const strom26 = Math.round(ytdSum('strom', 2026));
+  const strom25 = Math.round(ytdSum('strom', 2025));
+  const gas26   = Math.round(ytdSum('gas',   2026));
+  const gas25   = Math.round(ytdSum('gas',   2025));
+  const MON = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+  const ytdLabel = `Jan–${MON[curMonth]}`;
+
+  const ytd = `Strom ${ytdLabel}: 2026=${strom26} kWh, 2025=${strom25} kWh\nGas ${ytdLabel}: 2026=${gas26} m³, 2025=${gas25} m³`;
+
+  // PROMPT — hier kannst du den Text anpassen:
+  const prompt = `Du bist ein Energie-Assistent. Analysiere die Verbrauchsdaten eines Haushalts mit Solaranlage. Antworte auf Deutsch, maximal 180 Wörter, keine Einleitung. Struktur: je ein kurzer Abschnitt pro Kategorie mit Emoji, nur wenn etwas auffällt. Dann ein Abschnitt "📊 Langzeit" mit max. 2 Sätzen zum YTD-Vergleich 2026 vs. 2025. Abschluss: eine Zeile Gesamtfazit.
+
+Tagesdaten letzte 14 Tage:
+${lines}
+
+Jahresdaten YTD:
+${ytd}`;
+
+  return prompt;
 }
 
 async function runKiAnalysis(auto = false) {

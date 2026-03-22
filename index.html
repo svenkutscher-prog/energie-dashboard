@@ -742,73 +742,35 @@ function openAcc(groupId) {
 function runDataCheck() {
   if (!DB) return;
   const issues = [];
+  const MON = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+  const FACTOR = 4; // Schwelle: 3× Vormonat = Ausreißer
 
-  // Check 1: Monatswerte Ausreißer (> 3× Ø oder < Ø/3)
-  ['strom','gas','wasser','temp'].forEach(cat => {
+  // Vormonat-Vergleich: Faktor 4 = nur echte Fehleingaben
+  ['strom','gas','wasser'].forEach(cat => {
     const vals = DB[cat] && DB[cat].values ? DB[cat].values : {};
     Object.keys(vals).forEach(yr => {
-      const months = vals[yr].filter(v => v !== null);
-      if (months.length < 3) return;
-      const avg = months.reduce((a,b)=>a+b,0) / months.length;
-      vals[yr].forEach((v, i) => {
-        if (v === null) return;
-        const MON = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
-        if (v > avg * 4) {
+      const months = vals[yr];
+      for (let i = 1; i < months.length; i++) {
+        const prev = months[i-1];
+        const curr = months[i];
+        if (prev === null || curr === null) continue;
+        if (prev === 0) continue;
+        const ratio = curr / prev;
+        const catLabel = cat.charAt(0).toUpperCase() + cat.slice(1);
+        const unit = cat === 'strom' ? 'kWh' : 'm³';
+        if (ratio > FACTOR) {
           issues.push({
             level: 'error',
-            title: `${cat.charAt(0).toUpperCase()+cat.slice(1)} ${MON[i]} ${yr} — ${Math.round(v/avg)}× über Ø`,
-            detail: `Wert: ${v} · Monatsdurchschnitt: ${avg.toFixed(1)}`
+            title: `${catLabel} ${MON[i]} ${yr} — ${ratio.toFixed(1)}× Sprung`,
+            detail: `${MON[i-1]}: ${prev} ${unit} → ${MON[i]}: ${curr} ${unit}`
           });
-        } else if (v < avg / 4 && avg > 5) {
+        } else if (ratio < 1 / FACTOR) {
           issues.push({
             level: 'warn',
-            title: `${cat.charAt(0).toUpperCase()+cat.slice(1)} ${MON[i]} ${yr} — weit unter Ø`,
-            detail: `Wert: ${v} · Monatsdurchschnitt: ${avg.toFixed(1)}`
+            title: `${catLabel} ${MON[i]} ${yr} — starker Einbruch`,
+            detail: `${MON[i-1]}: ${prev} ${unit} → ${MON[i]}: ${curr} ${unit} (${Math.round(ratio*100)}%)`
           });
         }
-      });
-    });
-  });
-
-  // Check 2: Doppelte Daily-Einträge
-  if (DB.daily) {
-    const seen = {};
-    DB.daily.forEach(r => {
-      if (seen[r.datum]) {
-        issues.push({
-          level: 'error',
-          title: `Daily — Doppelter Eintrag ${r.datum}`,
-          detail: `Strom: ${r.strom} · Gas: ${r.gas?.toFixed(2)} · Temp: ${r.temp}`
-        });
-      }
-      seen[r.datum] = true;
-    });
-  }
-
-  // Check 3: tage=0 in Daily
-  if (DB.daily) {
-    DB.daily.filter(r => r.tage === 0).forEach(r => {
-      issues.push({
-        level: 'warn',
-        title: `Daily — tage=0 bei ${r.datum}`,
-        detail: `Gas: ${r.gas?.toFixed(2)} · Wasser: ${r.wasser}`
-      });
-    });
-  }
-
-  // Check 4: Zukünftige Monatswerte im aktuellen Jahr
-  const curMonth = new Date().getMonth();
-  const curYear  = new Date().getFullYear();
-  ['strom','gas','wasser'].forEach(cat => {
-    const vals = DB[cat]?.values?.[curYear] || [];
-    vals.forEach((v, i) => {
-      if (v !== null && i > curMonth) {
-        const MON = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
-        issues.push({
-          level: 'warn',
-          title: `${cat.charAt(0).toUpperCase()+cat.slice(1)} ${MON[i]} ${curYear} — Zukünftiger Wert`,
-          detail: `Wert: ${v} · Monat ${MON[i]} liegt in der Zukunft`
-        });
       }
     });
   });
@@ -1433,10 +1395,14 @@ function renderStromPrognose() {
     if (d.mon === curMonth) { istKwh += r.strom; istTage++; }
   });
 
-  // Ø aus Original-Daily (letzte 30 Eintraege) fuer realistische Prognose
+  // Ø aus letzten 30 expanded Tagen (echte Tagesdaten)
+  const last30 = dailyData.slice(-30);
   let origSum = 0, origCount = 0;
-  dailyOrig.slice(-30).forEach(r => {
-    if (r.strom !== null && r.strom !== undefined) { origSum += r.strom; origCount++; }
+  last30.forEach(r => {
+    if (r.strom !== null && r.strom !== undefined) {
+      origSum += r.strom;
+      origCount++;
+    }
   });
   const avgPerDay = origCount > 0 ? origSum / origCount : (countAll > 0 ? sumAll / countAll : 0);
 

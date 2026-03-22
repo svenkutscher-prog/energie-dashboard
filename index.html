@@ -170,6 +170,16 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .wasser-wrap{position:relative;height:180px;}
 
 
+/* ── PROMPT EDITOR ──────────────────────────────────── */
+.prompt-textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;line-height:1.6;padding:10px 12px;resize:vertical;min-height:120px;box-sizing:border-box;margin-top:6px;}
+.prompt-textarea:focus{outline:none;border-color:rgba(139,92,246,0.4);}
+.prompt-textarea[readonly]{color:var(--muted);cursor:default;}
+.prompt-btns{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.prompt-btn{padding:7px 14px;border-radius:20px;font-size:12px;cursor:pointer;font-family:inherit;border:1px solid var(--border);background:transparent;color:var(--muted);}
+.prompt-btn.primary{background:rgba(139,92,246,0.15);border-color:rgba(139,92,246,0.3);color:#a78bfa;}
+.prompt-btn.danger{background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.3);color:#ef4444;}
+.prompt-copied{font-size:11px;color:#10b981;display:none;margin-top:4px;}
+
 /* ── KI ANALYSE ──────────────────────────────────── */
 .ki-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:10px;}
 .ki-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
@@ -240,20 +250,10 @@ canvas{display:block;}
       <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px;text-align:center">
         <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px">⚡ Strom</div>
         <canvas id="tachoStrom" width="160" height="100" style="max-width:100%"></canvas>
-        <div style="display:flex;justify-content:center;gap:12px;margin-top:4px">
-          <div style="font-size:10px;color:#10b981;font-family:monospace" id="tachoStromMin">–</div>
-          <div style="font-size:10px;color:#ef4444;font-family:monospace" id="tachoStromMax">–</div>
-        </div>
-        <div style="font-size:10px;color:var(--muted);margin-top:2px">kWh</div>
       </div>
       <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px;text-align:center">
         <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px">🔥 Gas</div>
         <canvas id="tachoGas" width="160" height="100" style="max-width:100%"></canvas>
-        <div style="display:flex;justify-content:center;gap:12px;margin-top:4px">
-          <div style="font-size:10px;color:#10b981;font-family:monospace" id="tachoGasMin">–</div>
-          <div style="font-size:10px;color:#ef4444;font-family:monospace" id="tachoGasMax">–</div>
-        </div>
-        <div style="font-size:10px;color:var(--muted);margin-top:2px">m³</div>
       </div>
     </div>
   </div>
@@ -274,11 +274,28 @@ canvas{display:block;}
   <div data-block="wasser">
   <!-- WASSER BALKEN -->
   <div class="section">
-    <div class="section-title">Wasser (Tage seit letzter Messung)</div>
+    <div class="section-title">💧 Wasser — m³ pro Tag</div>
     <div class="wasser-card">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+        <div style="background:var(--bg3);border-radius:10px;padding:8px;text-align:center">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:2px">Ø/Tag</div>
+          <div style="font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:#3b82f6" id="wasserAvg">–</div>
+          <div style="font-size:10px;color:var(--muted)">m³</div>
+        </div>
+        <div style="background:var(--bg3);border-radius:10px;padding:8px;text-align:center">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:2px">Maximum</div>
+          <div style="font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:#3b82f6" id="wasserMax">–</div>
+          <div style="font-size:10px;color:var(--muted)">m³</div>
+        </div>
+        <div style="background:var(--bg3);border-radius:10px;padding:8px;text-align:center">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:2px">Minimum</div>
+          <div style="font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:#3b82f6" id="wasserMin">–</div>
+          <div style="font-size:10px;color:var(--muted)">m³</div>
+        </div>
+      </div>
       <div class="wasser-legend">
-        <div class="wleg"><div class="wleg-dot" style="background:#7dd3fc"></div>&lt; 3 Tage</div>
-        <div class="wleg"><div class="wleg-dot" style="background:#f472b6"></div>≥ 3 Tage</div>
+        <div class="wleg"><div class="wleg-dot" style="background:#7dd3fc"></div>unter Ø (sparsam)</div>
+        <div class="wleg"><div class="wleg-dot" style="background:#3b82f6"></div>über Ø (viel)</div>
       </div>
       <div class="wasser-wrap"><canvas id="wasserChart"></canvas></div>
     </div>
@@ -396,6 +413,25 @@ canvas{display:block;}
     </div>
   </div>
   <div class="section" style="margin-top:16px;">
+    <div class="section-title">🤖 KI Prompt</div>
+    <div class="settings-group">
+      <div class="api-row">
+        <div class="api-label">Standard-Prompt (readonly)</div>
+        <textarea class="prompt-textarea" id="prompt-default" readonly rows="5"></textarea>
+      </div>
+      <div style="border-top:1px solid var(--border);padding:14px 16px 0">
+        <div class="api-label">Eigener Prompt <span style="color:var(--muted);font-weight:400">(leer = Standard wird verwendet)</span></div>
+        <textarea class="prompt-textarea" id="prompt-custom" rows="5" placeholder="Hier eigenen Prompt eingeben…" oninput="saveCustomPrompt()"></textarea>
+        <div class="prompt-btns">
+          <button class="prompt-btn primary" onclick="testCustomPrompt()">▶ Testen</button>
+          <button class="prompt-btn primary" onclick="copyPrompt()">📋 Kopieren & Teilen</button>
+          <button class="prompt-btn danger" onclick="resetCustomPrompt()">↺ Zurücksetzen</button>
+        </div>
+        <div class="prompt-copied" id="prompt-copied">✓ In Zwischenablage kopiert!</div>
+      </div>
+    </div>
+  </div>
+  <div class="section" style="margin-top:16px;">
     <div class="section-title">Datenquelle</div>
     <div class="settings-group">
       <div class="api-row">
@@ -449,7 +485,7 @@ canvas{display:block;}
 </div>
 
 <script>
-const API_URL   = 'https://script.google.com/macros/s/AKfycbyHb5tu5TGyKykF4rLF6a7jkzVu86kdRtLGdVXMz7mJJzNjOyGXMLy2KmpJEsm7umJ9ug/exec';
+const API_URL   = 'https://script.google.com/macros/s/AKfycbymWSbOCQHIaFNgdZ2OQY9AJ-qDjukOwLEGaXMJRT8oNAlvEoqn2IeqZZItqIrVw-BuCA/exec';
 const CACHE_KEY = 'wagael_v3';
 const PREF_KEY  = 'wagael_prefs_v3';
 const CACHE_TTL = 4 * 60 * 60 * 1000;
@@ -520,6 +556,11 @@ function renderSettings() {
   document.getElementById('apiUrlDisplay').textContent = API_URL;
   const wbEl = document.getElementById('toggle-weekend'); if(wbEl) wbEl.checked = prefs.weekendBg !== false;
   renderBlockOrderList();
+  // Prompt Felder befüllen
+  const defEl = document.getElementById('prompt-default');
+  if (defEl) defEl.value = DEFAULT_KI_PROMPT;
+  const custEl = document.getElementById('prompt-custom');
+  if (custEl) custEl.value = localStorage.getItem('wagael_ki_prompt') || '';
   const sl = document.getElementById('curveDays-slider'); if(sl) { sl.value = prefs.curveDays || 60; document.getElementById('curveDays-label').textContent = (prefs.curveDays||60) + ' Tage'; }
 }
 
@@ -848,11 +889,6 @@ function renderTacho() {
 
   drawTachoMinMax('tachoStrom', 0, sScale, sMin, sMax, sAvg, '#f59e0b');
   drawTachoMinMax('tachoGas',   0, gScale, gMin, gMax, gAvg, '#ef4444');
-
-  document.getElementById('tachoStromMin').textContent = 'Min ' + sMin.toFixed(1);
-  document.getElementById('tachoStromMax').textContent = 'Max ' + sMax.toFixed(1);
-  document.getElementById('tachoGasMin').textContent   = 'Min ' + gMin.toFixed(1);
-  document.getElementById('tachoGasMax').textContent   = 'Max ' + gMax.toFixed(1);
 
   // Titel mit Anzahl Tage
   const titleEl = document.getElementById('tacho-title');
@@ -1361,7 +1397,44 @@ function renderStromPrognose() {
 }
 
 
+
+// ── PROMPT EDITOR ──────────────────────────────────────────
+function saveCustomPrompt() {
+  const v = document.getElementById('prompt-custom')?.value || '';
+  if (v.trim()) localStorage.setItem('wagael_ki_prompt', v);
+  else localStorage.removeItem('wagael_ki_prompt');
+}
+
+function resetCustomPrompt() {
+  localStorage.removeItem('wagael_ki_prompt');
+  const el = document.getElementById('prompt-custom');
+  if (el) el.value = '';
+}
+
+function copyPrompt() {
+  const custom = document.getElementById('prompt-custom')?.value?.trim();
+  const text = custom || DEFAULT_KI_PROMPT;
+  navigator.clipboard.writeText(text).then(() => {
+    const el = document.getElementById('prompt-copied');
+    if (el) { el.style.display = 'block'; setTimeout(() => el.style.display = 'none', 2500); }
+  });
+}
+
+function testCustomPrompt() {
+  // Zum KI-Tab wechseln und Analyse starten
+  showPage('ki', document.querySelectorAll('.nav-item')[4]);
+  setTimeout(() => runKiAnalysis(), 300);
+}
+
 // ── KI ANALYSE ─────────────────────────────────────────────
+const DEFAULT_KI_PROMPT = `Du bist ein Energie-Assistent für einen Haushalt mit Solaranlage.
+
+WICHTIG zur Interpretation der Stromdaten:
+- Strom = 0 kWh bedeutet: Die Solaranlage hat den gesamten Bedarf gedeckt, kein Netzbezug. Das ist optimal.
+- Strom > 0 kWh bedeutet: Netzbezug war nötig, Solar hat nicht gereicht. Je höher, desto mehr Bewölkung oder Nacht.
+- Der Stromwert ist also der Netzbezug, NICHT der Solarertrag. Niedriger Wert = guter Solartag.
+
+Antworte auf Deutsch, maximal 180 Wörter, keine Einleitung. Struktur: je ein kurzer Abschnitt pro Kategorie mit Emoji, nur wenn etwas auffällt. Dann ein Abschnitt "📊 Langzeit" mit max. 2 Sätzen zum YTD-Vergleich 2026 vs. 2025. Abschluss: eine Zeile Gesamtfazit.`;
 const KI_CACHE_KEY  = 'wagael_ki_v1';
 const KI_INTERVAL   = 14 * 24 * 60 * 60 * 1000; // 14 Tage
 
@@ -1413,21 +1486,29 @@ function buildKiPrompt() {
 
   const ytd = `Strom ${ytdLabel}: 2026=${strom26} kWh, 2025=${strom25} kWh\nGas ${ytdLabel}: 2026=${gas26} m³, 2025=${gas25} m³`;
 
-  // PROMPT — hier kannst du den Text anpassen:
-  const prompt = `Du bist ein Energie-Assistent für einen Haushalt mit Solaranlage.
+  // Eigener oder Standard-Prompt
+  const customPromptText = localStorage.getItem('wagael_ki_prompt') || '';
+  const basePrompt = customPromptText.trim() || DEFAULT_KI_PROMPT;
 
-WICHTIG zur Interpretation der Stromdaten:
-- Strom = 0 kWh bedeutet: Die Solaranlage hat den gesamten Bedarf gedeckt, kein Netzbezug. Das ist optimal.
-- Strom > 0 kWh bedeutet: Netzbezug war nötig, Solar hat nicht gereicht. Je höher, desto mehr Bewölkung oder Nacht.
-- Der Stromwert ist also der Netzbezug, NICHT der Solarertrag. Niedriger Wert = guter Solartag.
+  // Wasser-Ablesungen für Prompt
+  let wasserInfo = '';
+  if (DB.wasserDaily && DB.wasserDaily.length) {
+    const wValid = DB.wasserDaily.filter(r => r.datum && String(r.datum).trim().length > 2 && r.tage > 0).slice(-14);
+    if (wValid.length) wasserInfo = '\n\nWasserablesungen (Datum · Tage ohne Zähleränderung — je höher desto sparsamer):\n' +
+      wValid.map(r => `${String(r.datum).trim()}: ${r.tage} Tage`).join('\n');
+  }
 
-Antworte auf Deutsch, maximal 180 Wörter, keine Einleitung. Struktur: je ein kurzer Abschnitt pro Kategorie mit Emoji, nur wenn etwas auffällt. Dann ein Abschnitt "📊 Langzeit" mit max. 2 Sätzen zum YTD-Vergleich 2026 vs. 2025. Abschluss: eine Zeile Gesamtfazit.
+  const prompt = `${basePrompt}
+
+WICHTIG zur Interpretation der Wasserdaten:
+- Die Wasserablesung zeigt Tage ohne Zähleränderung. Je höher, desto sparsamer.
+- m³/Tag = tatsächlicher Tagesverbrauch (falls vorhanden).
 
 Tagesdaten letzte 14 Tage (Strom = Netzbezug in kWh, 0 = reiner Solartag):
 ${lines}
 
 Jahresdaten YTD:
-${ytd}`;
+${ytd}${wasserInfo}`;
 
   return prompt;
 }
@@ -1581,14 +1662,12 @@ function renderWasser() {
 
   function parseDateMs(s) {
     s = String(s || '').trim();
-    // DD.MM.YYYY oder DD.MM.YY
     let m = s.match(/(\d{1,2})\.(\d{1,2})\.(\d{2,4})/);
     if (m) {
       let yr = parseInt(m[3]);
       if (yr < 100) yr += 2000;
       return new Date(yr, parseInt(m[2])-1, parseInt(m[1])).getTime();
     }
-    // DD.MM. ohne Jahr: wenn Monat > aktueller Monat -> Vorjahr
     m = s.match(/^(\d{1,2})\.(\d{1,2})\./);
     if (m) {
       const now = new Date();
@@ -1600,32 +1679,57 @@ function renderWasser() {
     return 0;
   }
 
-  // Nur Eintraege mit gueltigem Datum UND positivem ganzzahligem Wert
+  // Nur Eintraege mit Datum, tage > 0 UND wasser (Zählerstand)
   const valid = raw.filter(r => {
     const d = String(r.datum || '').trim();
-    const v = r.tage;
     return d.length > 2 && parseDateMs(d) > 0
-        && v !== null && v !== undefined && !isNaN(v) && Number(v) > 0;
+        && r.tage !== null && !isNaN(r.tage) && Number(r.tage) > 0
+        && r.wasser !== null && !isNaN(r.wasser);
   });
 
-  if (!valid.length) return;
+  if (valid.length < 2) {
+    // Fallback: alte Darstellung mit tage wenn kein Wasserstand
+    renderWasserFallback(raw);
+    return;
+  }
 
-  // Chronologisch sortieren (aeltestes links)
+  // Chronologisch sortieren
   const sorted = [...valid].sort((a, b) => parseDateMs(a.datum) - parseDateMs(b.datum));
 
-  // Label: nur DD.MM. extrahieren, Wert auf Ganzzahl runden
-  const labels = sorted.map(r => {
+  // m³/Tag berechnen: Differenz Zählerstand / Tage
+  const data = sorted.map((r, i) => {
+    if (i === 0) return null;
+    const diff = Number(r.wasser) - Number(sorted[i-1].wasser);
+    const t    = Number(r.tage);
+    if (t <= 0) return null;
+    const val  = Math.round((diff / t) * 1000) / 1000;
     const s = String(r.datum).trim();
     const m = s.match(/(\d{1,2}\.\d{1,2}\.)/);
-    return m ? m[1] : s.substring(0, 6);
-  });
-  const tage   = sorted.map(r => Math.round(Number(r.tage)));
-  const colors = tage.map(v => v < 3 ? '#7dd3fc' : '#f472b6');
+    return { label: m ? m[1] : s.substring(0,6), val: val >= 0 ? val : 0 };
+  }).filter(Boolean);
+
+  if (!data.length) { renderWasserFallback(raw); return; }
+
+  const vals = data.map(r => r.val);
+  const avg  = vals.reduce((a,b)=>a+b,0) / vals.length;
+  const maxx = Math.max(...vals);
+  const minn = Math.min(...vals);
+  const colors = vals.map(v => v > avg ? '#3b82f6' : '#7dd3fc');
+
+  // Stats updaten
+  const avgEl = document.getElementById('wasserAvg');
+  const maxEl = document.getElementById('wasserMax');
+  const minEl = document.getElementById('wasserMin');
+  if (avgEl) avgEl.textContent = avg.toFixed(3);
+  if (maxEl) maxEl.textContent = maxx.toFixed(3);
+  if (minEl) minEl.textContent  = minn.toFixed(3);
 
   if (wasserChart) { wasserChart.destroy(); wasserChart = null; }
   wasserChart = new Chart(document.getElementById('wasserChart'), {
     type: 'bar',
-    data: { labels, datasets: [{ data: tage, backgroundColor: colors, borderRadius: 4, borderSkipped: false }] },
+    data: { labels: data.map(r=>r.label), datasets: [{
+      data: vals, backgroundColor: colors, borderRadius: 4, borderSkipped: false
+    }]},
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: {
@@ -1633,28 +1737,44 @@ function renderWasser() {
         tooltip: {
           backgroundColor:'rgba(10,15,30,0.97)', borderColor:'rgba(255,255,255,0.1)', borderWidth:1,
           titleColor:'#94a3b8', bodyColor:'#f1f5f9', padding:8, cornerRadius:8,
-          callbacks: { label: c => ` ${c.parsed.y} Tag${c.parsed.y !== 1 ? 'e' : ''}` }
+          callbacks: { label: c => ` ${c.parsed.y.toFixed(3)} m³/Tag` }
         },
         datalabels: {
-          display: ctx => ctx.dataset.data[ctx.dataIndex] > 0,
+          display: true,
           color: '#fff',
-          font: { size: 10, weight: 'bold', family: 'monospace' },
+          font: { size: 9, weight: 'bold', family: 'monospace' },
           anchor: 'center', align: 'center',
-          formatter: v => v
+          formatter: v => v > 0 ? v.toFixed(2) : '0'
         }
       },
       scales: {
-        x: {
-          grid:{color:'rgba(255,255,255,0.04)'},
-          ticks:{ color:'#94a3b8', font:{size:8}, maxTicksLimit:20, maxRotation:45, minRotation:0 }
-        },
-        y: {
-          grid:{color:'rgba(255,255,255,0.04)'},
-          ticks:{color:'#94a3b8',font:{size:9},callback:v=>v+'d'},
-          beginAtZero:true
-        }
+        x: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#94a3b8',font:{size:8},maxTicksLimit:20,maxRotation:45} },
+        y: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#94a3b8',font:{size:9},callback:v=>v+' m³'}, beginAtZero:true }
       }
     }
+  });
+}
+
+// Fallback: alte Tage-Darstellung wenn kein Wasserstand vorhanden
+function renderWasserFallback(raw) {
+  function parseDateMs(s) {
+    s = String(s || '').trim();
+    let m = s.match(/(\d{1,2})\.(\d{1,2})\.(\d{2,4})/);
+    if (m) { let yr=parseInt(m[3]); if(yr<100)yr+=2000; return new Date(yr,parseInt(m[2])-1,parseInt(m[1])).getTime(); }
+    m = s.match(/^(\d{1,2})\.(\d{1,2})\./);
+    if (m) { const now=new Date(); let yr=now.getFullYear(); const mon=parseInt(m[2])-1; if(mon>now.getMonth())yr-=1; return new Date(yr,mon,parseInt(m[1])).getTime(); }
+    return 0;
+  }
+  const valid = raw.filter(r => { const d=String(r.datum||'').trim(); const v=r.tage; return d.length>2&&parseDateMs(d)>0&&v!==null&&!isNaN(v)&&Number(v)>0; });
+  if (!valid.length) return;
+  const sorted = [...valid].sort((a,b)=>parseDateMs(a.datum)-parseDateMs(b.datum));
+  const labels = sorted.map(r => { const s=String(r.datum).trim(); const m=s.match(/(\d{1,2}\.\d{1,2}\.)/); return m?m[1]:s.substring(0,6); });
+  const tage = sorted.map(r=>Math.round(Number(r.tage)));
+  const colors = tage.map(v=>v<3?'#7dd3fc':'#f472b6');
+  if (wasserChart) { wasserChart.destroy(); wasserChart=null; }
+  wasserChart = new Chart(document.getElementById('wasserChart'), {
+    type:'bar', data:{labels,datasets:[{data:tage,backgroundColor:colors,borderRadius:4,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{display:ctx=>ctx.dataset.data[ctx.dataIndex]>0,color:'#fff',font:{size:10,weight:'bold',family:'monospace'},anchor:'center',align:'center',formatter:v=>v},tooltip:{callbacks:{label:c=>` ${c.parsed.y} Tage`}}},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#94a3b8',font:{size:8},maxRotation:45}},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#94a3b8',font:{size:9},callback:v=>v+'d'},beginAtZero:true}}}
   });
 }
 

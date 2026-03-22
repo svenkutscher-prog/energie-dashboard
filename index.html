@@ -471,7 +471,7 @@ const CURVE_COLORS = { gas:'#ef4444', temp:'#10b981', wasser:'#3b82f6' };
 const CURVE_TARGETS = { strom:4.33, gas:4.8, temp:null, wasser:null };
 
 function defaultPrefs() {
-  return { cats:{strom:true,gas:true,wasser:true,temp:false}, years:{2021:true,2022:true,2023:true,2024:true,2025:true,2026:true}, weekendBg:true, curveDays:60, blockOrder:['kurve','tacho','zaehler','wasser','prognose','ki'] };
+  return { cats:{strom:true,gas:true,wasser:true,temp:false}, years:{2021:true,2022:true,2023:true,2024:true,2025:true,2026:true}, weekendBg:true, curveDays:60, blockOrder:['kurve','tacho','zaehler','wasser','prognose','ki'], blockDisabled:{} };
 }
 function loadPrefs() { try { return JSON.parse(localStorage.getItem(PREF_KEY)) || defaultPrefs(); } catch(e) { return defaultPrefs(); } }
 function savePrefs(p) { localStorage.setItem(PREF_KEY, JSON.stringify(p)); }
@@ -681,23 +681,33 @@ const BLOCK_META = {
 };
 
 function getBlockOrder() {
-  return prefs.blockOrder || ['kurve','tacho','zaehler','wasser','prognose'];
+  const order = prefs.blockOrder || ['kurve','tacho','zaehler','wasser','prognose','ki'];
+  // KI hinzufügen falls noch nicht vorhanden (Migration)
+  if (!order.includes('ki')) order.push('ki');
+  return order;
 }
 
 function applyBlockOrder() {
   const dashboard = document.getElementById('page-dashboard');
   const order = getBlockOrder();
+  const disabled = prefs.blockDisabled || {};
   const spacer = dashboard.querySelector('div[style*="height:20px"]');
   order.forEach(id => {
     const el = dashboard.querySelector('[data-block="' + id + '"]');
-    if (el) dashboard.insertBefore(el, spacer);
+    if (el) {
+      dashboard.insertBefore(el, spacer);
+      el.style.display = disabled[id] ? 'none' : '';
+    }
   });
-  // Charts neu zeichnen nach DOM-Änderung
-  if (DB) {
-    renderCurve();
-    renderTacho();
-    renderWasser();
-  }
+  if (DB) { renderCurve(); renderTacho(); renderWasser(); }
+}
+
+function toggleBlock(id) {
+  if (!prefs.blockDisabled) prefs.blockDisabled = {};
+  prefs.blockDisabled[id] = !prefs.blockDisabled[id];
+  savePrefs(prefs);
+  applyBlockOrder();
+  renderBlockOrderList();
 }
 
 function moveBlock(idx, dir) {
@@ -715,16 +725,26 @@ function renderBlockOrderList() {
   const el = document.getElementById('blockOrderList');
   if (!el) return;
   const order = getBlockOrder();
+  const disabled = prefs.blockDisabled || {};
   el.innerHTML = order.map((id, i) => {
     const m = BLOCK_META[id] || {icon:'?', name:id, sub:''};
-    return `<div class="settings-row">
+    const isOff = !!disabled[id];
+    const rowOpacity = isOff ? 'opacity:0.4' : '';
+    return `<div class="settings-row" style="${rowOpacity}">
       <div class="settings-row-left">
         <div class="settings-icon">${m.icon}</div>
-        <div><div class="settings-label">${m.name}</div><div class="settings-sub">${m.sub}</div></div>
+        <div>
+          <div class="settings-label">${m.name}</div>
+          <div class="settings-sub">${m.sub}</div>
+        </div>
       </div>
-      <div style="display:flex;gap:4px">
-        <button onclick="moveBlock(${i},-1)" ${i===0?'disabled':''} style="background:var(--bg3);border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:8px;font-size:13px;cursor:pointer;opacity:${i===0?'0.3':'1'}">▲</button>
-        <button onclick="moveBlock(${i}, 1)" ${i===order.length-1?'disabled':''} style="background:var(--bg3);border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:8px;font-size:13px;cursor:pointer;opacity:${i===order.length-1?'0.3':'1'}">▼</button>
+      <div style="display:flex;align-items:center;gap:6px">
+        <label class="toggle" title="${isOff?'Einschalten':'Ausschalten'}">
+          <input type="checkbox" ${isOff?'':'checked'} onchange="toggleBlock('${id}')">
+          <div class="toggle-track"></div><div class="toggle-thumb"></div>
+        </label>
+        <button onclick="moveBlock(${i},-1)" ${i===0||isOff?'disabled':''} style="background:var(--bg3);border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:8px;font-size:13px;cursor:pointer;opacity:${i===0||isOff?'0.3':'1'}">▲</button>
+        <button onclick="moveBlock(${i}, 1)" ${i===order.length-1||isOff?'disabled':''} style="background:var(--bg3);border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:8px;font-size:13px;cursor:pointer;opacity:${i===order.length-1||isOff?'0.3':'1'}">▼</button>
       </div>
     </div>`;
   }).join('');
@@ -1381,9 +1401,16 @@ function buildKiPrompt() {
   const ytd = `Strom ${ytdLabel}: 2026=${strom26} kWh, 2025=${strom25} kWh\nGas ${ytdLabel}: 2026=${gas26} m³, 2025=${gas25} m³`;
 
   // PROMPT — hier kannst du den Text anpassen:
-  const prompt = `Du bist ein Energie-Assistent. Analysiere die Verbrauchsdaten eines Haushalts mit Solaranlage. Antworte auf Deutsch, maximal 180 Wörter, keine Einleitung. Struktur: je ein kurzer Abschnitt pro Kategorie mit Emoji, nur wenn etwas auffällt. Dann ein Abschnitt "📊 Langzeit" mit max. 2 Sätzen zum YTD-Vergleich 2026 vs. 2025. Abschluss: eine Zeile Gesamtfazit.
+  const prompt = `Du bist ein Energie-Assistent für einen Haushalt mit Solaranlage.
 
-Tagesdaten letzte 14 Tage:
+WICHTIG zur Interpretation der Stromdaten:
+- Strom = 0 kWh bedeutet: Die Solaranlage hat den gesamten Bedarf gedeckt, kein Netzbezug. Das ist optimal.
+- Strom > 0 kWh bedeutet: Netzbezug war nötig, Solar hat nicht gereicht. Je höher, desto mehr Bewölkung oder Nacht.
+- Der Stromwert ist also der Netzbezug, NICHT der Solarertrag. Niedriger Wert = guter Solartag.
+
+Antworte auf Deutsch, maximal 180 Wörter, keine Einleitung. Struktur: je ein kurzer Abschnitt pro Kategorie mit Emoji, nur wenn etwas auffällt. Dann ein Abschnitt "📊 Langzeit" mit max. 2 Sätzen zum YTD-Vergleich 2026 vs. 2025. Abschluss: eine Zeile Gesamtfazit.
+
+Tagesdaten letzte 14 Tage (Strom = Netzbezug in kWh, 0 = reiner Solartag):
 ${lines}
 
 Jahresdaten YTD:

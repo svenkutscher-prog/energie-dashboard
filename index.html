@@ -745,10 +745,12 @@ function runDataCheck() {
   const MON = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
   const FACTOR = 4; // Schwelle: 3× Vormonat = Ausreißer
 
-  // Vormonat-Vergleich: Faktor 4 = nur echte Fehleingaben
+  // Vormonat-Vergleich: nur aktuelles Jahr, Faktor 4
+  const checkYear = String(new Date().getFullYear());
   ['strom','gas','wasser'].forEach(cat => {
     const vals = DB[cat] && DB[cat].values ? DB[cat].values : {};
-    Object.keys(vals).forEach(yr => {
+    [checkYear].forEach(yr => {
+      if (!vals[yr]) return;
       const months = vals[yr];
       for (let i = 1; i < months.length; i++) {
         const prev = months[i-1];

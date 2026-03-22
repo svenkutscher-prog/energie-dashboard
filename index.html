@@ -169,6 +169,25 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .wleg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
 .wasser-wrap{position:relative;height:180px;}
 
+
+/* ── KI ANALYSE ──────────────────────────────────── */
+.ki-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:10px;}
+.ki-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.ki-title{font-size:15px;font-weight:600;color:var(--text);}
+.ki-meta{font-size:11px;color:var(--muted);margin-top:3px;}
+.ki-btn{background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);color:#a78bfa;font-family:'Space Mono',monospace;font-size:12px;padding:7px 16px;border-radius:20px;cursor:pointer;}
+.ki-btn:disabled{opacity:0.5;cursor:default;}
+.ki-btn.loading{animation:pulse 1s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+.ki-text{font-size:14px;line-height:1.8;color:var(--text);white-space:pre-wrap;}
+.ki-text-placeholder{font-size:13px;color:var(--muted);text-align:center;padding:20px 0;}
+.ki-next{font-size:11px;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
+/* Dashboard Mini */
+.ki-mini{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px;cursor:pointer;transition:border-color 0.2s;}
+.ki-mini:hover{border-color:rgba(139,92,246,0.3);}
+.ki-mini-title{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;}
+.ki-mini-text{font-size:13px;color:var(--text);line-height:1.6;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+.ki-mini-link{font-size:11px;color:#a78bfa;margin-top:6px;}
 /* BOTTOM NAV */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,15,30,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;padding:8px 0 20px;z-index:100;}
 .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0;cursor:pointer;font-size:10px;letter-spacing:0.05em;text-transform:uppercase;color:var(--muted);transition:color 0.2s;}
@@ -272,6 +291,21 @@ canvas{display:block;}
     <div class="section-title">⚡ Strom — Monatsprognose</div>
     <div class="wasser-card" id="stromPrognose">
       <div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">Lade…</div>
+    </div>
+  </div>
+  </div>
+
+  <div data-block="ki">
+  <!-- KI MINI -->
+  <div class="section">
+    <div class="section-title">🤖 KI Analyse</div>
+    <div class="ki-mini" onclick="showPage('ki', document.querySelectorAll('.nav-item')[4])">
+      <div class="ki-mini-title">
+        <span>14 Tage Bewertung</span>
+        <span id="ki-mini-date" style="color:var(--muted);font-size:10px"></span>
+      </div>
+      <div class="ki-mini-text" id="ki-mini-text">Noch keine Analyse — tippe hier um zu starten.</div>
+      <div class="ki-mini-link">→ Zur vollständigen Analyse</div>
     </div>
   </div>
   </div>
@@ -383,16 +417,39 @@ canvas{display:block;}
   <div style="height:20px"></div>
 </div>
 
+
+<!-- PAGE 5: KI ANALYSE -->
+<div class="page" id="page-ki">
+  <div class="section">
+    <div class="section-title">14 Tage KI Analyse</div>
+    <div class="ki-card">
+      <div class="ki-header">
+        <div>
+          <div class="ki-title">🤖 Energie-Assistent</div>
+          <div class="ki-meta" id="ki-last">Noch keine Analyse vorhanden</div>
+        </div>
+        <button class="ki-btn" id="ki-btn" onclick="runKiAnalysis()">▶ Analysieren</button>
+      </div>
+      <div id="ki-result">
+        <div class="ki-text-placeholder">Klicke auf "Analysieren" um eine KI-Bewertung deines Energieverbrauchs zu erhalten.</div>
+      </div>
+      <div class="ki-next" id="ki-next"></div>
+    </div>
+  </div>
+  <div style="height:20px"></div>
+</div>
+
 <!-- BOTTOM NAV -->
 <div class="bottom-nav">
   <div class="nav-item active" onclick="showPage('dashboard',this)"><div class="nav-icon">📊</div><div>Dashboard</div></div>
   <div class="nav-item" onclick="showPage('trends',this)"><div class="nav-icon">🌤️</div><div>Trends</div></div>
   <div class="nav-item" onclick="showPage('jahr',this)"><div class="nav-icon">📅</div><div>Jahr</div></div>
   <div class="nav-item" onclick="showPage('settings',this)"><div class="nav-icon">⚙️</div><div>Einstellungen</div></div>
+  <div class="nav-item" onclick="showPage('ki',this)"><div class="nav-icon">🤖</div><div>KI</div></div>
 </div>
 
 <script>
-const API_URL   = 'https://script.google.com/macros/s/AKfycbyc4vn6bE2diHbaTKTvoigGmh1OleySIBNJog6ZA9wHvNjfQdZC4zdlUwYT9dzbTFMwQw/exec';
+const API_URL   = 'https://script.google.com/macros/s/AKfycbyHb5tu5TGyKykF4rLF6a7jkzVu86kdRtLGdVXMz7mJJzNjOyGXMLy2KmpJEsm7umJ9ug/exec';
 const CACHE_KEY = 'wagael_v3';
 const PREF_KEY  = 'wagael_prefs_v3';
 const CACHE_TTL = 4 * 60 * 60 * 1000;
@@ -414,7 +471,7 @@ const CURVE_COLORS = { gas:'#ef4444', temp:'#10b981', wasser:'#3b82f6' };
 const CURVE_TARGETS = { strom:4.33, gas:4.8, temp:null, wasser:null };
 
 function defaultPrefs() {
-  return { cats:{strom:true,gas:true,wasser:true,temp:false}, years:{2021:true,2022:true,2023:true,2024:true,2025:true,2026:true}, weekendBg:true, curveDays:60, blockOrder:['kurve','tacho','zaehler','wasser','prognose'] };
+  return { cats:{strom:true,gas:true,wasser:true,temp:false}, years:{2021:true,2022:true,2023:true,2024:true,2025:true,2026:true}, weekendBg:true, curveDays:60, blockOrder:['kurve','tacho','zaehler','wasser','prognose','ki'] };
 }
 function loadPrefs() { try { return JSON.parse(localStorage.getItem(PREF_KEY)) || defaultPrefs(); } catch(e) { return defaultPrefs(); } }
 function savePrefs(p) { localStorage.setItem(PREF_KEY, JSON.stringify(p)); }
@@ -439,6 +496,7 @@ function showPage(name, navEl) {
   if (pg) pg.classList.add('active');
   if (navEl) navEl.classList.add('active');
   if (name === 'settings') renderSettings();
+  if (name === 'ki') renderKiPage();
   if (name === 'trends') loadForecast();
   if (name === 'jahr') renderYear();
   if (name === 'dashboard') renderCurve();
@@ -558,6 +616,7 @@ function applyData() {
   if (DB.daily) DB.dailyExpanded = expandDaily(DB.daily);
 
   applyBlockOrder();
+  initKi();
   renderCurve();
   renderTacho();
   renderWasser();
@@ -618,6 +677,7 @@ const BLOCK_META = {
   zaehler:  { icon:'🔢', name:'Zählerstände',    sub:'Gas · Strom · Wasser' },
   wasser:   { icon:'💧', name:'Wasser Balken',   sub:'Tage seit Messung' },
   prognose: { icon:'⚡', name:'Strom Prognose',  sub:'Hochrechnung · Solar' },
+  ki:       { icon:'🤖', name:'KI Analyse',       sub:'14 Tage Bewertung' },
 };
 
 function getBlockOrder() {
@@ -1265,6 +1325,116 @@ function renderStromPrognose() {
       <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px">☀️ Solar-Forecast Resttage (Schwelle &gt;4h)</div>
       ${solarRows}
     </div>` : ''}`;
+}
+
+
+// ── KI ANALYSE ─────────────────────────────────────────────
+const KI_CACHE_KEY  = 'wagael_ki_v1';
+const KI_INTERVAL   = 14 * 24 * 60 * 60 * 1000; // 14 Tage
+
+function loadKiCache() {
+  try { return JSON.parse(localStorage.getItem(KI_CACHE_KEY)) || null; } catch(e) { return null; }
+}
+function saveKiCache(data) {
+  localStorage.setItem(KI_CACHE_KEY, JSON.stringify(data));
+}
+
+function getKiAge(ts) {
+  if (!ts) return null;
+  const diff = Date.now() - ts;
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  if (days > 0) return `vor ${days} Tag${days>1?'en':''}`;
+  if (hours > 0) return `vor ${hours} Stunde${hours>1?'n':''}`;
+  return 'gerade eben';
+}
+
+function getNextAnalysisText(ts) {
+  if (!ts) return '';
+  const next = new Date(ts + KI_INTERVAL);
+  return 'Nächste automatische Analyse: ' + next.toLocaleDateString('de', {day:'2-digit',month:'2-digit',year:'numeric'});
+}
+
+function buildKiPrompt() {
+  if (!DB || !DB.daily) return null;
+  const daily = (DB.dailyExpanded || DB.daily).slice(-14);
+  const lines = daily.map(r =>
+    `${r.datum}: Strom=${r.strom!==null?r.strom.toFixed(2):'–'} kWh, Gas=${r.gas!==null?r.gas.toFixed(2):'–'} m³, Temp=${r.temp!==null?r.temp:'–'}°C`
+  ).join('\n');
+  return `Du bist ein Energie-Assistent. Analysiere die übergebenen Verbrauchsdaten (Strom, Gas, Wasser) der letzten 14 Tage. Antworte auf Deutsch, maximal 150 Wörter, keine Einleitung. Struktur: je ein kurzer Abschnitt pro Kategorie mit Emoji, nur wenn etwas auffällt. Abschluss: eine Zeile Gesamtfazit.\n\nDaten:\n${lines}`;
+}
+
+async function runKiAnalysis(auto = false) {
+  const btn = document.getElementById('ki-btn');
+  if (btn) { btn.disabled = true; btn.classList.add('loading'); btn.textContent = '⏳ Analysiere…'; }
+
+  const resultEl = document.getElementById('ki-result');
+  if (resultEl) resultEl.innerHTML = '<div class="ki-text-placeholder">KI analysiert deine Daten…</div>';
+
+  try {
+    const prompt = buildKiPrompt();
+    if (!prompt) throw new Error('Keine Daten verfügbar');
+
+    // Apps Script als Proxy aufrufen
+    const url = API_URL + '?action=ki&prompt=' + encodeURIComponent(prompt);
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    const text = data.analysis || data.content || '–';
+    const now = Date.now();
+
+    saveKiCache({ text, ts: now });
+    renderKiResult(text, now);
+
+  } catch(err) {
+    if (resultEl) resultEl.innerHTML = `<div class="ki-text-placeholder" style="color:#ef4444">⚠️ Fehler: ${err.message}</div>`;
+  }
+
+  if (btn) { btn.disabled = false; btn.classList.remove('loading'); btn.textContent = '↻ Neu analysieren'; }
+}
+
+function renderKiResult(text, ts) {
+  const resultEl = document.getElementById('ki-result');
+  if (resultEl) resultEl.innerHTML = `<div class="ki-text">${text}</div>`;
+
+  const lastEl = document.getElementById('ki-last');
+  if (lastEl) lastEl.textContent = 'Analysiert ' + getKiAge(ts);
+
+  const nextEl = document.getElementById('ki-next');
+  if (nextEl) nextEl.textContent = getNextAnalysisText(ts);
+
+  // Mini-Dashboard updaten
+  updateKiMini(text, ts);
+}
+
+function updateKiMini(text, ts) {
+  const miniText = document.getElementById('ki-mini-text');
+  const miniDate = document.getElementById('ki-mini-date');
+  if (miniText) miniText.textContent = text || 'Keine Analyse vorhanden';
+  if (miniDate && ts) miniDate.textContent = getKiAge(ts);
+}
+
+function renderKiPage() {
+  const cache = loadKiCache();
+  if (cache) {
+    renderKiResult(cache.text, cache.ts);
+    const btn = document.getElementById('ki-btn');
+    if (btn) btn.textContent = '↻ Neu analysieren';
+
+    // Auto-Analyse wenn 14 Tage vergangen
+    if (Date.now() - cache.ts > KI_INTERVAL) runKiAnalysis(true);
+  }
+}
+
+function initKi() {
+  const cache = loadKiCache();
+  if (cache) {
+    updateKiMini(cache.text, cache.ts);
+    // Auto-Analyse im Hintergrund wenn fällig
+    if (Date.now() - cache.ts > KI_INTERVAL) runKiAnalysis(true);
+  }
 }
 
 // ── WASSER MONATSKURVE ─────────────────────────────────────

@@ -599,7 +599,24 @@ function setCurveDays(v) {
 }
 
 function clearCache() {
-  localStorage.removeItem(CACHE_KEY); DB = null;
+  localStorage.removeItem(CACHE_KEY);
+  localStorage.removeItem(KI_CACHE_KEY);
+  localStorage.removeItem('wagael_ki_prompt');
+  DB = null;
+  // KI zurücksetzen
+  const kiResult = document.getElementById('ki-result');
+  if (kiResult) kiResult.innerHTML = '<div class="ki-text-placeholder">Klicke auf "Analysieren" um eine KI-Bewertung zu erhalten.</div>';
+  const kiLast = document.getElementById('ki-last');
+  if (kiLast) kiLast.textContent = 'Noch keine Analyse vorhanden';
+  const kiNext = document.getElementById('ki-next');
+  if (kiNext) kiNext.textContent = '';
+  const kiBtn = document.getElementById('ki-btn');
+  if (kiBtn) kiBtn.textContent = '▶ Analysieren';
+  // Mini Dashboard KI zurücksetzen
+  const miniText = document.getElementById('ki-mini-text');
+  if (miniText) miniText.textContent = 'Noch keine Analyse — tippe hier um zu starten.';
+  const miniDate = document.getElementById('ki-mini-date');
+  if (miniDate) miniDate.textContent = '';
   document.getElementById('lastRefresh').textContent = 'Cache geleert…';
   showPage('dashboard', document.querySelectorAll('.nav-item')[0]);
   loadData(true);
@@ -799,10 +816,15 @@ function runDataCheck() {
           <div class="check-detail">${iss.detail}</div>
         </div>
       </div>`).join('');
-    if (badge) { badge.textContent = total; badge.style.display = 'flex'; }
-    if (navBadge) { navBadge.textContent = total; navBadge.classList.add('show'); }
-    // Datencheck automatisch aufklappen
-    openAcc('acc-datencheck');
+    // Badge nur bei echten Fehlern (nicht Warnungen)
+    if (errCount > 0) {
+      if (badge) { badge.textContent = errCount; badge.style.display = 'flex'; }
+      if (navBadge) { navBadge.textContent = errCount; navBadge.classList.add('show'); }
+      openAcc('acc-datencheck');
+    } else {
+      if (badge) { badge.textContent = total; badge.style.display = 'flex'; }
+      if (navBadge) { navBadge.classList.remove('show'); }
+    }
   }
 }
 

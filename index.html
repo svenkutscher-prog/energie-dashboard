@@ -751,7 +751,7 @@ function renderBlockOrderList() {
 }
 
 // ── TACHO ──────────────────────────────────────────────────
-function drawTachoMinMax(canvasId, scaleMin, scaleMax, valMin, valMax, color) {
+function drawTachoMinMax(canvasId, scaleMin, scaleMax, valMin, valMax, valAvg, color) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
@@ -794,6 +794,16 @@ function drawTachoMinMax(canvasId, scaleMin, scaleMax, valMin, valMax, color) {
   ctx.setLineDash([]); ctx.lineCap = 'round'; ctx.stroke();
   ctx.restore();
 
+  // Nadel AVG (weiß, breiter)
+  if (valAvg !== null && valAvg !== undefined) {
+    const avgAngle = valToAngle(valAvg);
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(avgAngle);
+    ctx.beginPath(); ctx.moveTo(-6, 0); ctx.lineTo(r-6, 0);
+    ctx.strokeStyle = '#f1f5f9'; ctx.lineWidth = 3;
+    ctx.setLineDash([]); ctx.lineCap = 'round'; ctx.stroke();
+    ctx.restore();
+  }
+
   // Mittelpunkt
   ctx.beginPath(); ctx.arc(cx, cy, 4, 0, 2*Math.PI);
   ctx.fillStyle = '#475569'; ctx.fill();
@@ -814,6 +824,7 @@ function drawTachoMinMax(canvasId, scaleMin, scaleMax, valMin, valMax, color) {
   }
   labelAtAngle(minAngle, valMin.toFixed(1), '#10b981');
   labelAtAngle(maxAngle, valMax.toFixed(1), '#ef4444');
+  if (valAvg !== null && valAvg !== undefined) labelAtAngle(valToAngle(valAvg), valAvg.toFixed(1), '#f1f5f9');
 }
 
 function renderTacho() {
@@ -828,13 +839,15 @@ function renderTacho() {
 
   const sMin = Math.min(...stromVals), sMax = Math.max(...stromVals);
   const gMin = Math.min(...gasVals),   gMax = Math.max(...gasVals);
+  const sAvg = stromVals.reduce((a,b)=>a+b,0) / stromVals.length;
+  const gAvg = gasVals.reduce((a,b)=>a+b,0)   / gasVals.length;
 
   // Skala immer 0 bis aufgerundetes Max
   const sScale = Math.ceil(sMax * 1.1);
   const gScale = Math.ceil(gMax * 1.1);
 
-  drawTachoMinMax('tachoStrom', 0, sScale, sMin, sMax, '#f59e0b');
-  drawTachoMinMax('tachoGas',   0, gScale, gMin, gMax, '#ef4444');
+  drawTachoMinMax('tachoStrom', 0, sScale, sMin, sMax, sAvg, '#f59e0b');
+  drawTachoMinMax('tachoGas',   0, gScale, gMin, gMax, gAvg, '#ef4444');
 
   document.getElementById('tachoStromMin').textContent = 'Min ' + sMin.toFixed(1);
   document.getElementById('tachoStromMax').textContent = 'Max ' + sMax.toFixed(1);
@@ -843,7 +856,7 @@ function renderTacho() {
 
   // Titel mit Anzahl Tage
   const titleEl = document.getElementById('tacho-title');
-  if (titleEl) titleEl.textContent = 'Min / Max — letzte ' + maxDays + ' Tage';
+  if (titleEl) titleEl.textContent = 'Min / Ø / Max — letzte ' + maxDays + ' Tage';
 }
 
 // ── WOCHENENDE HELPERS ─────────────────────────────────────

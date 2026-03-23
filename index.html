@@ -625,6 +625,7 @@ function clearCache() {
 // ── DATA LOADING ───────────────────────────────────────────
 async function loadData(force = false) {
   document.getElementById('loadingBar').classList.add('active');
+  if (force) { forecastLoaded = false; forecastData = null; } // Forecast neu laden bei force
   if (!force) {
     const c = localStorage.getItem(CACHE_KEY);
     if (c) {

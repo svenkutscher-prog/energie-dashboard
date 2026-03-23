@@ -169,7 +169,6 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .wleg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
 .wasser-wrap{position:relative;height:180px;}
 
-
 /* ── PROMPT EDITOR ──────────────────────────────────── */
 .prompt-textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;line-height:1.6;padding:10px 12px;resize:vertical;min-height:120px;box-sizing:border-box;margin-top:6px;}
 .prompt-textarea:focus{outline:none;border-color:rgba(139,92,246,0.4);}
@@ -226,6 +225,14 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .check-title{font-size:13px;font-weight:500;color:var(--text);}
 .check-detail{font-size:11px;color:var(--muted);margin-top:2px;font-family:'Space Mono',monospace;}
 .check-ok{padding:14px 16px;text-align:center;font-size:13px;color:var(--green);}
+
+/* ── ENERGIE-PROGNOSE IN FORECAST ───────────────── */
+.fday-divider{border-top:1px solid rgba(255,255,255,0.06);margin:6px 0 5px;}
+.fday-energy-row{display:flex;align-items:center;justify-content:center;gap:3px;font-size:11px;margin:3px 0;}
+.fday-energy-val{font-family:'Space Mono',monospace;font-weight:700;font-size:12px;}
+.fday-energy-unit{color:#94a3b8;font-size:10px;}
+.fday-solar-label{font-size:9px;margin-top:2px;}
+
 /* BOTTOM NAV */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,15,30,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;padding:8px 0 20px;z-index:100;}
 .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0;cursor:pointer;font-size:10px;letter-spacing:0.05em;text-transform:uppercase;color:var(--muted);transition:color 0.2s;}
@@ -252,7 +259,6 @@ canvas{display:block;}
 <div class="page active" id="page-dashboard">
 
   <div data-block="kurve">
-  <!-- TAGESKURVE -->
   <div class="curve-card">
     <div class="curve-header">
       <div class="curve-title" id="curve-title">Letzte 60 Tage</div>
@@ -271,7 +277,6 @@ canvas{display:block;}
   </div>
 
   <div data-block="tacho">
-  <!-- TACHO -->
   <div class="section">
     <div class="section-title" id="tacho-title">Min / Max</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -288,7 +293,6 @@ canvas{display:block;}
   </div>
 
   <div data-block="zaehler">
-  <!-- ZÄHLERSTÄNDE -->
   <div class="section">
     <div class="zaehler-title" id="zaehler-title">Zählerstände</div>
     <div class="zaehler-grid">
@@ -299,10 +303,7 @@ canvas{display:block;}
   </div>
   </div>
 
-
-
   <div data-block="prognose">
-  <!-- STROM PROGNOSE -->
   <div class="section">
     <div class="section-title">⚡ Strom — Monatsprognose</div>
     <div class="wasser-card" id="stromPrognose">
@@ -312,7 +313,6 @@ canvas{display:block;}
   </div>
 
   <div data-block="ki">
-  <!-- KI MINI -->
   <div class="section">
     <div class="section-title">🤖 KI Analyse</div>
     <div class="ki-mini" onclick="showPage('ki', document.querySelectorAll('.nav-item')[3])">
@@ -337,6 +337,19 @@ canvas{display:block;}
       <div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted);font-size:13px;">Lade Forecast…</div>
     </div>
     <div class="forecast-updated" id="forecastUpdated"></div>
+  </div>
+
+  <!-- ENERGIE-LEGENDE -->
+  <div class="section" style="margin-top:10px;">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;">
+      <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">⚡ Strom · 🔥 Gas — Tagesprognose</div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;font-size:11px;color:var(--muted);">
+        <span><span style="color:#10b981;font-weight:700">●</span> Solar / Niedrig</span>
+        <span><span style="color:#f59e0b;font-weight:700">●</span> Normal</span>
+        <span><span style="color:#ef4444;font-weight:700">●</span> Hoch / Bad Day</span>
+        <span style="color:var(--muted)">· Basis: Ø letzte 30 Tage · Temp-Korrektur Gas</span>
+      </div>
+    </div>
   </div>
 
   <div class="section" style="margin-top:16px;">
@@ -367,7 +380,6 @@ canvas{display:block;}
 <div class="page" id="page-settings">
   <div class="section">
 
-    <!-- ANZEIGE -->
     <div class="acc-group">
       <div class="acc-header" onclick="toggleAcc(this)">
         <div class="acc-left"><div class="acc-icon">🎨</div><div><div class="acc-name">Anzeige</div><div class="acc-sub">Darstellung · Block-Reihenfolge</div></div></div>
@@ -389,7 +401,6 @@ canvas{display:block;}
       </div>
     </div>
 
-    <!-- DATEN -->
     <div class="acc-group">
       <div class="acc-header" onclick="toggleAcc(this)">
         <div class="acc-left"><div class="acc-icon">📈</div><div><div class="acc-name">Daten</div><div class="acc-sub">Kategorien · Jahre</div></div></div>
@@ -403,7 +414,6 @@ canvas{display:block;}
       </div>
     </div>
 
-    <!-- KI PROMPT -->
     <div class="acc-group">
       <div class="acc-header" onclick="toggleAcc(this)">
         <div class="acc-left"><div class="acc-icon">🤖</div><div><div class="acc-name">KI Analyse</div><div class="acc-sub">Prompt anpassen · Testen</div></div></div>
@@ -427,7 +437,6 @@ canvas{display:block;}
       </div>
     </div>
 
-    <!-- DATENCHECK -->
     <div class="acc-group" id="acc-datencheck">
       <div class="acc-header" onclick="toggleAcc(this)">
         <div class="acc-left"><div class="acc-icon">🔍</div><div><div class="acc-name">Datencheck</div><div class="acc-sub">Ausreißer · Datenfehler</div></div></div>
@@ -438,7 +447,6 @@ canvas{display:block;}
       </div>
     </div>
 
-    <!-- DATENQUELLE -->
     <div class="acc-group">
       <div class="acc-header" onclick="toggleAcc(this)">
         <div class="acc-left"><div class="acc-icon">🔗</div><div><div class="acc-name">Datenquelle</div><div class="acc-sub">API URL · Cache leeren</div></div></div>
@@ -459,7 +467,6 @@ canvas{display:block;}
   </div>
   <div style="height:20px"></div>
 </div>
-
 
 <!-- PAGE 5: KI ANALYSE -->
 <div class="page" id="page-ki">
@@ -519,7 +526,6 @@ function defaultPrefs() {
 function loadPrefs() { try { return JSON.parse(localStorage.getItem(PREF_KEY)) || defaultPrefs(); } catch(e) { return defaultPrefs(); } }
 function savePrefs(p) { localStorage.setItem(PREF_KEY, JSON.stringify(p)); }
 
-// ── FIX 1: DataLabels global deaktivieren — nur explizit per Chart aktivieren ──
 Chart.register(ChartDataLabels);
 Chart.defaults.plugins.datalabels.display = false;
 
@@ -564,7 +570,6 @@ function renderSettings() {
   const apiEl = document.getElementById('apiUrlDisplay'); if(apiEl) apiEl.textContent = API_URL;
   const wbEl = document.getElementById('toggle-weekend'); if(wbEl) wbEl.checked = prefs.weekendBg !== false;
   renderBlockOrderList();
-  // Prompt Felder befüllen
   const defEl = document.getElementById('prompt-default');
   if (defEl) defEl.value = DEFAULT_KI_PROMPT;
   const custEl = document.getElementById('prompt-custom');
@@ -603,7 +608,6 @@ function clearCache() {
   localStorage.removeItem(KI_CACHE_KEY);
   localStorage.removeItem('wagael_ki_prompt');
   DB = null;
-  // KI zurücksetzen
   const kiResult = document.getElementById('ki-result');
   if (kiResult) kiResult.innerHTML = '<div class="ki-text-placeholder">Klicke auf "Analysieren" um eine KI-Bewertung zu erhalten.</div>';
   const kiLast = document.getElementById('ki-last');
@@ -612,7 +616,6 @@ function clearCache() {
   if (kiNext) kiNext.textContent = '';
   const kiBtn = document.getElementById('ki-btn');
   if (kiBtn) kiBtn.textContent = '▶ Analysieren';
-  // Mini Dashboard KI zurücksetzen
   const miniText = document.getElementById('ki-mini-text');
   if (miniText) miniText.textContent = 'Noch keine Analyse — tippe hier um zu starten.';
   const miniDate = document.getElementById('ki-mini-date');
@@ -625,7 +628,7 @@ function clearCache() {
 // ── DATA LOADING ───────────────────────────────────────────
 async function loadData(force = false) {
   document.getElementById('loadingBar').classList.add('active');
-  if (force) { forecastLoaded = false; forecastData = null; } // Forecast neu laden bei force
+  if (force) { forecastLoaded = false; forecastData = null; }
   if (!force) {
     const c = localStorage.getItem(CACHE_KEY);
     if (c) {
@@ -679,7 +682,6 @@ function applyData() {
   if (!yearCat || !prefs.cats[yearCat]) yearCat = firstActiveCat?.key || 'strom';
   buildYearTabs();
 
-  // Daily-Daten expandieren (Lücken auffüllen)
   if (DB.daily) DB.dailyExpanded = expandDaily(DB.daily);
 
   applyBlockOrder();
@@ -692,17 +694,13 @@ function applyData() {
   if (curPage === 'jahr') renderYear();
 }
 
-
 // ── DAILY EXPANDIEREN ──────────────────────────────────────
-// Jeden Eintrag rückwärts auffüllen: Erfasst am - tage + 1 bis Erfasst am
 function expandDaily(daily) {
   const expanded = [];
-
   daily.forEach(entry => {
     const tage = entry.tage || 1;
     const endDate = parseDailyDatum(entry.datum);
     if (!endDate) { expanded.push(entry); return; }
-
     for (let d = tage - 1; d >= 0; d--) {
       const dt = new Date(endDate);
       dt.setDate(dt.getDate() - d);
@@ -713,17 +711,15 @@ function expandDaily(daily) {
         gas:   entry.gas,
         strom: entry.strom,
         temp:  entry.temp,
-        _expanded: d > 0  // true = aufgefüllter Tag, false = originaler Messtag
+        _expanded: d > 0
       });
     }
   });
-
   return expanded;
 }
 
 function parseDailyDatum(s) {
   s = String(s || '').trim();
-  // DD.MM.Format (z.B. "19.03.Do.")
   const m = s.match(/^(\d{1,2})\.(\d{1,2})\./);
   if (m) {
     const now = new Date();
@@ -734,9 +730,6 @@ function parseDailyDatum(s) {
   }
   return null;
 }
-
-
-
 
 // ── ACCORDION ──────────────────────────────────────────────
 function toggleAcc(header) {
@@ -760,10 +753,7 @@ function openAcc(groupId) {
 function runDataCheck() {
   if (!DB) return;
   const issues = [];
-  const MON = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
-  const FACTOR = 4; // Schwelle: 3× Vormonat = Ausreißer
-
-  // Vormonat-Vergleich: nur aktuelles Jahr, Faktor 4
+  const FACTOR = 4;
   const checkYear = String(new Date().getFullYear());
   ['strom','gas','wasser'].forEach(cat => {
     const vals = DB[cat] && DB[cat].values ? DB[cat].values : {};
@@ -779,28 +769,17 @@ function runDataCheck() {
         const catLabel = cat.charAt(0).toUpperCase() + cat.slice(1);
         const unit = cat === 'strom' ? 'kWh' : 'm³';
         if (ratio > FACTOR) {
-          issues.push({
-            level: 'error',
-            title: `${catLabel} ${MON[i]} ${yr} — ${ratio.toFixed(1)}× Sprung`,
-            detail: `${MON[i-1]}: ${prev} ${unit} → ${MON[i]}: ${curr} ${unit}`
-          });
+          issues.push({ level: 'error', title: `${catLabel} ${MON[i]} ${yr} — ${ratio.toFixed(1)}× Sprung`, detail: `${MON[i-1]}: ${prev} ${unit} → ${MON[i]}: ${curr} ${unit}` });
         } else if (ratio < 1 / FACTOR) {
-          issues.push({
-            level: 'warn',
-            title: `${catLabel} ${MON[i]} ${yr} — starker Einbruch`,
-            detail: `${MON[i-1]}: ${prev} ${unit} → ${MON[i]}: ${curr} ${unit} (${Math.round(ratio*100)}%)`
-          });
+          issues.push({ level: 'warn', title: `${catLabel} ${MON[i]} ${yr} — starker Einbruch`, detail: `${MON[i-1]}: ${prev} ${unit} → ${MON[i]}: ${curr} ${unit} (${Math.round(ratio*100)}%)` });
         }
       }
     });
   });
 
-  // Anzeigen
   const body   = document.getElementById('check-body');
   const badge  = document.getElementById('check-badge');
   const navBadge = document.getElementById('settings-badge');
-  const okEl   = document.getElementById('check-ok');
-
   const errCount = issues.filter(i=>i.level==='error').length;
   const total    = issues.length;
 
@@ -812,12 +791,8 @@ function runDataCheck() {
     if (body) body.innerHTML = issues.map(iss => `
       <div class="check-item">
         <div class="check-dot" style="background:${iss.level==='error'?'#ef4444':'#f59e0b'}"></div>
-        <div>
-          <div class="check-title">${iss.title}</div>
-          <div class="check-detail">${iss.detail}</div>
-        </div>
+        <div><div class="check-title">${iss.title}</div><div class="check-detail">${iss.detail}</div></div>
       </div>`).join('');
-    // Badge nur bei echten Fehlern (nicht Warnungen)
     if (errCount > 0) {
       if (badge) { badge.textContent = errCount; badge.style.display = 'flex'; }
       if (navBadge) { navBadge.textContent = errCount; navBadge.classList.add('show'); }
@@ -840,7 +815,6 @@ const BLOCK_META = {
 
 function getBlockOrder() {
   const order = prefs.blockOrder || ['kurve','tacho','zaehler','prognose','ki'];
-  // KI hinzufügen falls noch nicht vorhanden (Migration)
   if (!order.includes('ki')) order.push('ki');
   return order;
 }
@@ -891,10 +865,7 @@ function renderBlockOrderList() {
     return `<div class="settings-row" style="${rowOpacity}">
       <div class="settings-row-left">
         <div class="settings-icon">${m.icon}</div>
-        <div>
-          <div class="settings-label">${m.name}</div>
-          <div class="settings-sub">${m.sub}</div>
-        </div>
+        <div><div class="settings-label">${m.name}</div><div class="settings-sub">${m.sub}</div></div>
       </div>
       <div style="display:flex;align-items:center;gap:6px">
         <label class="toggle" title="${isOff?'Einschalten':'Ausschalten'}">
@@ -916,68 +887,37 @@ function drawTachoMinMax(canvasId, scaleMin, scaleMax, valMin, valMax, valAvg, c
   const W = canvas.width, H = canvas.height;
   const cx = W / 2, cy = H - 8;
   const r = Math.min(W * 0.42, H * 0.88);
-
   ctx.clearRect(0, 0, W, H);
-
   function valToAngle(v) {
     const pct = Math.max(0, Math.min(1, (v - scaleMin) / (scaleMax - scaleMin)));
     return Math.PI + pct * Math.PI;
   }
-
-  // Hintergrundbogen
-  ctx.beginPath();
-  ctx.arc(cx, cy, r, Math.PI, 2*Math.PI);
-  ctx.strokeStyle = 'rgba(255,255,255,0.07)';
-  ctx.lineWidth = 12; ctx.lineCap = 'round'; ctx.stroke();
-
-  // Farbiger Bogen zwischen Min und Max
-  ctx.beginPath();
-  ctx.arc(cx, cy, r, valToAngle(valMin), valToAngle(valMax));
-  ctx.strokeStyle = color + '55';
-  ctx.lineWidth = 12; ctx.lineCap = 'round'; ctx.stroke();
-
-  // Nadel MIN (grün)
+  ctx.beginPath(); ctx.arc(cx, cy, r, Math.PI, 2*Math.PI);
+  ctx.strokeStyle = 'rgba(255,255,255,0.07)'; ctx.lineWidth = 12; ctx.lineCap = 'round'; ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx, cy, r, valToAngle(valMin), valToAngle(valMax));
+  ctx.strokeStyle = color + '55'; ctx.lineWidth = 12; ctx.lineCap = 'round'; ctx.stroke();
   const minAngle = valToAngle(valMin);
   ctx.save(); ctx.translate(cx, cy); ctx.rotate(minAngle);
   ctx.beginPath(); ctx.moveTo(-5, 0); ctx.lineTo(r-10, 0);
-  ctx.strokeStyle = '#10b981'; ctx.lineWidth = 2.5;
-  ctx.setLineDash([]); ctx.lineCap = 'round'; ctx.stroke();
-  ctx.restore();
-
-  // Nadel MAX (rot)
+  ctx.strokeStyle = '#10b981'; ctx.lineWidth = 2.5; ctx.setLineDash([]); ctx.lineCap = 'round'; ctx.stroke(); ctx.restore();
   const maxAngle = valToAngle(valMax);
   ctx.save(); ctx.translate(cx, cy); ctx.rotate(maxAngle);
   ctx.beginPath(); ctx.moveTo(-5, 0); ctx.lineTo(r-10, 0);
-  ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2.5;
-  ctx.setLineDash([]); ctx.lineCap = 'round'; ctx.stroke();
-  ctx.restore();
-
-  // Nadel AVG (weiß, breiter)
+  ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2.5; ctx.setLineDash([]); ctx.lineCap = 'round'; ctx.stroke(); ctx.restore();
   if (valAvg !== null && valAvg !== undefined) {
     const avgAngle = valToAngle(valAvg);
     ctx.save(); ctx.translate(cx, cy); ctx.rotate(avgAngle);
     ctx.beginPath(); ctx.moveTo(-6, 0); ctx.lineTo(r-6, 0);
-    ctx.strokeStyle = '#f1f5f9'; ctx.lineWidth = 3;
-    ctx.setLineDash([]); ctx.lineCap = 'round'; ctx.stroke();
-    ctx.restore();
+    ctx.strokeStyle = '#f1f5f9'; ctx.lineWidth = 3; ctx.setLineDash([]); ctx.lineCap = 'round'; ctx.stroke(); ctx.restore();
   }
-
-  // Mittelpunkt
-  ctx.beginPath(); ctx.arc(cx, cy, 4, 0, 2*Math.PI);
-  ctx.fillStyle = '#475569'; ctx.fill();
-
-  // Skala Min/Max
+  ctx.beginPath(); ctx.arc(cx, cy, 4, 0, 2*Math.PI); ctx.fillStyle = '#475569'; ctx.fill();
   ctx.fillStyle = '#475569'; ctx.font = '9px monospace';
-  ctx.textAlign = 'left';  ctx.fillText(scaleMin, 4, cy + 2);
+  ctx.textAlign = 'left'; ctx.fillText(scaleMin, 4, cy + 2);
   ctx.textAlign = 'right'; ctx.fillText(scaleMax, W-4, cy + 2);
-
-  // Werte an den Nadeln
   function labelAtAngle(angle, text, col) {
     const lx = cx + (r - 26) * Math.cos(angle);
     const ly = cy + (r - 26) * Math.sin(angle);
-    ctx.fillStyle = col;
-    ctx.font = 'bold 9px monospace';
-    ctx.textAlign = 'center';
+    ctx.fillStyle = col; ctx.font = 'bold 9px monospace'; ctx.textAlign = 'center';
     ctx.fillText(text, lx, ly - 3);
   }
   labelAtAngle(minAngle, valMin.toFixed(1), '#10b981');
@@ -989,25 +929,17 @@ function renderTacho() {
   if (!DB || !DB.daily || !DB.daily.length) return;
   const maxDays = prefs.curveDays || 60;
   const daily = (DB.dailyExpanded || DB.daily).slice(-maxDays);
-
   const stromVals = daily.map(r => r.strom).filter(v => v !== null && v !== undefined && !isNaN(v));
   const gasVals   = daily.map(r => r.gas).filter(v => v !== null && v !== undefined && !isNaN(v));
-
   if (!stromVals.length || !gasVals.length) return;
-
   const sMin = Math.min(...stromVals), sMax = Math.max(...stromVals);
   const gMin = Math.min(...gasVals),   gMax = Math.max(...gasVals);
   const sAvg = stromVals.reduce((a,b)=>a+b,0) / stromVals.length;
   const gAvg = gasVals.reduce((a,b)=>a+b,0)   / gasVals.length;
-
-  // Skala immer 0 bis aufgerundetes Max
   const sScale = Math.ceil(sMax * 1.1);
   const gScale = Math.ceil(gMax * 1.1);
-
   drawTachoMinMax('tachoStrom', 0, sScale, sMin, sMax, sAvg, '#f59e0b');
   drawTachoMinMax('tachoGas',   0, gScale, gMin, gMax, gAvg, '#ef4444');
-
-  // Titel mit Anzahl Tage
   const titleEl = document.getElementById('tacho-title');
   if (titleEl) titleEl.textContent = 'Min / Ø / Max — letzte ' + maxDays + ' Tage';
 }
@@ -1049,15 +981,11 @@ function dayColor(v) {
 
 function renderCurve() {
   if (!DB) return;
-
-  // Wasser: Monatsdaten aus DB.wasser statt daily
   if (curveMode === 'wasser') { renderCurveWasser(); return; }
-
   const dailyAll = DB.dailyExpanded || DB.daily || [];
   if (!dailyAll.length) return;
   const maxDays = prefs.curveDays || 60;
   const daily = dailyAll.slice(-maxDays);
-
   const vals   = daily.map(r => r[curveMode] !== null ? Math.round(r[curveMode]*100)/100 : null);
   const labels = daily.map(r => r.datum);
   const unit   = curveMode === 'strom' ? 'kWh' : curveMode === 'gas' ? 'm³' : curveMode === 'wasser' ? 'm³' : '°C';
@@ -1122,7 +1050,6 @@ function renderCurve() {
       responsive:true, maintainAspectRatio:false, animation:false,
       plugins:{
         legend:{display:false},
-        // FIX 1: DataLabels explizit für diesen Chart deaktivieren
         datalabels: { display: false },
         tooltip:{
           backgroundColor:'rgba(10,15,30,0.97)', borderColor:'rgba(255,255,255,0.1)', borderWidth:1,
@@ -1143,17 +1070,57 @@ function renderCurve() {
   });
 }
 
+// ── ENERGIE-PROGNOSE HELFER ────────────────────────────────
+function getAvgFromDaily(field, days) {
+  if (!DB || !DB.daily) return field === 'strom' ? 4.33 : 4.8;
+  const src = DB.dailyExpanded || DB.daily;
+  const slice = src.slice(-days);
+  const vals = slice.map(r => r[field]).filter(v => v !== null && v !== undefined && !isNaN(v));
+  if (!vals.length) return field === 'strom' ? 4.33 : 4.8;
+  return vals.reduce((a,b) => a+b, 0) / vals.length;
+}
+
+function calcStromPrognose(sunDuration, rainProb, avgPerDay) {
+  const sunH = (sunDuration || 0) / 3600;
+  let factor = 1.0;
+  if      (sunH >= 6) factor = 0.05;
+  else if (sunH >= 4) factor = 0.30;
+  else if (sunH >= 2) factor = 0.65;
+  else                factor = 1.00;
+  if ((rainProb || 0) > 80) factor = Math.min(factor * 1.15, 1.3);
+  const val = Math.round(avgPerDay * factor * 100) / 100;
+  let label, color;
+  if      (sunH >= 4) { label = '☀️ Solar';   color = '#10b981'; }
+  else if (sunH >= 2) { label = '☁️ Bewölkt'; color = '#f59e0b'; }
+  else                { label = '🌧 Bad Day';  color = '#ef4444'; }
+  return { val, label, color };
+}
+
+function calcGasPrognose(tempMax, tempMin, avgPerDay) {
+  const avg = ((tempMax || 10) + (tempMin || 5)) / 2;
+  let factor;
+  if      (avg <= 0)  factor = 2.0;
+  else if (avg <= 5)  factor = 1.5;
+  else if (avg <= 10) factor = 1.1;
+  else if (avg <= 15) factor = 0.7;
+  else if (avg <= 20) factor = 0.3;
+  else                factor = 0.05;
+  const val = Math.round(avgPerDay * factor * 100) / 100;
+  let color;
+  if      (factor >= 1.5) color = '#ef4444';
+  else if (factor >= 0.9) color = '#f59e0b';
+  else                    color = '#10b981';
+  return { val, color };
+}
+
 // ── FORECAST ───────────────────────────────────────────────
 let forecastLoaded = false;
 let forecastData = null;
 
 async function loadForecast() {
   if (forecastLoaded) return;
-
   const url = 'https://api.open-meteo.com/v1/forecast?latitude=51.0018&longitude=6.2681&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,sunshine_duration&timezone=Europe%2FBerlin&forecast_days=7';
-
   document.getElementById('forecastGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted);font-size:13px;">Lade Forecast…</div>';
-
   try {
     const res = await fetch(url);
     if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -1192,8 +1159,12 @@ function weatherIcon(code) {
 
 const DAYS = ['So','Mo','Di','Mi','Do','Fr','Sa'];
 
+// ── FORECAST RENDERN MIT ENERGIE-PROGNOSE ──────────────────
 function renderForecast(d) {
   const daily = d.daily;
+  const avgStrom = getAvgFromDaily('strom', 30);
+  const avgGas   = getAvgFromDaily('gas', 30);
+
   const grid = (daily.time || daily.date).map((date, i) => {
     const dt = new Date(date);
     const dayName = i === 0 ? 'Heute' : DAYS[dt.getDay()];
@@ -1202,16 +1173,35 @@ function renderForecast(d) {
     const lo = Math.round(daily.temperature_2m_min[i]);
     const rain = (daily.precipitation_sum[i] || 0).toFixed(1);
     const prob = daily.precipitation_probability_max ? (daily.precipitation_probability_max[i] || 0) : 0;
+
+    const sunDur = daily.sunshine_duration ? (daily.sunshine_duration[i] || 0) : 0;
+    const strom  = calcStromPrognose(sunDur, prob, avgStrom);
+    const gas    = calcGasPrognose(daily.temperature_2m_max[i], daily.temperature_2m_min[i], avgGas);
+
     return `<div class="fday">
       <div class="fday-name">${dayName}</div>
       <div class="fday-icon">${icon}</div>
       <div class="fday-hi">${hi}°</div>
       <div class="fday-lo">${lo}°</div>
-      <div class="fday-rain">${rain}mm ${prob>0?'('+prob+'%)':''}</div>
+      <div class="fday-rain">${rain}mm${prob>0?' ('+prob+'%)':''}</div>
+      <div class="fday-divider"></div>
+      <div class="fday-energy-row">
+        <span>⚡</span>
+        <span class="fday-energy-val" style="color:${strom.color}">${strom.val.toFixed(1)}</span>
+        <span class="fday-energy-unit">kWh</span>
+      </div>
+      <div class="fday-energy-row">
+        <span>🔥</span>
+        <span class="fday-energy-val" style="color:${gas.color}">${gas.val.toFixed(1)}</span>
+        <span class="fday-energy-unit">m³</span>
+      </div>
+      <div class="fday-solar-label" style="color:${strom.color}">${strom.label}</div>
     </div>`;
   }).join('');
+
   document.getElementById('forecastGrid').innerHTML = grid;
-  document.getElementById('forecastUpdated').textContent = 'Linnich, Germany · Open-Meteo';
+  document.getElementById('forecastUpdated').textContent =
+    `Linnich · Open-Meteo · Ø Strom ${avgStrom.toFixed(2)} kWh/Tag · Gas ${avgGas.toFixed(2)} m³/Tag`;
 
   const labels = (daily.time || daily.date).map((date,i) => i===0?'Heute':DAYS[new Date(date).getDay()]);
   const hi = daily.temperature_2m_max.map(v=>Math.round(v));
@@ -1306,7 +1296,6 @@ function renderYear() {
     yAxisID: 'y'
   }));
 
-  // Bei Gas: Temperatur 2026 als zweite Kurve auf rechter Achse
   const showTemp = yearCat === 'gas';
   if (showTemp && DB.temp) {
     const tempVals = DB.temp.values || {};
@@ -1314,15 +1303,11 @@ function renderYear() {
       datasets.push({
         label: 'Temp ' + yr,
         data: (tempVals[yr]||[]).map(v=>(v===null||v==='')?null:Number(v)),
-        borderColor: '#10b981',
-        backgroundColor: 'transparent',
-        borderWidth: yr===2026 ? 2 : 1,
-        borderDash: [4,3],
-        pointRadius: yr===2026 ? 2 : 0,
-        pointBackgroundColor: '#10b981',
+        borderColor: '#10b981', backgroundColor: 'transparent',
+        borderWidth: yr===2026 ? 2 : 1, borderDash: [4,3],
+        pointRadius: yr===2026 ? 2 : 0, pointBackgroundColor: '#10b981',
         tension:0.4, spanGaps:false, fill:false,
-        yAxisID: 'yTemp',
-        opacity: yr===2026 ? 1 : 0.4
+        yAxisID: 'yTemp'
       });
     });
   }
@@ -1385,23 +1370,19 @@ function renderYear() {
     </tbody></table>`;
 }
 
-
-
 // ── STROM MONATSPROGNOSE ───────────────────────────────────
 function renderStromPrognose() {
   const el = document.getElementById('stromPrognose');
   if (!el) return;
   if (!DB || !DB.daily || !DB.daily.length) { el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">Keine Daten</div>'; return; }
 
-  // Aktueller Monat aus letztem Daily-Eintrag
   const now = new Date();
-  const curMonth = now.getMonth(); // 0-basiert
+  const curMonth = now.getMonth();
   const curYear  = now.getFullYear();
   const daysInMonth = new Date(curYear, curMonth + 1, 0).getDate();
   const today = now.getDate();
   const restTage = daysInMonth - today;
 
-  // IST: Strom-Summe aus daily für aktuellen Monat
   function parseEntryDate(datum) {
     const m = String(datum).match(/(\d{1,2})\.(\d{1,2})/);
     if (!m) return null;
@@ -1409,9 +1390,7 @@ function renderStromPrognose() {
   }
 
   const dailyData = DB.dailyExpanded || DB.daily || [];
-  const dailyOrig = DB.daily || []; // Original für Ø-Berechnung
   let istKwh = 0, istTage = 0, sumAll = 0, countAll = 0;
-  // IST aus expanded (korrekte Tagessumme)
   dailyData.forEach(r => {
     if (r.strom === null) return;
     const d = parseEntryDate(r.datum);
@@ -1420,22 +1399,17 @@ function renderStromPrognose() {
     if (d.mon === curMonth) { istKwh += r.strom; istTage++; }
   });
 
-  // Ø aus letzten 30 expanded Tagen (echte Tagesdaten)
   const last30 = dailyData.slice(-30);
   let origSum = 0, origCount = 0;
   last30.forEach(r => {
-    if (r.strom !== null && r.strom !== undefined) {
-      origSum += r.strom;
-      origCount++;
-    }
+    if (r.strom !== null && r.strom !== undefined) { origSum += r.strom; origCount++; }
   });
   const avgPerDay = origCount > 0 ? origSum / origCount : (countAll > 0 ? sumAll / countAll : 0);
 
-  // Sonnentage aus Forecast (sunshine_duration > 4h = 14400 Sek)
   let solarTageRest = 0, solarDetails = [];
   if (forecastData && forecastData.daily && forecastData.daily.sunshine_duration) {
     const fd = forecastData.daily;
-    const SOLAR_SCHWELLE = 4 * 3600; // 4 Stunden in Sekunden
+    const SOLAR_SCHWELLE = 4 * 3600;
     (fd.time || fd.date).forEach((date, i) => {
       const dt = new Date(date);
       if (dt.getMonth() === curMonth) {
@@ -1451,15 +1425,12 @@ function renderStromPrognose() {
 
   const bewolktRest = restTage - solarTageRest;
   const prognoseOhneSolar = istKwh + avgPerDay * restTage;
-  const prognoseMitSolar  = istKwh + avgPerDay * bewolktRest; // Sonnentage = 0 kWh
+  const prognoseMitSolar  = istKwh + avgPerDay * bewolktRest;
 
-  // Vorjahr gleicher Monat
   const vorjahrKwh = DB.strom && DB.strom.values['2025'] ? (DB.strom.values['2025'][curMonth] || null) : null;
   const diffPct = vorjahrKwh ? ((prognoseMitSolar - vorjahrKwh) / vorjahrKwh * 100).toFixed(0) : null;
-
   const MON_NAMES = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
 
-  // Solar-Forecast Zeilen
   const solarRows = solarDetails.map(s => {
     const col  = s.isSolar ? '#10b981' : s.sunH >= 2 ? '#f59e0b' : '#ef4444';
     const badge = s.isSolar ? 'Solar ✓' : s.sunH >= 2 ? 'Grenzwertig' : 'Kein Solar';
@@ -1489,7 +1460,6 @@ function renderStromPrognose() {
         <div style="font-size:10px;color:var(--muted);margin-top:2px">bis ${daysInMonth}. ${MON_NAMES[curMonth]}</div>
       </div>
     </div>
-
     <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:12px;margin-bottom:12px">
       <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px">Hochrechnung Monatsende</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
@@ -1501,7 +1471,7 @@ function renderStromPrognose() {
         <div style="background:var(--bg3);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:10px;text-align:center">
           <div style="font-size:10px;color:var(--muted);margin-bottom:4px">Mit Solar ☀️</div>
           <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:var(--text)">${Math.round(prognoseMitSolar)}</div>
-          <div style="font-size:10px;color:var(--muted)">${solarTageRest} Sonnentage (7-Tage Forecast)</div>
+          <div style="font-size:10px;color:var(--muted)">${solarTageRest} Sonnentage</div>
         </div>
         <div style="background:var(--bg3);border-radius:10px;padding:10px;text-align:center">
           <div style="font-size:10px;color:var(--muted);margin-bottom:4px">Vorjahr ${MON_NAMES[curMonth]}</div>
@@ -1510,14 +1480,11 @@ function renderStromPrognose() {
         </div>
       </div>
     </div>
-
     ${solarRows ? `<div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:10px">
       <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px">☀️ Solar-Forecast Resttage (Schwelle &gt;4h)</div>
       ${solarRows}
     </div>` : ''}`;
 }
-
-
 
 // ── PROMPT EDITOR ──────────────────────────────────────────
 function saveCustomPrompt() {
@@ -1542,7 +1509,6 @@ function copyPrompt() {
 }
 
 function testCustomPrompt() {
-  // Zum KI-Tab wechseln und Analyse starten
   showPage('ki', document.querySelectorAll('.nav-item')[3]);
   setTimeout(() => runKiAnalysis(), 300);
 }
@@ -1557,7 +1523,7 @@ WICHTIG zur Interpretation der Stromdaten:
 
 Antworte auf Deutsch, maximal 180 Wörter, keine Einleitung. Struktur: je ein kurzer Abschnitt pro Kategorie mit Emoji, nur wenn etwas auffällt. Dann ein Abschnitt "📊 Langzeit" mit max. 2 Sätzen zum YTD-Vergleich 2026 vs. 2025. Abschluss: eine Zeile Gesamtfazit.`;
 const KI_CACHE_KEY  = 'wagael_ki_v1';
-const KI_INTERVAL   = 14 * 24 * 60 * 60 * 1000; // 14 Tage
+const KI_INTERVAL   = 14 * 24 * 60 * 60 * 1000;
 
 function loadKiCache() {
   try { return JSON.parse(localStorage.getItem(KI_CACHE_KEY)) || null; } catch(e) { return null; }
@@ -1585,15 +1551,11 @@ function getNextAnalysisText(ts) {
 function buildKiPrompt() {
   if (!DB || !DB.daily) return null;
   const daily = (DB.dailyExpanded || DB.daily).slice(-14);
-
-  // 14 Tage Tagesdaten
   const lines = daily.map(r =>
     `${r.datum}: Strom=${r.strom!==null?r.strom.toFixed(2):'–'} kWh, Gas=${r.gas!==null?r.gas.toFixed(2):'–'} m³, Temp=${r.temp!==null?r.temp:'–'}°C`
   ).join('\n');
-
-  // YTD Jahresdaten 2025 vs 2026
   const now = new Date();
-  const curMonth = now.getMonth(); // 0-basiert
+  const curMonth = now.getMonth();
   function ytdSum(cat, yr) {
     const vals = DB[cat] && DB[cat].values && DB[cat].values[yr] ? DB[cat].values[yr] : [];
     return vals.slice(0, curMonth + 1).filter(v => v !== null).reduce((a,b) => a+b, 0);
@@ -1602,16 +1564,12 @@ function buildKiPrompt() {
   const strom25 = Math.round(ytdSum('strom', 2025));
   const gas26   = Math.round(ytdSum('gas',   2026));
   const gas25   = Math.round(ytdSum('gas',   2025));
-  const MON = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
   const ytdLabel = `Jan–${MON[curMonth]}`;
-
   const ytd = `Strom ${ytdLabel}: 2026=${strom26} kWh, 2025=${strom25} kWh\nGas ${ytdLabel}: 2026=${gas26} m³, 2025=${gas25} m³`;
 
-  // Eigener oder Standard-Prompt
   const customPromptText = localStorage.getItem('wagael_ki_prompt') || '';
   const basePrompt = customPromptText.trim() || DEFAULT_KI_PROMPT;
 
-  // Wasser-Ablesungen für Prompt
   let wasserInfo = '';
   if (DB.wasserDaily && DB.wasserDaily.length) {
     const wValid = DB.wasserDaily.filter(r => r.datum && String(r.datum).trim().length > 2 && r.tage > 0).slice(-14);
@@ -1619,66 +1577,51 @@ function buildKiPrompt() {
       wValid.map(r => `${String(r.datum).trim()}: ${r.tage} Tage`).join('\n');
   }
 
-  const prompt = `${basePrompt}
+  return `${basePrompt}
 
 WICHTIG zur Interpretation der Wasserdaten:
 - Wasserverbrauch wird in Tage/m³ gemessen: je mehr Tage pro m³, desto sparsamer.
 - 🚿 Duschig = 1 Tag/m³ (hoher Verbrauch, rot)
 - 💧 Normal = 2–4 Tage/m³ (durchschnittlich, gelb)
 - 🌊 Sparsam = >4 Tage/m³ (sehr sparsam, blau)
-- Der Zählerstand steigt pro m³ Verbrauch um 1.
 
 Tagesdaten letzte 14 Tage (Strom = Netzbezug in kWh, 0 = reiner Solartag):
 ${lines}
 
 Jahresdaten YTD:
 ${ytd}${wasserInfo}`;
-
-  return prompt;
 }
 
 async function runKiAnalysis(auto = false) {
   const btn = document.getElementById('ki-btn');
   if (btn) { btn.disabled = true; btn.classList.add('loading'); btn.textContent = '⏳ Analysiere…'; }
-
   const resultEl = document.getElementById('ki-result');
   if (resultEl) resultEl.innerHTML = '<div class="ki-text-placeholder">KI analysiert deine Daten…</div>';
-
   try {
     const prompt = buildKiPrompt();
     if (!prompt) throw new Error('Keine Daten verfügbar');
-
-    // Apps Script als Proxy aufrufen
     const url = API_URL + '?action=ki&prompt=' + encodeURIComponent(prompt);
     const res = await fetch(url);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     if (data.error) throw new Error(data.error);
-
     const text = data.analysis || data.content || '–';
     const now = Date.now();
-
     saveKiCache({ text, ts: now });
     renderKiResult(text, now);
-
   } catch(err) {
     if (resultEl) resultEl.innerHTML = `<div class="ki-text-placeholder" style="color:#ef4444">⚠️ Fehler: ${err.message}</div>`;
   }
-
   if (btn) { btn.disabled = false; btn.classList.remove('loading'); btn.textContent = '↻ Neu analysieren'; }
 }
 
 function renderKiResult(text, ts) {
   const resultEl = document.getElementById('ki-result');
   if (resultEl) resultEl.innerHTML = `<div class="ki-text">${text}</div>`;
-
   const lastEl = document.getElementById('ki-last');
   if (lastEl) lastEl.textContent = 'Analysiert ' + getKiAge(ts);
-
   const nextEl = document.getElementById('ki-next');
   if (nextEl) nextEl.textContent = getNextAnalysisText(ts);
-
-  // Mini-Dashboard updaten
   updateKiMini(text, ts);
 }
 
@@ -1695,8 +1638,6 @@ function renderKiPage() {
     renderKiResult(cache.text, cache.ts);
     const btn = document.getElementById('ki-btn');
     if (btn) btn.textContent = '↻ Neu analysieren';
-
-    // Auto-Analyse wenn 14 Tage vergangen
     if (Date.now() - cache.ts > KI_INTERVAL) runKiAnalysis(true);
   }
 }
@@ -1705,7 +1646,6 @@ function initKi() {
   const cache = loadKiCache();
   if (cache) {
     updateKiMini(cache.text, cache.ts);
-    // Auto-Analyse im Hintergrund wenn fällig
     if (Date.now() - cache.ts > KI_INTERVAL) runKiAnalysis(true);
   }
 }
@@ -1716,7 +1656,6 @@ function renderCurveWasser() {
   const dailyOrig = DB.daily.filter(r => r.wasser !== null && r.wasser !== undefined && r.tage > 0);
   if (!dailyOrig.length) return;
 
-  // Tage/m³ berechnen für Farbkategorien (aus Original-Messpunkten)
   function tageProM3(curr, prev) {
     if (!prev) return null;
     const diff = curr.wasser - prev.wasser;
@@ -1726,12 +1665,11 @@ function renderCurveWasser() {
 
   function segColor(tpm) {
     if (tpm === null) return '#475569';
-    if (tpm === Infinity || tpm >= 4) return '#3b82f6'; // Sparsam (>= 4 Tage/m³)
-    if (tpm >= 2) return '#f59e0b';                     // Normal (2-4)
-    return '#ef4444';                                   // Duschig (< 2)
+    if (tpm === Infinity || tpm >= 4) return '#3b82f6';
+    if (tpm >= 2) return '#f59e0b';
+    return '#ef4444';
   }
 
-  // Wasser expandieren: jeden Tag rückwärts auffüllen mit gleichem Zählerstand
   function expandWasserDaily(arr) {
     const result = [];
     arr.forEach((r, i) => {
@@ -1754,7 +1692,6 @@ function renderCurveWasser() {
 
   const expanded = expandWasserDaily(dailyOrig);
 
-  // Stats aus Original-Messpunkten
   let duschig=0, normal=0, sparsam=0;
   dailyOrig.forEach((r,i) => {
     if (i===0) return;
@@ -1788,7 +1725,6 @@ function renderCurveWasser() {
   document.getElementById('curve-range').textContent =
     `Zähler: ${first} → ${last} m³  ·  Verbrauch: ${last-first} m³  ·  Ø ${totalDays > 0 ? ((last-first)/totalDays).toFixed(3) : '–'} m³/Tag`;
 
-  // Farbige Segmente wie Stromkurve — Farbe aus _tpm des aufgefüllten Tages
   const datasets = [];
   for (let i = 0; i < sliced.length - 1; i++) {
     const col = segColor(sliced[i+1]._tpm);
@@ -1799,11 +1735,9 @@ function renderCurveWasser() {
       borderWidth: 2.5, pointRadius: 0, tension: 0, spanGaps: false, fill: false
     });
   }
-  // Punkte nur an echten Messpunkten (tage > 0 im Original)
   const isMeasured = sliced.map(r => r._tpm !== null);
   datasets.push({
-    data: vals,
-    borderColor: 'transparent',
+    data: vals, borderColor: 'transparent',
     backgroundColor: sliced.map(r => segColor(r._tpm)),
     pointRadius: sliced.map((r,i) => isMeasured[i] ? 4 : 0),
     pointHoverRadius: 6, borderWidth: 0,
@@ -1841,8 +1775,7 @@ function renderCurveWasser() {
   });
 }
 
-
-// ── WASSER ─────────────────────────────────────────────────
+// ── HELPERS ────────────────────────────────────────────────
 function fmt(v) {
   if(v===null||v===undefined) return '–';
   return Number(v).toLocaleString('de',{maximumFractionDigits:1});

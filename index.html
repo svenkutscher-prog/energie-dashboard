@@ -1712,18 +1712,15 @@ function initKi() {
 // ── WASSER TAGESKURVE ─────────────────────────────────────
 function renderCurveWasser() {
   if (!DB || !DB.daily || !DB.daily.length) return;
-  const daily = DB.daily; // Original, nicht expanded
+  const dailyOrig = DB.daily.filter(r => r.wasser !== null && r.wasser !== undefined && r.tage > 0);
+  if (!dailyOrig.length) return;
 
-  // Nur Eintraege mit Wasserstand
-  const withW = daily.filter(r => r.wasser !== null && r.wasser !== undefined);
-  if (!withW.length) return;
-
-  // Tage/m³ berechnen für Farbkategorien
-  function tageProM3(r, prev) {
+  // Tage/m³ berechnen für Farbkategorien (aus Original-Messpunkten)
+  function tageProM3(curr, prev) {
     if (!prev) return null;
-    const diff = r.wasser - prev.wasser;
+    const diff = curr.wasser - prev.wasser;
     if (diff <= 0) return Infinity;
-    return r.tage / diff;
+    return curr.tage / diff;
   }
 
   function segColor(tpm) {
@@ -1733,11 +1730,34 @@ function renderCurveWasser() {
     return '#ef4444';                                  // Duschig
   }
 
-  // Stats
+  // Wasser expandieren: jeden Tag rückwärts auffüllen mit gleichem Zählerstand
+  function expandWasserDaily(arr) {
+    const result = [];
+    arr.forEach((r, i) => {
+      if (i === 0 || r.tage <= 0) { result.push({datum: r.datum, wasser: r.wasser, _tpm: null}); return; }
+      const tpm = tageProM3(r, arr[i-1]);
+      const m = r.datum.match(/(\d{1,2})\.(\d{1,2})\./);
+      if (!m) { result.push({datum: r.datum, wasser: r.wasser, _tpm: tpm}); return; }
+      const now = new Date(); let yr = now.getFullYear();
+      const mon = parseInt(m[2]) - 1;
+      if (mon > now.getMonth()) yr--;
+      const endDate = new Date(yr, mon, parseInt(m[1]));
+      for (let dd = r.tage - 1; dd >= 0; dd--) {
+        const dt = new Date(endDate); dt.setDate(dt.getDate() - dd);
+        const label = dt.getDate() + '.' + String(dt.getMonth()+1).padStart(2,'0') + '.';
+        result.push({datum: label, wasser: r.wasser, _tpm: tpm});
+      }
+    });
+    return result;
+  }
+
+  const expanded = expandWasserDaily(dailyOrig);
+
+  // Stats aus Original-Messpunkten
   let duschig=0, normal=0, sparsam=0;
-  withW.forEach((r,i) => {
+  dailyOrig.forEach((r,i) => {
     if (i===0) return;
-    const tpm = tageProM3(r, withW[i-1]);
+    const tpm = tageProM3(r, dailyOrig[i-1]);
     if (tpm===null) return;
     if (tpm > 4 || tpm===Infinity) sparsam++;
     else if (tpm >= 2) normal++;
@@ -1757,35 +1777,36 @@ function renderCurveWasser() {
     <div class="cleg"><div class="cleg-dot" style="background:#3b82f6"></div>🌊 Sparsam (&gt;4d/m³)</div>`;
 
   const maxDays = prefs.curveDays || 60;
-  const sliced  = withW.slice(-maxDays);
+  const sliced  = expanded.slice(-maxDays);
   const labels  = sliced.map(r => r.datum);
   const vals    = sliced.map(r => r.wasser);
 
   const first = sliced[0]?.wasser || 0;
   const last  = sliced[sliced.length-1]?.wasser || 0;
-  const totalDays = sliced.reduce((a,r)=>a+(r.tage||1),0);
+  const totalDays = sliced.length;
   document.getElementById('curve-range').textContent =
-    `Zähler: ${first} → ${last} m³  ·  Verbrauch: ${last-first} m³  ·  Ø ${((last-first)/totalDays).toFixed(3)} m³/Tag`;
+    `Zähler: ${first} → ${last} m³  ·  Verbrauch: ${last-first} m³  ·  Ø ${totalDays > 0 ? ((last-first)/totalDays).toFixed(3) : '–'} m³/Tag`;
 
-  // Farbige Segmente wie Stromkurve
+  // Farbige Segmente wie Stromkurve — Farbe aus _tpm des aufgefüllten Tages
   const datasets = [];
   for (let i = 0; i < sliced.length - 1; i++) {
-    const tpm = tageProM3(sliced[i+1], sliced[i]);
-    const col = segColor(tpm);
+    const col = segColor(sliced[i+1]._tpm);
     const seg = new Array(sliced.length).fill(null);
     seg[i] = vals[i]; seg[i+1] = vals[i+1];
     datasets.push({
       data: seg, borderColor: col, backgroundColor: 'transparent',
-      borderWidth: 2.5, pointRadius: 0, tension: 0.3, spanGaps: false, fill: false
+      borderWidth: 2.5, pointRadius: 0, tension: 0, spanGaps: false, fill: false
     });
   }
-  // Punkte
+  // Punkte nur an echten Messpunkten (tage > 0 im Original)
+  const isMeasured = sliced.map(r => r._tpm !== null);
   datasets.push({
     data: vals,
     borderColor: 'transparent',
-    backgroundColor: sliced.map((r,i) => i===0 ? '#475569' : segColor(tageProM3(r, sliced[i-1]))),
-    pointRadius: 4, pointHoverRadius: 6, borderWidth: 0,
-    fill: false, tension: 0.3, spanGaps: false
+    backgroundColor: sliced.map(r => segColor(r._tpm)),
+    pointRadius: sliced.map((r,i) => isMeasured[i] ? 4 : 0),
+    pointHoverRadius: 6, borderWidth: 0,
+    fill: false, tension: 0, spanGaps: false
   });
 
   const titleEl = document.getElementById('curve-title');
@@ -1804,10 +1825,9 @@ function renderCurveWasser() {
           titleColor: '#94a3b8', bodyColor: '#f1f5f9', padding: 10, cornerRadius: 8,
           filter: item => item.datasetIndex === datasets.length - 1,
           callbacks: { label: ctx => {
-            const i = ctx.dataIndex;
-            const tpm = i > 0 ? tageProM3(sliced[i], sliced[i-1]) : null;
-            const tpmStr = tpm === null ? '–' : tpm === Infinity ? '∞' : tpm.toFixed(1);
-            const cat = tpm === null ? '' : tpm > 4 || tpm===Infinity ? ' 🌊' : tpm >= 2 ? ' 💧' : ' 🚿';
+            const tpm = sliced[ctx.dataIndex]?._tpm;
+            const tpmStr = tpm === null || tpm === undefined ? '–' : tpm === Infinity ? '∞' : tpm.toFixed(1);
+            const cat = !tpm ? '' : tpm > 4 || tpm===Infinity ? ' 🌊' : tpm >= 2 ? ' 💧' : ' 🚿';
             return ` ${ctx.parsed.y} m³  (${tpmStr} Tage/m³)${cat}`;
           }}
         }

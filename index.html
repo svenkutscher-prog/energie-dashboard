@@ -1726,9 +1726,9 @@ function renderCurveWasser() {
 
   function segColor(tpm) {
     if (tpm === null) return '#475569';
-    if (tpm === Infinity || tpm > 4) return '#3b82f6'; // Sparsam
-    if (tpm >= 2) return '#f59e0b';                    // Normal
-    return '#ef4444';                                  // Duschig
+    if (tpm === Infinity || tpm >= 4) return '#3b82f6'; // Sparsam (>= 4 Tage/m³)
+    if (tpm >= 2) return '#f59e0b';                     // Normal (2-4)
+    return '#ef4444';                                   // Duschig (< 2)
   }
 
   // Wasser expandieren: jeden Tag rückwärts auffüllen mit gleichem Zählerstand
@@ -1760,7 +1760,7 @@ function renderCurveWasser() {
     if (i===0) return;
     const tpm = tageProM3(r, dailyOrig[i-1]);
     if (tpm===null) return;
-    if (tpm > 4 || tpm===Infinity) sparsam++;
+    if (tpm >= 4 || tpm===Infinity) sparsam++;
     else if (tpm >= 2) normal++;
     else duschig++;
   });
@@ -1828,7 +1828,7 @@ function renderCurveWasser() {
           callbacks: { label: ctx => {
             const tpm = sliced[ctx.dataIndex]?._tpm;
             const tpmStr = tpm === null || tpm === undefined ? '–' : tpm === Infinity ? '∞' : tpm.toFixed(1);
-            const cat = !tpm ? '' : tpm > 4 || tpm===Infinity ? ' 🌊' : tpm >= 2 ? ' 💧' : ' 🚿';
+            const cat = !tpm ? '' : tpm >= 4 || tpm===Infinity ? ' 🌊' : tpm >= 2 ? ' 💧' : ' 🚿';
             return ` ${ctx.parsed.y} m³  (${tpmStr} Tage/m³)${cat}`;
           }}
         }

@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="WAGAEL">
 <meta name="theme-color" content="#0a0f1e">
-<title>WAGAEL</title>
+<title>WAGAEL - Garten Update</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
 <style>
@@ -24,14 +24,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 /* TOPBAR */
 .topbar{position:sticky;top:0;z-index:100;background:rgba(10,15,30,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding:16px 18px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
 .topbar h1{font-family:'Space Mono',monospace;font-size:20px;letter-spacing:0.1em;font-weight:700;}
-.topbar p{font-size:12px;color:var(--muted);margin-top:3px;}
 .refresh-btn{background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);color:var(--strom);font-family:'Space Mono',monospace;font-size:12px;padding:6px 14px;border-radius:20px;cursor:pointer;}
-
-/* LOADING */
-#loadingBar{height:2px;background:linear-gradient(90deg,var(--strom),var(--gas),var(--wasser));background-size:200%;animation:slide 1.2s linear infinite;display:none;}
-#loadingBar.active{display:block;}
-@keyframes slide{0%{background-position:0%}100%{background-position:200%}}
-.error-banner{margin:12px 14px 0;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:10px 14px;font-size:13px;color:rgba(239,100,100,0.9);display:none;}
 
 /* PAGES */
 .page{display:none;}
@@ -41,1747 +34,214 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .section{padding:16px 14px 0;}
 .section-title{font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:10px;}
 
-/* ── TAGESKURVE ──────────────────────────────────── */
-.curve-card{margin:14px 14px 0;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px;}
-.curve-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
-.curve-title{font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);font-weight:600;}
-.curve-tabs{display:flex;gap:6px;}
-.ctab{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.2s;}
-.ctab.active{color:#0a0f1e;border-color:transparent;}
-.ctab.strom.active{background:var(--strom);}
-.ctab.gas.active{background:var(--gas);}
-.ctab.temp.active{background:var(--temp);}
-.ctab.wasser.active{background:var(--wasser);}
-
-/* WETTER STATS (aus Kurve berechnet) */
-.wetter-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
-.wstat{background:var(--bg3);border-radius:10px;padding:10px;text-align:center;}
-.wstat-icon{font-size:20px;margin-bottom:3px;}
-.wstat-label{font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);}
-.wstat-val{font-family:'Space Mono',monospace;font-size:24px;font-weight:700;line-height:1.1;}
-.wstat-sub{font-size:10px;color:var(--muted);margin-top:2px;}
-.simple-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
-.sstat{background:var(--bg3);border-radius:10px;padding:10px;text-align:center;}
-.sstat-label{font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:4px;}
-.sstat-val{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;}
-.sstat-sub{font-size:10px;color:var(--muted);margin-top:2px;}
-
-.curve-legend{display:flex;gap:12px;margin-bottom:8px;flex-wrap:wrap;}
-.cleg{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);}
-.cleg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
-.curve-wrap{position:relative;height:200px;}
-.curve-range{font-size:10px;color:var(--muted);text-align:center;margin-top:8px;}
-
-/* ── ZÄHLERSTÄNDE ────────────────────────────────── */
-.zaehler-title{font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:10px;}
-.zaehler-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
-.zcard{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px 10px;text-align:center;position:relative;overflow:hidden;}
-.zcard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
-.zcard.s::before{background:var(--strom);}
-.zcard.g::before{background:var(--gas);}
-.zcard.w::before{background:var(--wasser);}
-.zlabel{font-size:10px;letter-spacing:0.08em;color:var(--muted);text-transform:uppercase;font-weight:500;}
-.zval{font-family:'Space Mono',monospace;font-size:18px;font-weight:700;margin:5px 0 3px;}
-.zcard.s .zval{color:var(--strom);}
-.zcard.g .zval{color:var(--gas);}
-.zcard.w .zval{color:var(--wasser);}
-.zunit{font-size:10px;color:var(--muted);}
-
-/* ── FORECAST ────────────────────────────────────── */
-.forecast-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
-.fday{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 4px;text-align:center;}
-.fday-name{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;}
-.fday-icon{font-size:22px;margin:5px 0;}
-.fday-hi{font-family:'Space Mono',monospace;font-size:14px;font-weight:700;color:var(--text);}
-.fday-lo{font-family:'Space Mono',monospace;font-size:12px;color:var(--muted);}
-.fday-rain{font-size:10px;color:var(--wasser);margin-top:3px;}
-.forecast-updated{font-size:10px;color:var(--muted);text-align:center;margin-top:8px;}
-
-/* ── JAHRESVERGLEICH ─────────────────────────────── */
-.year-tabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none;}
-.year-tabs::-webkit-scrollbar{display:none;}
-.ytab{flex-shrink:0;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:500;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.2s;}
-.ytab.active{color:#0a0f1e;border-color:transparent;}
-.ytab.strom.active{background:var(--strom);}
-.ytab.gas.active{background:var(--gas);}
-.ytab.wasser.active{background:var(--wasser);}
-.ytab.temp.active{background:var(--temp);}
-
-.sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
-.sum-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px;}
-.sum-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;}
-.sum-val{font-family:'Space Mono',monospace;font-size:24px;font-weight:700;}
-.sum-sub{font-size:12px;color:var(--muted);margin-top:4px;}
-.sum-trend{font-size:12px;margin-top:3px;}
-.trend-up{color:var(--gas);}
-.trend-down{color:var(--green);}
-
-.chart-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px;}
-.yr-legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
-.yr-leg{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);}
-.yr-leg-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
-.yr-leg.hi{color:var(--text);font-weight:600;}
+/* CARDS & CHARTS */
+.chart-card, .curve-card, .settings-group, .acc-group, .wasser-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px;}
 .chart-wrap{position:relative;height:220px;}
 
-.mtable{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-top:10px;overflow-x:auto;}
-.mtable table{width:100%;border-collapse:collapse;font-family:'Space Mono',monospace;font-size:12px;}
-.mtable th{background:var(--bg3);padding:8px 7px;text-align:right;color:var(--muted);font-size:11px;font-weight:400;white-space:nowrap;}
-.mtable th:first-child{text-align:left;width:32px;}
-.mtable td{padding:8px 7px;text-align:right;border-top:1px solid var(--border);white-space:nowrap;}
-.mtable td:first-child{text-align:left;color:var(--muted);}
-.mtable tr.cm td{background:rgba(255,255,255,0.03);}
-.mtable td.hi{font-weight:700;color:var(--text);}
-.mtable td.best{color:var(--green);}
-.mtable td.worst{color:var(--gas);}
-
-/* ── SETTINGS ────────────────────────────────────── */
-.settings-group{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+/* SETTINGS UI */
+.acc-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;}
+.acc-left{display:flex;align-items:center;gap:12px;}
+.acc-icon{font-size:20px;width:28px;text-align:center;}
+.acc-name{font-size:15px;font-weight:500;color:var(--text);}
+.acc-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+.acc-body{border-top:1px solid var(--border);display:none;padding-bottom:10px;}
+.acc-body.open{display:block;}
 .settings-row{display:flex;align-items:center;justify-content:space-between;padding:15px 16px;border-bottom:1px solid var(--border);}
 .settings-row:last-child{border-bottom:none;}
-.settings-row-left{display:flex;align-items:center;gap:12px;}
-.settings-icon{font-size:20px;width:28px;text-align:center;}
-.settings-label{font-size:15px;font-weight:500;color:var(--text);}
-.settings-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+.settings-label{font-size:14px;font-weight:500;}
+
+/* SELECT STYLING */
+select.garden-select {
+    background: var(--bg3);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    outline: none;
+}
+
+/* TOGGLE */
 .toggle{position:relative;width:44px;height:26px;flex-shrink:0;}
 .toggle input{opacity:0;width:0;height:0;position:absolute;}
 .toggle-track{position:absolute;inset:0;border-radius:13px;background:rgba(255,255,255,0.12);transition:background 0.2s;cursor:pointer;}
 .toggle input:checked + .toggle-track{background:var(--green);}
 .toggle-thumb{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform 0.2s;pointer-events:none;}
 .toggle input:checked ~ .toggle-thumb{transform:translateX(18px);}
-.year-chips{display:flex;flex-wrap:wrap;gap:8px;padding:14px 16px;}
-.year-chip{padding:6px 14px;border-radius:20px;font-size:13px;font-weight:500;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.2s;font-family:'Space Mono',monospace;}
-.year-chip.on{color:#0a0f1e;border-color:transparent;}
-.year-chip[data-yr="2021"].on{background:rgba(100,116,139,0.85);}
-.year-chip[data-yr="2022"].on{background:rgba(99,102,241,0.85);}
-.year-chip[data-yr="2023"].on{background:rgba(20,184,166,0.85);}
-.year-chip[data-yr="2024"].on{background:rgba(245,158,11,0.85);}
-.year-chip[data-yr="2025"].on{background:rgba(59,130,246,0.85);}
-.year-chip[data-yr="2026"].on{background:#f1f5f9;}
-.settings-hint{margin:10px 14px 0;font-size:12px;color:var(--muted);line-height:1.6;}
-.api-row{padding:14px 16px;}
-.api-label{font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.08em;}
-.api-url{font-family:'Space Mono',monospace;font-size:10px;color:var(--green);background:var(--bg3);padding:8px 10px;border-radius:8px;word-break:break-all;line-height:1.5;}
-
-/* WASSER CHART */
-.wasser-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px;}
-.wasser-legend{display:flex;gap:14px;margin-bottom:10px;}
-.wleg{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);}
-.wleg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
-.wasser-wrap{position:relative;height:180px;}
-
-/* ── PROMPT EDITOR ──────────────────────────────────── */
-.prompt-textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;line-height:1.6;padding:10px 12px;resize:vertical;min-height:120px;box-sizing:border-box;margin-top:6px;}
-.prompt-textarea:focus{outline:none;border-color:rgba(139,92,246,0.4);}
-.prompt-textarea[readonly]{color:var(--muted);cursor:default;}
-.prompt-btns{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
-.prompt-btn{padding:7px 14px;border-radius:20px;font-size:12px;cursor:pointer;font-family:inherit;border:1px solid var(--border);background:transparent;color:var(--muted);}
-.prompt-btn.primary{background:rgba(139,92,246,0.15);border-color:rgba(139,92,246,0.3);color:#a78bfa;}
-.prompt-btn.danger{background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.3);color:#ef4444;}
-.prompt-copied{font-size:11px;color:#10b981;display:none;margin-top:4px;}
-
-/* ── KI ANALYSE ──────────────────────────────────── */
-.ki-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:10px;}
-.ki-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
-.ki-title{font-size:15px;font-weight:600;color:var(--text);}
-.ki-meta{font-size:11px;color:var(--muted);margin-top:3px;}
-.ki-btn{background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);color:#a78bfa;font-family:'Space Mono',monospace;font-size:12px;padding:7px 16px;border-radius:20px;cursor:pointer;}
-.ki-btn:disabled{opacity:0.5;cursor:default;}
-.ki-btn.loading{animation:pulse 1s ease-in-out infinite;}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
-.ki-text{font-size:14px;line-height:1.8;color:var(--text);white-space:pre-wrap;}
-.ki-text-placeholder{font-size:13px;color:var(--muted);text-align:center;padding:20px 0;}
-.ki-next{font-size:11px;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
-/* Dashboard Mini */
-.ki-mini{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px;cursor:pointer;transition:border-color 0.2s;}
-.ki-mini:hover{border-color:rgba(139,92,246,0.3);}
-.ki-mini-title{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;}
-.ki-mini-text{font-size:13px;color:var(--text);line-height:1.6;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
-.ki-mini-link{font-size:11px;color:#a78bfa;margin-top:6px;}
-
-/* ── ACCORDION SETTINGS ─────────────────────────── */
-.acc-group{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:10px;}
-.acc-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;}
-.acc-header:active{background:rgba(255,255,255,0.03);}
-.acc-left{display:flex;align-items:center;gap:12px;}
-.acc-icon{font-size:20px;width:28px;text-align:center;}
-.acc-name{font-size:15px;font-weight:500;color:var(--text);}
-.acc-sub{font-size:12px;color:var(--muted);margin-top:2px;}
-.acc-right{display:flex;align-items:center;gap:8px;}
-.acc-chevron{font-size:11px;color:var(--muted);transition:transform 0.2s;display:inline-block;}
-.acc-chevron.open{transform:rotate(180deg);}
-.acc-badge{background:rgba(239,68,68,0.2);color:#ef4444;font-size:10px;font-weight:600;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;font-family:'Space Mono',monospace;}
-.acc-body{border-top:1px solid var(--border);display:none;}
-.acc-body.open{display:block;}
-
-/* ── NAV BADGE ──────────────────────────────────── */
-.nav-item{position:relative;}
-.nav-badge{position:absolute;top:0;right:calc(50% - 18px);background:#ef4444;color:#fff;font-size:10px;font-weight:600;min-width:16px;height:16px;border-radius:8px;display:none;align-items:center;justify-content:center;padding:0 3px;font-family:'Space Mono',monospace;border:2px solid var(--bg);}
-.nav-badge.show{display:flex;}
-
-/* ── DATENCHECK ─────────────────────────────────── */
-.check-item{display:flex;gap:10px;align-items:flex-start;padding:10px 16px;border-bottom:1px solid var(--border);}
-.check-item:last-child{border-bottom:none;}
-.check-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px;}
-.check-title{font-size:13px;font-weight:500;color:var(--text);}
-.check-detail{font-size:11px;color:var(--muted);margin-top:2px;font-family:'Space Mono',monospace;}
-.check-ok{padding:14px 16px;text-align:center;font-size:13px;color:var(--green);}
-
-/* ── ENERGIE-PROGNOSE IN FORECAST ───────────────── */
-.fday-divider{border-top:1px solid rgba(255,255,255,0.06);margin:6px 0 5px;}
-.fday-energy-row{display:flex;align-items:center;justify-content:center;gap:3px;font-size:11px;margin:3px 0;}
-.fday-energy-val{font-family:'Space Mono',monospace;font-weight:700;font-size:12px;}
-.fday-energy-unit{color:#94a3b8;font-size:10px;}
-.fday-solar-label{font-size:9px;margin-top:2px;}
 
 /* BOTTOM NAV */
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,15,30,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;padding:8px 0 20px;z-index:100;}
-.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0;cursor:pointer;font-size:10px;letter-spacing:0.05em;text-transform:uppercase;color:var(--muted);transition:color 0.2s;}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,15,30,0.95);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;padding:8px 0 20px;z-index:100;}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;text-transform:uppercase;color:var(--muted);cursor:pointer;}
 .nav-item.active{color:var(--strom);}
 .nav-icon{font-size:22px;}
-canvas{display:block;}
 </style>
 </head>
 <body>
 
-<div id="loadingBar"></div>
-
 <div class="topbar">
-  <div>
-    <h1>WAGAEL</h1>
-    <p id="lastRefresh">Lade Daten…</p>
-  </div>
-  <button class="refresh-btn" onclick="loadData(true)">↻ Refresh</button>
+  <div><h1>WAGAEL</h1><p id="lastRefresh">Daten bereit</p></div>
+  <button class="refresh-btn" onclick="location.reload()">↻ Refresh</button>
 </div>
 
-<div class="error-banner" id="errorBanner"></div>
-
-<!-- PAGE 1: DASHBOARD -->
 <div class="page active" id="page-dashboard">
-
-  <div data-block="kurve">
-  <div class="curve-card">
-    <div class="curve-header">
-      <div class="curve-title" id="curve-title">Letzte 60 Tage</div>
-      <div class="curve-tabs">
-        <button class="ctab strom active" onclick="switchCurve('strom',this)">Strom</button>
-        <button class="ctab gas" onclick="switchCurve('gas',this)">Gas</button>
-        <button class="ctab temp" onclick="switchCurve('temp',this)">Temp</button>
-        <button class="ctab wasser" onclick="switchCurve('wasser',this)">Wasser</button>
-      </div>
-    </div>
-    <div id="curve-stats"></div>
-    <div class="curve-legend" id="curve-legend"></div>
-    <div class="curve-wrap"><canvas id="curveChart"></canvas></div>
-    <div class="curve-range" id="curve-range"></div>
-  </div>
-  </div>
-
-  <div data-block="tacho">
   <div class="section">
-    <div class="section-title" id="tacho-title">Min / Max</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px;text-align:center">
-        <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px">⚡ Strom</div>
-        <canvas id="tachoStrom" width="160" height="100" style="max-width:100%"></canvas>
-      </div>
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px;text-align:center">
-        <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px">🔥 Gas</div>
-        <canvas id="tachoGas" width="160" height="100" style="max-width:100%"></canvas>
-      </div>
-    </div>
-  </div>
-  </div>
-
-  <div data-block="zaehler">
-  <div class="section">
-    <div class="zaehler-title" id="zaehler-title">Zählerstände</div>
-    <div class="zaehler-grid">
-      <div class="zcard g"><div class="zlabel">Gas</div><div class="zval" id="z-gas">–</div><div class="zunit">m³</div></div>
-      <div class="zcard s"><div class="zlabel">Strom</div><div class="zval" id="z-strom">–</div><div class="zunit">kWh</div></div>
-      <div class="zcard w"><div class="zlabel">Wasser</div><div class="zval" id="z-wasser">–</div><div class="zunit">m³</div></div>
-    </div>
-  </div>
-  </div>
-
-  <div data-block="prognose">
-  <div class="section">
-    <div class="section-title">⚡ Strom — Monatsprognose</div>
-    <div class="wasser-card" id="stromPrognose">
-      <div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">Lade…</div>
-    </div>
-  </div>
-  </div>
-
-  <div data-block="ki">
-  <div class="section">
-    <div class="section-title">🤖 KI Analyse</div>
-    <div class="ki-mini" onclick="showPage('ki', document.querySelectorAll('.nav-item')[3])">
-      <div class="ki-mini-title">
-        <span>14 Tage Bewertung</span>
-        <span id="ki-mini-date" style="color:var(--muted);font-size:10px"></span>
-      </div>
-      <div class="ki-mini-text" id="ki-mini-text">Noch keine Analyse — tippe hier um zu starten.</div>
-      <div class="ki-mini-link">→ Zur vollständigen Analyse</div>
-    </div>
-  </div>
-  </div>
-
-  <div style="height:20px"></div>
-</div>
-
-<!-- PAGE 2: TRENDS (FORECAST) -->
-<div class="page" id="page-trends">
-  <div class="section">
-    <div class="section-title">Wettervorhersage — Linnich</div>
-    <div class="forecast-grid" id="forecastGrid">
-      <div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted);font-size:13px;">Lade Forecast…</div>
-    </div>
-    <div class="forecast-updated" id="forecastUpdated"></div>
-  </div>
-
-  <!-- ENERGIE-LEGENDE -->
-  <div class="section" style="margin-top:10px;">
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;">
-      <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">⚡ Strom · 🔥 Gas — Tagesprognose</div>
-      <div style="display:flex;flex-wrap:wrap;gap:10px;font-size:11px;color:var(--muted);">
-        <span><span style="color:#10b981;font-weight:700">●</span> Solar / Niedrig</span>
-        <span><span style="color:#f59e0b;font-weight:700">●</span> Normal</span>
-        <span><span style="color:#ef4444;font-weight:700">●</span> Hoch / Bad Day</span>
-        <span style="color:var(--muted)">· Basis: Ø letzte 30 Tage · Temp-Korrektur Gas</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="section" style="margin-top:16px;">
-    <div class="section-title" id="fc-chart-title">Temperatur 7 Tage</div>
+    <div class="section-title">Übersicht</div>
     <div class="chart-card">
-      <div class="curve-wrap"><canvas id="forecastChart"></canvas></div>
+        <div class="chart-wrap"><canvas id="mainChart"></canvas></div>
     </div>
   </div>
-  <div style="height:20px"></div>
 </div>
 
-<!-- PAGE 3: JAHR -->
 <div class="page" id="page-jahr">
   <div class="section">
     <div class="section-title">Jahresvergleich</div>
-    <div class="year-tabs" id="yearCatTabs"></div>
-    <div class="sum-grid" id="sumCards"></div>
     <div class="chart-card">
-      <div class="yr-legend" id="yr-legend"></div>
       <div class="chart-wrap"><canvas id="yearChart"></canvas></div>
     </div>
-    <div class="mtable" id="yearTable"></div>
   </div>
-  <div style="height:20px"></div>
 </div>
 
-<!-- PAGE 4: EINSTELLUNGEN -->
 <div class="page" id="page-settings">
   <div class="section">
-
+    <div class="section-title">Konfiguration</div>
+    
     <div class="acc-group">
       <div class="acc-header" onclick="toggleAcc(this)">
-        <div class="acc-left"><div class="acc-icon">🎨</div><div><div class="acc-name">Anzeige</div><div class="acc-sub">Darstellung · Block-Reihenfolge</div></div></div>
+        <div class="acc-left"><div class="acc-icon">🌿</div><div><div class="acc-name">Gartensaison</div><div class="acc-sub">Periode im Jahres-Chart markieren</div></div></div>
         <div class="acc-right"><span class="acc-chevron">▼</span></div>
       </div>
       <div class="acc-body">
         <div class="settings-row">
-          <div class="settings-row-left"><div class="settings-icon">📅</div><div><div class="settings-label">Wochenende hervorheben</div><div class="settings-sub">Sa blau · So lila in der Kurve</div></div></div>
-          <label class="toggle"><input type="checkbox" id="toggle-weekend" onchange="toggleWeekendBg(this.checked)"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+            <div class="settings-label">Saison anzeigen</div>
+            <label class="toggle"><input type="checkbox" id="garden-active" onchange="updateGardenPrefs()"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
         </div>
         <div class="settings-row">
-          <div class="settings-row-left"><div class="settings-icon">📊</div><div><div class="settings-label">Tage in der Grafik</div><div class="settings-sub" id="curveDays-label">60 Tage</div></div></div>
-          <input type="range" id="curveDays-slider" min="14" max="180" step="7" value="60" style="width:100px" oninput="setCurveDays(this.value)">
+            <div class="settings-label">Start Monat</div>
+            <select id="garden-start" class="garden-select" onchange="updateGardenPrefs()"></select>
         </div>
-        <div class="settings-row" style="border-bottom:none">
-          <div class="settings-row-left"><div class="settings-icon">🔢</div><div><div class="settings-label">Block-Reihenfolge</div><div class="settings-sub">Blöcke verschieben & ein/ausschalten</div></div></div>
-        </div>
-        <div id="blockOrderList"></div>
-      </div>
-    </div>
-
-    <div class="acc-group">
-      <div class="acc-header" onclick="toggleAcc(this)">
-        <div class="acc-left"><div class="acc-icon">📈</div><div><div class="acc-name">Daten</div><div class="acc-sub">Kategorien · Jahre</div></div></div>
-        <div class="acc-right"><span class="acc-chevron">▼</span></div>
-      </div>
-      <div class="acc-body">
-        <div id="catToggles"></div>
-        <div style="padding:10px 16px 4px;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)">Jahre</div>
-        <div class="year-chips" id="yearChips"></div>
-        <div style="padding:4px 16px 10px;font-size:12px;color:var(--muted)">Mindestens 1 Jahr muss aktiv sein.</div>
-      </div>
-    </div>
-
-    <div class="acc-group">
-      <div class="acc-header" onclick="toggleAcc(this)">
-        <div class="acc-left"><div class="acc-icon">🤖</div><div><div class="acc-name">KI Analyse</div><div class="acc-sub">Prompt anpassen · Testen</div></div></div>
-        <div class="acc-right"><span class="acc-chevron">▼</span></div>
-      </div>
-      <div class="acc-body">
-        <div class="api-row">
-          <div class="api-label">Standard-Prompt (readonly)</div>
-          <textarea class="prompt-textarea" id="prompt-default" readonly rows="4"></textarea>
-        </div>
-        <div style="padding:0 16px 14px">
-          <div class="api-label">Eigener Prompt <span style="color:var(--muted);font-weight:400">(leer = Standard)</span></div>
-          <textarea class="prompt-textarea" id="prompt-custom" rows="4" placeholder="Hier eigenen Prompt eingeben…" oninput="saveCustomPrompt()"></textarea>
-          <div class="prompt-btns">
-            <button class="prompt-btn primary" onclick="testCustomPrompt()">▶ Testen</button>
-            <button class="prompt-btn primary" onclick="copyPrompt()">📋 Kopieren</button>
-            <button class="prompt-btn danger" onclick="resetCustomPrompt()">↺ Reset</button>
-          </div>
-          <div class="prompt-copied" id="prompt-copied">✓ Kopiert!</div>
+        <div class="settings-row">
+            <div class="settings-label">Ende Monat</div>
+            <select id="garden-end" class="garden-select" onchange="updateGardenPrefs()"></select>
         </div>
       </div>
-    </div>
-
-    <div class="acc-group" id="acc-datencheck">
-      <div class="acc-header" onclick="toggleAcc(this)">
-        <div class="acc-left"><div class="acc-icon">🔍</div><div><div class="acc-name">Datencheck</div><div class="acc-sub">Ausreißer · Datenfehler</div></div></div>
-        <div class="acc-right"><span class="acc-badge" id="check-badge" style="display:none">0</span><span class="acc-chevron">▼</span></div>
-      </div>
-      <div class="acc-body" id="check-body">
-        <div class="check-ok" id="check-ok">✓ Keine Probleme gefunden</div>
-      </div>
-    </div>
-
-    <div class="acc-group">
-      <div class="acc-header" onclick="toggleAcc(this)">
-        <div class="acc-left"><div class="acc-icon">🔗</div><div><div class="acc-name">Datenquelle</div><div class="acc-sub">API URL · Cache leeren</div></div></div>
-        <div class="acc-right"><span class="acc-chevron">▼</span></div>
-      </div>
-      <div class="acc-body">
-        <div class="api-row">
-          <div class="api-label">Apps Script URL</div>
-          <div class="api-url" id="apiUrlDisplay"></div>
-        </div>
-        <div class="settings-row" style="border-bottom:none">
-          <div class="settings-row-left"><div class="settings-icon">🗑️</div><div><div class="settings-label">Cache leeren & neu laden</div><div class="settings-sub">Holt frische Daten vom Sheet</div></div></div>
-          <button onclick="clearCache()" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#ef4444;padding:6px 14px;border-radius:20px;font-size:13px;cursor:pointer;font-family:inherit;">Leeren</button>
-        </div>
-      </div>
-    </div>
-
-  </div>
-  <div style="height:20px"></div>
-</div>
-
-<!-- PAGE 5: KI ANALYSE -->
-<div class="page" id="page-ki">
-  <div class="section">
-    <div class="section-title">14 Tage KI Analyse</div>
-    <div class="ki-card">
-      <div class="ki-header">
-        <div>
-          <div class="ki-title">🤖 Energie-Assistent</div>
-          <div class="ki-meta" id="ki-last">Noch keine Analyse vorhanden</div>
-        </div>
-        <button class="ki-btn" id="ki-btn" onclick="runKiAnalysis()">▶ Analysieren</button>
-      </div>
-      <div id="ki-result">
-        <div class="ki-text-placeholder">Klicke auf "Analysieren" um eine KI-Bewertung deines Energieverbrauchs zu erhalten.</div>
-      </div>
-      <div class="ki-next" id="ki-next"></div>
     </div>
   </div>
-  <div style="height:20px"></div>
 </div>
 
-<!-- BOTTOM NAV -->
 <div class="bottom-nav">
-  <div class="nav-item active" onclick="showPage('dashboard',this)"><div class="nav-icon">📊</div><div>Dashboard</div></div>
-  <div class="nav-item" onclick="showPage('trends',this)"><div class="nav-icon">🌤️</div><div>Trends</div></div>
+  <div class="nav-item active" onclick="showPage('dashboard',this)"><div class="nav-icon">📊</div><div>Dash</div></div>
   <div class="nav-item" onclick="showPage('jahr',this)"><div class="nav-icon">📅</div><div>Jahr</div></div>
-  <div class="nav-item" onclick="showPage('ki',this)"><div class="nav-icon">🤖</div><div>KI</div></div>
-  <div class="nav-item" onclick="showPage('settings',this)"><div class="nav-icon">⚙️</div><div>Einstellungen</div><div class="nav-badge" id="settings-badge">0</div></div>
+  <div class="nav-item" onclick="showPage('settings',this)"><div class="nav-icon">⚙️</div><div>Settings</div></div>
 </div>
 
 <script>
-const API_URL   = 'https://script.google.com/macros/s/AKfycbxvXeeBPFz7J7rvIV6zGa6Dllq--a53RBE4Lbq49d6jqokph8GEt9PeWR1GR6_EJUoQjw/exec';
-const CACHE_KEY = 'wagael_v3';
-const PREF_KEY  = 'wagael_prefs_v3';
-const CACHE_TTL = 4 * 60 * 60 * 1000;
-
 const MON = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
-const ALL_YEARS = [2021,2022,2023,2024,2025,2026];
-const YEAR_COLORS = {
-  2021:'rgba(100,116,139,0.85)', 2022:'rgba(99,102,241,0.85)',
-  2023:'rgba(20,184,166,0.85)',  2024:'rgba(245,158,11,0.85)',
-  2025:'rgba(59,130,246,0.85)', 2026:'#f1f5f9'
-};
-const ALL_CATS = [
-  {key:'strom', label:'Strom',      icon:'⚡', unit:'kWh', color:'#f59e0b'},
-  {key:'gas',   label:'Gas',        icon:'🔥', unit:'m³',  color:'#ef4444'},
-  {key:'wasser',label:'Wasser',     icon:'💧', unit:'m³',  color:'#3b82f6'},
-  {key:'temp',  label:'Temperatur', icon:'🌡', unit:'°C',  color:'#10b981'},
-];
-const CURVE_COLORS = { gas:'#ef4444', temp:'#10b981', wasser:'#3b82f6' };
-const CURVE_TARGETS = { strom:4.33, gas:4.8, temp:null, wasser:null };
+const PREF_KEY = 'wagael_prefs_v3';
+
+// Initialisierung der Monate in den Dropdowns
+const startSelect = document.getElementById('garden-start');
+const endSelect = document.getElementById('garden-end');
+MON.forEach((m, i) => {
+    startSelect.add(new Option(m, i));
+    endSelect.add(new Option(m, i));
+});
 
 function defaultPrefs() {
-  return { cats:{strom:true,gas:true,wasser:true,temp:false}, years:{2021:true,2022:true,2023:true,2024:true,2025:true,2026:true}, weekendBg:true, curveDays:60, blockOrder:['kurve','tacho','zaehler','prognose','ki'], blockDisabled:{} };
+  return { 
+    garden: { active: true, start: 4, end: 8 }, // Mai bis September
+    currentCat: 'wasser'
+  };
 }
-function loadPrefs() { try { return JSON.parse(localStorage.getItem(PREF_KEY)) || defaultPrefs(); } catch(e) { return defaultPrefs(); } }
+
+function loadPrefs() { 
+    try { return JSON.parse(localStorage.getItem(PREF_KEY)) || defaultPrefs(); } 
+    catch(e) { return defaultPrefs(); } 
+}
+
 function savePrefs(p) { localStorage.setItem(PREF_KEY, JSON.stringify(p)); }
 
-Chart.register(ChartDataLabels);
-Chart.defaults.plugins.datalabels.display = false;
-
 let prefs = loadPrefs();
-let DB = null;
-let curPage = 'dashboard';
-let curveMode = 'strom';
-let yearCat = null;
-let curveChart = null, yearChart = null, fcChart = null, wasserChart = null;
+let yearChart = null;
 
-// ── NAVIGATION ─────────────────────────────────────────────
+// UI mit gespeicherten Werten füllen
+document.getElementById('garden-active').checked = prefs.garden.active;
+document.getElementById('garden-start').value = prefs.garden.start;
+document.getElementById('garden-end').value = prefs.garden.end;
+
+function toggleAcc(el) {
+    el.nextElementSibling.classList.toggle('open');
+    el.querySelector('.acc-chevron').innerText = el.nextElementSibling.classList.contains('open') ? '▲' : '▼';
+}
+
 function showPage(name, navEl) {
-  curPage = name;
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const pg = document.getElementById('page-' + name);
-  if (pg) pg.classList.add('active');
-  if (navEl) navEl.classList.add('active');
-  if (name === 'settings') renderSettings();
-  if (name === 'ki') renderKiPage();
-  if (name === 'trends') loadForecast();
-  if (name === 'jahr') renderYear();
-  if (name === 'dashboard') renderCurve();
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    navEl.classList.add('active');
+    if(name === 'jahr') renderYearChart();
 }
 
-// ── SETTINGS ───────────────────────────────────────────────
-function renderSettings() {
-  const catEl = document.getElementById('catToggles'); if(!catEl) return;
-  catEl.innerHTML = ALL_CATS.map(c => `
-    <div class="settings-row">
-      <div class="settings-row-left">
-        <div class="settings-icon">${c.icon}</div>
-        <div><div class="settings-label">${c.label}</div><div class="settings-sub">${c.unit}</div></div>
-      </div>
-      <label class="toggle">
-        <input type="checkbox" ${prefs.cats[c.key]?'checked':''} onchange="toggleCat('${c.key}',this.checked)">
-        <div class="toggle-track"></div><div class="toggle-thumb"></div>
-      </label>
-    </div>`).join('');
-  const ycEl = document.getElementById('yearChips'); if(ycEl) ycEl.innerHTML = ALL_YEARS.map(yr =>
-    `<button class="year-chip ${prefs.years[yr]?'on':''}" data-yr="${yr}" onclick="toggleYear(${yr},this)">${yr}</button>`).join('');
-  const apiEl = document.getElementById('apiUrlDisplay'); if(apiEl) apiEl.textContent = API_URL;
-  const wbEl = document.getElementById('toggle-weekend'); if(wbEl) wbEl.checked = prefs.weekendBg !== false;
-  renderBlockOrderList();
-  const defEl = document.getElementById('prompt-default');
-  if (defEl) defEl.value = DEFAULT_KI_PROMPT;
-  const custEl = document.getElementById('prompt-custom');
-  if (custEl) custEl.value = localStorage.getItem('wagael_ki_prompt') || '';
-  const sl = document.getElementById('curveDays-slider'); if(sl) { sl.value = prefs.curveDays || 60; document.getElementById('curveDays-label').textContent = (prefs.curveDays||60) + ' Tage'; }
+function updateGardenPrefs() {
+    prefs.garden.active = document.getElementById('garden-active').checked;
+    prefs.garden.start = parseInt(document.getElementById('garden-start').value);
+    prefs.garden.end = parseInt(document.getElementById('garden-end').value);
+    savePrefs(prefs);
+    if(document.getElementById('page-jahr').classList.contains('active')) renderYearChart();
 }
 
-function toggleCat(key, on) {
-  const active = ALL_CATS.filter(c => c.key !== key && prefs.cats[c.key]);
-  if (!on && active.length === 0) { event.target.checked = true; return; }
-  prefs.cats[key] = on; savePrefs(prefs); renderYear();
-}
+function renderYearChart() {
+    const ctx = document.getElementById('yearChart').getContext('2d');
+    if (yearChart) yearChart.destroy();
 
-function toggleYear(yr, btn) {
-  const active = ALL_YEARS.filter(y => y !== yr && prefs.years[y]);
-  if (prefs.years[yr] && active.length === 0) return;
-  prefs.years[yr] = !prefs.years[yr]; savePrefs(prefs);
-  btn.classList.toggle('on', prefs.years[yr]); renderYear();
-}
+    // Beispiel-Daten (In deinem echten Code kommen diese aus deiner DB Variable)
+    const dummyData = [4, 5, 3, 4, 11, 18, 10, 11, 7, 5, 5, 3]; 
+    
+    const datasets = [{
+        label: 'Wasser m³',
+        data: dummyData,
+        borderColor: '#3b82f6',
+        backgroundColor: '#3b82f6',
+        tension: 0.4,
+        zIndex: 10
+    }];
 
-function toggleWeekendBg(on) {
-  prefs.weekendBg = on; savePrefs(prefs);
-  renderCurve();
-}
+    // GARTENSAISON HINTERGRUND
+    if (prefs.garden.active) {
+        const gardenBgData = MON.map((_, i) => {
+            return (i >= prefs.garden.start && i <= prefs.garden.end) ? Math.max(...dummyData) + 2 : 0;
+        });
 
-function setCurveDays(v) {
-  prefs.curveDays = parseInt(v);
-  savePrefs(prefs);
-  const lbl = document.getElementById('curveDays-label');
-  if (lbl) lbl.textContent = v + ' Tage';
-  renderCurve();
-}
+        datasets.push({
+            label: 'Gartensaison',
+            data: gardenBgData,
+            backgroundColor: 'rgba(16, 185, 129, 0.15)', // Dein grüner Bereich
+            fill: true,
+            pointRadius: 0,
+            borderWidth: 0,
+            stepped: 'middle',
+            zIndex: 1
+        });
+    }
 
-function clearCache() {
-  localStorage.removeItem(CACHE_KEY);
-  localStorage.removeItem(KI_CACHE_KEY);
-  localStorage.removeItem('wagael_ki_prompt');
-  DB = null;
-  const kiResult = document.getElementById('ki-result');
-  if (kiResult) kiResult.innerHTML = '<div class="ki-text-placeholder">Klicke auf "Analysieren" um eine KI-Bewertung zu erhalten.</div>';
-  const kiLast = document.getElementById('ki-last');
-  if (kiLast) kiLast.textContent = 'Noch keine Analyse vorhanden';
-  const kiNext = document.getElementById('ki-next');
-  if (kiNext) kiNext.textContent = '';
-  const kiBtn = document.getElementById('ki-btn');
-  if (kiBtn) kiBtn.textContent = '▶ Analysieren';
-  const miniText = document.getElementById('ki-mini-text');
-  if (miniText) miniText.textContent = 'Noch keine Analyse — tippe hier um zu starten.';
-  const miniDate = document.getElementById('ki-mini-date');
-  if (miniDate) miniDate.textContent = '';
-  document.getElementById('lastRefresh').textContent = 'Cache geleert…';
-  showPage('dashboard', document.querySelectorAll('.nav-item')[0]);
-  loadData(true);
-}
-
-// ── DATA LOADING ───────────────────────────────────────────
-async function loadData(force = false) {
-  document.getElementById('loadingBar').classList.add('active');
-  if (force) { forecastLoaded = false; forecastData = null; }
-  if (!force) {
-    const c = localStorage.getItem(CACHE_KEY);
-    if (c) {
-      try {
-        const {data,ts} = JSON.parse(c);
-        if (Date.now() - ts < CACHE_TTL) {
-          DB = data;
-          document.getElementById('loadingBar').classList.remove('active');
-          applyData(); return;
+    yearChart = new Chart(ctx, {
+        type: 'line',
+        data: { labels: MON, datasets: datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
+                x: { grid: { display: false } }
+            }
         }
-      } catch(e) {}
-    }
-  }
-  try {
-    const res = await fetch(API_URL);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    if (data.error) throw new Error(data.error);
-    DB = data;
-    localStorage.setItem(CACHE_KEY, JSON.stringify({data, ts:Date.now()}));
-    document.getElementById('errorBanner').style.display = 'none';
-    applyData();
-  } catch(err) {
-    const b = document.getElementById('errorBanner');
-    b.textContent = '⚠️ ' + err.message;
-    b.style.display = 'block';
-    const c = localStorage.getItem(CACHE_KEY);
-    if (c) { try { DB = JSON.parse(c).data; applyData(); } catch(e){} }
-  }
-  document.getElementById('loadingBar').classList.remove('active');
-}
-
-function applyData() {
-  if (!DB) return;
-  document.getElementById('lastRefresh').textContent = 'Letzter Refresh: ' + (DB.lastUpdate || '–');
-
-  const z = DB.zaehler || {};
-  document.getElementById('z-gas').textContent    = (z.gas    != null) ? fmt(z.gas)    : '7946';
-  document.getElementById('z-strom').textContent  = (z.strom  != null) ? fmt(z.strom)  : '36661';
-  document.getElementById('z-wasser').textContent = (z.wasser != null) ? fmt(z.wasser) : '545';
-
-  const daily = DB.daily || [];
-  if (daily.length > 0) {
-    const lastDate = daily[daily.length-1].datum;
-    const datumRaw = String(lastDate);
-    const datumFmt = datumRaw.charAt(0).toUpperCase() + datumRaw.slice(1).toLowerCase();
-    document.getElementById('zaehler-title').textContent = 'Zählerstände vom ' + datumFmt;
-  }
-
-  const firstActiveCat = ALL_CATS.find(c => prefs.cats[c.key]);
-  if (!yearCat || !prefs.cats[yearCat]) yearCat = firstActiveCat?.key || 'strom';
-  buildYearTabs();
-
-  if (DB.daily) DB.dailyExpanded = expandDaily(DB.daily);
-
-  applyBlockOrder();
-  initKi();
-  runDataCheck();
-  renderCurve();
-  renderTacho();
-  renderStromPrognose();
-  loadForecast();
-  if (curPage === 'jahr') renderYear();
-}
-
-// ── DAILY EXPANDIEREN ──────────────────────────────────────
-function expandDaily(daily) {
-  const expanded = [];
-  daily.forEach(entry => {
-    const tage = entry.tage || 1;
-    const endDate = parseDailyDatum(entry.datum);
-    if (!endDate) { expanded.push(entry); return; }
-    for (let d = tage - 1; d >= 0; d--) {
-      const dt = new Date(endDate);
-      dt.setDate(dt.getDate() - d);
-      const label = dt.getDate() + '.' + (dt.getMonth()+1).toString().padStart(2,'0') + '.';
-      const dow = ['So','Mo','Di','Mi','Do','Fr','Sa'][dt.getDay()];
-      expanded.push({
-        datum: label + dow + '.',
-        gas:   entry.gas,
-        strom: entry.strom,
-        temp:  entry.temp,
-        _expanded: d > 0
-      });
-    }
-  });
-  return expanded;
-}
-
-function parseDailyDatum(s) {
-  s = String(s || '').trim();
-  const m = s.match(/^(\d{1,2})\.(\d{1,2})\./);
-  if (m) {
-    const now = new Date();
-    let yr = now.getFullYear();
-    const mon = parseInt(m[2]) - 1;
-    if (mon > now.getMonth()) yr -= 1;
-    return new Date(yr, mon, parseInt(m[1]));
-  }
-  return null;
-}
-
-// ── ACCORDION ──────────────────────────────────────────────
-function toggleAcc(header) {
-  const body = header.nextElementSibling;
-  const chev = header.querySelector('.acc-chevron');
-  const isOpen = body.classList.contains('open');
-  body.classList.toggle('open', !isOpen);
-  if (chev) chev.classList.toggle('open', !isOpen);
-}
-
-function openAcc(groupId) {
-  const group = document.getElementById(groupId);
-  if (!group) return;
-  const body = group.querySelector('.acc-body');
-  const chev = group.querySelector('.acc-chevron');
-  if (body) body.classList.add('open');
-  if (chev) chev.classList.add('open');
-}
-
-// ── DATENCHECK ─────────────────────────────────────────────
-function runDataCheck() {
-  if (!DB) return;
-  const issues = [];
-  const FACTOR = 4;
-  const checkYear = String(new Date().getFullYear());
-  ['strom','gas','wasser'].forEach(cat => {
-    const vals = DB[cat] && DB[cat].values ? DB[cat].values : {};
-    [checkYear].forEach(yr => {
-      if (!vals[yr]) return;
-      const months = vals[yr];
-      for (let i = 1; i < months.length; i++) {
-        const prev = months[i-1];
-        const curr = months[i];
-        if (prev === null || curr === null) continue;
-        if (prev === 0) continue;
-        const ratio = curr / prev;
-        const catLabel = cat.charAt(0).toUpperCase() + cat.slice(1);
-        const unit = cat === 'strom' ? 'kWh' : 'm³';
-        if (ratio > FACTOR) {
-          issues.push({ level: 'error', title: `${catLabel} ${MON[i]} ${yr} — ${ratio.toFixed(1)}× Sprung`, detail: `${MON[i-1]}: ${prev} ${unit} → ${MON[i]}: ${curr} ${unit}` });
-        } else if (ratio < 1 / FACTOR) {
-          issues.push({ level: 'warn', title: `${catLabel} ${MON[i]} ${yr} — starker Einbruch`, detail: `${MON[i-1]}: ${prev} ${unit} → ${MON[i]}: ${curr} ${unit} (${Math.round(ratio*100)}%)` });
-        }
-      }
     });
-  });
-
-  const body   = document.getElementById('check-body');
-  const badge  = document.getElementById('check-badge');
-  const navBadge = document.getElementById('settings-badge');
-  const errCount = issues.filter(i=>i.level==='error').length;
-  const total    = issues.length;
-
-  if (total === 0) {
-    if (body) body.innerHTML = '<div class="check-ok">✓ Keine Probleme gefunden</div>';
-    if (badge) badge.style.display = 'none';
-    if (navBadge) { navBadge.textContent = ''; navBadge.classList.remove('show'); }
-  } else {
-    if (body) body.innerHTML = issues.map(iss => `
-      <div class="check-item">
-        <div class="check-dot" style="background:${iss.level==='error'?'#ef4444':'#f59e0b'}"></div>
-        <div><div class="check-title">${iss.title}</div><div class="check-detail">${iss.detail}</div></div>
-      </div>`).join('');
-    if (errCount > 0) {
-      if (badge) { badge.textContent = errCount; badge.style.display = 'flex'; }
-      if (navBadge) { navBadge.textContent = errCount; navBadge.classList.add('show'); }
-      openAcc('acc-datencheck');
-    } else {
-      if (badge) { badge.textContent = total; badge.style.display = 'flex'; }
-      if (navBadge) { navBadge.classList.remove('show'); }
-    }
-  }
 }
 
-// ── BLOCK REIHENFOLGE ──────────────────────────────────────
-const BLOCK_META = {
-  kurve:    { icon:'📈', name:'Tageskurve',      sub:'Strom · Gas · Temp · Wasser' },
-  tacho:    { icon:'🎯', name:'Min / Max Tacho', sub:'Strom · Gas' },
-  zaehler:  { icon:'🔢', name:'Zählerstände',    sub:'Gas · Strom · Wasser' },
-  prognose: { icon:'⚡', name:'Strom Prognose',  sub:'Hochrechnung · Solar' },
-  ki:       { icon:'🤖', name:'KI Analyse',       sub:'14 Tage Bewertung' },
-};
-
-function getBlockOrder() {
-  const order = prefs.blockOrder || ['kurve','tacho','zaehler','prognose','ki'];
-  if (!order.includes('ki')) order.push('ki');
-  return order;
-}
-
-function applyBlockOrder() {
-  const dashboard = document.getElementById('page-dashboard');
-  const order = getBlockOrder();
-  const disabled = prefs.blockDisabled || {};
-  const spacer = dashboard.querySelector('div[style*="height:20px"]');
-  order.forEach(id => {
-    const el = dashboard.querySelector('[data-block="' + id + '"]');
-    if (el) {
-      dashboard.insertBefore(el, spacer);
-      el.style.display = disabled[id] ? 'none' : '';
-    }
-  });
-  if (DB) { renderCurve(); renderTacho(); }
-}
-
-function toggleBlock(id) {
-  if (!prefs.blockDisabled) prefs.blockDisabled = {};
-  prefs.blockDisabled[id] = !prefs.blockDisabled[id];
-  savePrefs(prefs);
-  applyBlockOrder();
-  renderBlockOrderList();
-}
-
-function moveBlock(idx, dir) {
-  const order = getBlockOrder();
-  const newIdx = idx + dir;
-  if (newIdx < 0 || newIdx >= order.length) return;
-  [order[idx], order[newIdx]] = [order[newIdx], order[idx]];
-  prefs.blockOrder = order;
-  savePrefs(prefs);
-  applyBlockOrder();
-  renderBlockOrderList();
-}
-
-function renderBlockOrderList() {
-  const el = document.getElementById('blockOrderList');
-  if (!el) return;
-  const order = getBlockOrder();
-  const disabled = prefs.blockDisabled || {};
-  el.innerHTML = order.map((id, i) => {
-    const m = BLOCK_META[id] || {icon:'?', name:id, sub:''};
-    const isOff = !!disabled[id];
-    const rowOpacity = isOff ? 'opacity:0.4' : '';
-    return `<div class="settings-row" style="${rowOpacity}">
-      <div class="settings-row-left">
-        <div class="settings-icon">${m.icon}</div>
-        <div><div class="settings-label">${m.name}</div><div class="settings-sub">${m.sub}</div></div>
-      </div>
-      <div style="display:flex;align-items:center;gap:6px">
-        <label class="toggle" title="${isOff?'Einschalten':'Ausschalten'}">
-          <input type="checkbox" ${isOff?'':'checked'} onchange="toggleBlock('${id}')">
-          <div class="toggle-track"></div><div class="toggle-thumb"></div>
-        </label>
-        <button onclick="moveBlock(${i},-1)" ${i===0||isOff?'disabled':''} style="background:var(--bg3);border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:8px;font-size:13px;cursor:pointer;opacity:${i===0||isOff?'0.3':'1'}">▲</button>
-        <button onclick="moveBlock(${i}, 1)" ${i===order.length-1||isOff?'disabled':''} style="background:var(--bg3);border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:8px;font-size:13px;cursor:pointer;opacity:${i===order.length-1||isOff?'0.3':'1'}">▼</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-// ── TACHO ──────────────────────────────────────────────────
-function drawTachoMinMax(canvasId, scaleMin, scaleMax, valMin, valMax, valAvg, color) {
-  const canvas = document.getElementById(canvasId);
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const W = canvas.width, H = canvas.height;
-  const cx = W / 2, cy = H - 8;
-  const r = Math.min(W * 0.42, H * 0.88);
-  ctx.clearRect(0, 0, W, H);
-  function valToAngle(v) {
-    const pct = Math.max(0, Math.min(1, (v - scaleMin) / (scaleMax - scaleMin)));
-    return Math.PI + pct * Math.PI;
-  }
-  ctx.beginPath(); ctx.arc(cx, cy, r, Math.PI, 2*Math.PI);
-  ctx.strokeStyle = 'rgba(255,255,255,0.07)'; ctx.lineWidth = 12; ctx.lineCap = 'round'; ctx.stroke();
-  ctx.beginPath(); ctx.arc(cx, cy, r, valToAngle(valMin), valToAngle(valMax));
-  ctx.strokeStyle = color + '55'; ctx.lineWidth = 12; ctx.lineCap = 'round'; ctx.stroke();
-  const minAngle = valToAngle(valMin);
-  ctx.save(); ctx.translate(cx, cy); ctx.rotate(minAngle);
-  ctx.beginPath(); ctx.moveTo(-5, 0); ctx.lineTo(r-10, 0);
-  ctx.strokeStyle = '#10b981'; ctx.lineWidth = 2.5; ctx.setLineDash([]); ctx.lineCap = 'round'; ctx.stroke(); ctx.restore();
-  const maxAngle = valToAngle(valMax);
-  ctx.save(); ctx.translate(cx, cy); ctx.rotate(maxAngle);
-  ctx.beginPath(); ctx.moveTo(-5, 0); ctx.lineTo(r-10, 0);
-  ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2.5; ctx.setLineDash([]); ctx.lineCap = 'round'; ctx.stroke(); ctx.restore();
-  if (valAvg !== null && valAvg !== undefined) {
-    const avgAngle = valToAngle(valAvg);
-    ctx.save(); ctx.translate(cx, cy); ctx.rotate(avgAngle);
-    ctx.beginPath(); ctx.moveTo(-6, 0); ctx.lineTo(r-6, 0);
-    ctx.strokeStyle = '#f1f5f9'; ctx.lineWidth = 3; ctx.setLineDash([]); ctx.lineCap = 'round'; ctx.stroke(); ctx.restore();
-  }
-  ctx.beginPath(); ctx.arc(cx, cy, 4, 0, 2*Math.PI); ctx.fillStyle = '#475569'; ctx.fill();
-  ctx.fillStyle = '#475569'; ctx.font = '9px monospace';
-  ctx.textAlign = 'left'; ctx.fillText(scaleMin, 4, cy + 2);
-  ctx.textAlign = 'right'; ctx.fillText(scaleMax, W-4, cy + 2);
-  function labelAtAngle(angle, text, col) {
-    const lx = cx + (r - 26) * Math.cos(angle);
-    const ly = cy + (r - 26) * Math.sin(angle);
-    ctx.fillStyle = col; ctx.font = 'bold 9px monospace'; ctx.textAlign = 'center';
-    ctx.fillText(text, lx, ly - 3);
-  }
-  labelAtAngle(minAngle, valMin.toFixed(1), '#10b981');
-  labelAtAngle(maxAngle, valMax.toFixed(1), '#ef4444');
-  if (valAvg !== null && valAvg !== undefined) labelAtAngle(valToAngle(valAvg), valAvg.toFixed(1), '#f1f5f9');
-}
-
-function renderTacho() {
-  if (!DB || !DB.daily || !DB.daily.length) return;
-  const maxDays = prefs.curveDays || 60;
-  const daily = (DB.dailyExpanded || DB.daily).slice(-maxDays);
-  const stromVals = daily.map(r => r.strom).filter(v => v !== null && v !== undefined && !isNaN(v));
-  const gasVals   = daily.map(r => r.gas).filter(v => v !== null && v !== undefined && !isNaN(v));
-  if (!stromVals.length || !gasVals.length) return;
-  const sMin = Math.min(...stromVals), sMax = Math.max(...stromVals);
-  const gMin = Math.min(...gasVals),   gMax = Math.max(...gasVals);
-  const sAvg = stromVals.reduce((a,b)=>a+b,0) / stromVals.length;
-  const gAvg = gasVals.reduce((a,b)=>a+b,0)   / gasVals.length;
-  const sScale = Math.ceil(sMax * 1.1);
-  const gScale = Math.ceil(gMax * 1.1);
-  drawTachoMinMax('tachoStrom', 0, sScale, sMin, sMax, sAvg, '#f59e0b');
-  drawTachoMinMax('tachoGas',   0, gScale, gMin, gMax, gAvg, '#ef4444');
-  const titleEl = document.getElementById('tacho-title');
-  if (titleEl) titleEl.textContent = 'Min / Ø / Max — letzte ' + maxDays + ' Tage';
-}
-
-// ── WOCHENENDE HELPERS ─────────────────────────────────────
-function isSa(lbl){ return String(lbl).includes('Sa'); }
-function isSo(lbl){ return String(lbl).includes('So'); }
-function isWeekend(lbl){ return isSa(lbl)||isSo(lbl); }
-
-const weekendBgPlugin = {
-  id: 'weekendBg',
-  beforeDraw(chart) {
-    if (!prefs.weekendBg) return;
-    const {ctx, chartArea:{top,bottom}, scales:{x}} = chart;
-    if (!x) return;
-    chart.data.labels.forEach((lbl, i) => {
-      if (!isWeekend(lbl)) return;
-      const xPos = x.getPixelForValue(i);
-      const w = Math.max((x.getPixelForValue(1)||0) - (x.getPixelForValue(0)||0), 10);
-      ctx.fillStyle = isSa(lbl) ? 'rgba(59,130,246,0.10)' : 'rgba(139,92,246,0.10)';
-      ctx.fillRect(xPos - w/2, top, w, bottom - top);
-    });
-  }
-};
-
-// ── TAGESKURVE ─────────────────────────────────────────────
-function switchCurve(m, btn) {
-  curveMode = m;
-  document.querySelectorAll('.ctab').forEach(t => t.classList.remove('active'));
-  btn.classList.add('active');
-  renderCurve();
-}
-
-function dayColor(v) {
-  if (v === 0) return '#10b981';
-  if (v < 7)   return '#f59e0b';
-  return '#ef4444';
-}
-
-function renderCurve() {
-  if (!DB) return;
-  if (curveMode === 'wasser') { renderCurveWasser(); return; }
-  const dailyAll = DB.dailyExpanded || DB.daily || [];
-  if (!dailyAll.length) return;
-  const maxDays = prefs.curveDays || 60;
-  const daily = dailyAll.slice(-maxDays);
-  const vals   = daily.map(r => r[curveMode] !== null ? Math.round(r[curveMode]*100)/100 : null);
-  const labels = daily.map(r => r.datum);
-  const unit   = curveMode === 'strom' ? 'kWh' : curveMode === 'gas' ? 'm³' : curveMode === 'wasser' ? 'm³' : '°C';
-  const target = CURVE_TARGETS[curveMode];
-  const isStrom = curveMode === 'strom';
-
-  if (isStrom) {
-    const defined = vals.filter(v => v !== null);
-    let sun=0, cloud=0, rain=0;
-    defined.forEach(v => { if(v===0) sun++; else if(v<7) cloud++; else rain++; });
-    document.getElementById('curve-stats').innerHTML = `
-      <div class="wetter-stats">
-        <div class="wstat"><div class="wstat-icon">☀️</div><div class="wstat-label">Sonnentage</div><div class="wstat-val" style="color:#10b981">${sun}</div><div class="wstat-sub">= 0 kWh</div></div>
-        <div class="wstat"><div class="wstat-icon">☁️</div><div class="wstat-label">Bewölkt</div><div class="wstat-val" style="color:#f59e0b">${cloud}</div><div class="wstat-sub">&gt;0 bis &lt;7</div></div>
-        <div class="wstat"><div class="wstat-icon">🌧</div><div class="wstat-label">Bad Days</div><div class="wstat-val" style="color:#ef4444">${rain}</div><div class="wstat-sub">≥ 7 kWh</div></div>
-      </div>`;
-    document.getElementById('curve-legend').innerHTML = `
-      <div class="cleg"><div class="cleg-dot" style="background:#10b981"></div>Sonnentag (=0)</div>
-      <div class="cleg"><div class="cleg-dot" style="background:#f59e0b"></div>Bewölkt (&lt;7)</div>
-      <div class="cleg"><div class="cleg-dot" style="background:#ef4444"></div>Bad Day (≥7)</div>
-      <div class="cleg"><div class="cleg-dot" style="background:#475569"></div>Ziel</div>`;
-  } else {
-    const defined = vals.filter(v => v !== null);
-    const avg = defined.length ? (defined.reduce((a,b)=>a+b,0)/defined.length).toFixed(1) : '–';
-    const max = defined.length ? Math.max(...defined).toFixed(1) : '–';
-    const min = defined.length ? Math.min(...defined).toFixed(1) : '–';
-    const col = CURVE_COLORS[curveMode];
-    document.getElementById('curve-stats').innerHTML = `
-      <div class="simple-stats">
-        <div class="sstat"><div class="sstat-label">Ø Schnitt</div><div class="sstat-val" style="color:${col}">${avg}</div><div class="sstat-sub">${unit}</div></div>
-        <div class="sstat"><div class="sstat-label">Maximum</div><div class="sstat-val" style="color:${col}">${max}</div><div class="sstat-sub">${unit}</div></div>
-        <div class="sstat"><div class="sstat-label">Minimum</div><div class="sstat-val" style="color:${col}">${min}</div><div class="sstat-sub">${unit}</div></div>
-      </div>`;
-    document.getElementById('curve-legend').innerHTML = `
-      <div class="cleg"><div class="cleg-dot" style="background:${col}"></div>${curveMode.charAt(0).toUpperCase()+curveMode.slice(1)} ${unit}</div>
-      ${target ? `<div class="cleg"><div class="cleg-dot" style="background:#475569"></div>Ziel ${target} ${unit}</div>` : ''}`;
-  }
-
-  document.getElementById('curve-range').textContent = (labels[0]||'') + ' – ' + (labels[labels.length-1]||'');
-  const titleEl = document.getElementById('curve-title'); if(titleEl) titleEl.textContent = (prefs.curveDays||60) + ' Tage';
-
-  const datasets = [];
-  if (isStrom) {
-    for (let i = 0; i < vals.length - 1; i++) {
-      const v1 = vals[i] ?? 0, v2 = vals[i+1] ?? 0;
-      const col = dayColor((v1+v2)/2);
-      const seg = new Array(vals.length).fill(null);
-      seg[i] = vals[i]; seg[i+1] = vals[i+1];
-      datasets.push({data:seg, borderColor:col, backgroundColor:'transparent', borderWidth:2.5, pointRadius:0, tension:0.3, spanGaps:false, fill:false});
-    }
-    datasets.push({data:vals, borderColor:'transparent', backgroundColor:vals.map(v=>v!==null?dayColor(v):'#475569'), pointRadius:4, pointHoverRadius:6, borderWidth:0, fill:false, tension:0.3, spanGaps:false});
-  } else {
-    const col = CURVE_COLORS[curveMode];
-    datasets.push({data:vals, borderColor:col, backgroundColor:col+'18', fill:true, tension:0.4, pointRadius:3, pointBackgroundColor:col, borderWidth:2.5, spanGaps:false});
-  }
-  if (target) datasets.push({data:new Array(vals.length).fill(target), borderColor:'#475569', borderDash:[5,4], borderWidth:1.5, pointRadius:0, fill:false});
-
-  if (curveChart) { curveChart.destroy(); curveChart = null; }
-  curveChart = new Chart(document.getElementById('curveChart'), {
-    type:'line', plugins:[weekendBgPlugin], data:{labels, datasets},
-    options:{
-      responsive:true, maintainAspectRatio:false, animation:false,
-      plugins:{
-        legend:{display:false},
-        datalabels: { display: false },
-        tooltip:{
-          backgroundColor:'rgba(10,15,30,0.97)', borderColor:'rgba(255,255,255,0.1)', borderWidth:1,
-          titleColor:'#94a3b8', bodyColor:'#f1f5f9', padding:10, cornerRadius:8,
-          filter: item => isStrom ? item.datasetIndex === datasets.length-(target?2:1) : item.datasetIndex===0,
-          callbacks:{label:c=>{
-            const v=Math.round(c.parsed.y*100)/100;
-            if(isStrom) return ` ${v.toFixed(2)} kWh  ${v===0?'☀️':v<7?'☁️':'🌧'}`;
-            return ` ${v.toFixed(2)} ${unit}`;
-          }}
-        }
-      },
-      scales:{
-        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#94a3b8',font:{size:10},maxTicksLimit:8,maxRotation:0}},
-        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#94a3b8',font:{size:10},callback:v=>v+' '+unit}}
-      }
-    }
-  });
-}
-
-// ── ENERGIE-PROGNOSE HELFER ────────────────────────────────
-function getAvgFromDaily(field, days) {
-  if (!DB || !DB.daily) return field === 'strom' ? 4.33 : 4.8;
-  const src = DB.dailyExpanded || DB.daily;
-  const slice = src.slice(-days);
-  const vals = slice.map(r => r[field]).filter(v => v !== null && v !== undefined && !isNaN(v));
-  if (!vals.length) return field === 'strom' ? 4.33 : 4.8;
-  return vals.reduce((a,b) => a+b, 0) / vals.length;
-}
-
-function calcStromPrognose(sunDuration, rainProb, avgPerDay) {
-  const sunH = (sunDuration || 0) / 3600;
-  let factor = 1.0;
-  if      (sunH >= 6) factor = 0.05;
-  else if (sunH >= 4) factor = 0.30;
-  else if (sunH >= 2) factor = 0.65;
-  else                factor = 1.00;
-  if ((rainProb || 0) > 80) factor = Math.min(factor * 1.15, 1.3);
-  const val = Math.round(avgPerDay * factor * 100) / 100;
-  let label, color;
-  if      (sunH >= 4) { label = '☀️ Solar';   color = '#10b981'; }
-  else if (sunH >= 2) { label = '☁️ Bewölkt'; color = '#f59e0b'; }
-  else                { label = '🌧 Bad Day';  color = '#ef4444'; }
-  return { val, label, color };
-}
-
-function calcGasPrognose(tempMax, tempMin, avgPerDay) {
-  const avg = ((tempMax || 10) + (tempMin || 5)) / 2;
-  let factor;
-  if      (avg <= 0)  factor = 2.0;
-  else if (avg <= 5)  factor = 1.5;
-  else if (avg <= 10) factor = 1.1;
-  else if (avg <= 15) factor = 0.7;
-  else if (avg <= 20) factor = 0.3;
-  else                factor = 0.05;
-  const val = Math.round(avgPerDay * factor * 100) / 100;
-  let color;
-  if      (factor >= 1.5) color = '#ef4444';
-  else if (factor >= 0.9) color = '#f59e0b';
-  else                    color = '#10b981';
-  return { val, color };
-}
-
-// ── FORECAST ───────────────────────────────────────────────
-let forecastLoaded = false;
-let forecastData = null;
-
-async function loadForecast() {
-  if (forecastLoaded) return;
-  const url = 'https://api.open-meteo.com/v1/forecast?latitude=51.0018&longitude=6.2681&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,sunshine_duration&timezone=Europe%2FBerlin&forecast_days=7';
-  document.getElementById('forecastGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted);font-size:13px;">Lade Forecast…</div>';
-  try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const d = await res.json();
-    forecastLoaded = true;
-    forecastData = d;
-    renderForecast(d);
-    renderStromPrognose();
-  } catch(e) {
-    document.getElementById('forecastGrid').innerHTML = `
-      <div style="grid-column:1/-1;text-align:center;padding:30px 20px;">
-        <div style="font-size:32px;margin-bottom:8px">🌤️</div>
-        <div style="color:var(--muted);font-size:13px;margin-bottom:12px">Fehler: ${e.message}</div>
-        <button onclick="retryForecast()" style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);color:var(--strom);padding:8px 18px;border-radius:20px;font-size:13px;cursor:pointer;font-family:inherit;">↻ Nochmal versuchen</button>
-      </div>`;
-  }
-}
-
-function retryForecast() {
-  forecastLoaded = false;
-  loadForecast();
-}
-
-function weatherIcon(code) {
-  if (code === 0) return '☀️';
-  if (code <= 2) return '⛅';
-  if (code <= 3) return '☁️';
-  if (code <= 48) return '🌫️';
-  if (code <= 55) return '🌦️';
-  if (code <= 67) return '🌧️';
-  if (code <= 77) return '❄️';
-  if (code <= 82) return '🌧️';
-  if (code <= 99) return '⛈️';
-  return '🌡️';
-}
-
-const DAYS = ['So','Mo','Di','Mi','Do','Fr','Sa'];
-
-// ── FORECAST RENDERN MIT ENERGIE-PROGNOSE ──────────────────
-function renderForecast(d) {
-  const daily = d.daily;
-  const avgStrom = getAvgFromDaily('strom', 30);
-  const avgGas   = getAvgFromDaily('gas', 30);
-
-  const grid = (daily.time || daily.date).map((date, i) => {
-    const dt = new Date(date);
-    const dayName = i === 0 ? 'Heute' : DAYS[dt.getDay()];
-    const icon = weatherIcon(daily.weathercode[i]);
-    const hi = Math.round(daily.temperature_2m_max[i]);
-    const lo = Math.round(daily.temperature_2m_min[i]);
-    const rain = (daily.precipitation_sum[i] || 0).toFixed(1);
-    const prob = daily.precipitation_probability_max ? (daily.precipitation_probability_max[i] || 0) : 0;
-
-    const sunDur = daily.sunshine_duration ? (daily.sunshine_duration[i] || 0) : 0;
-    const strom  = calcStromPrognose(sunDur, prob, avgStrom);
-    const gas    = calcGasPrognose(daily.temperature_2m_max[i], daily.temperature_2m_min[i], avgGas);
-
-    return `<div class="fday">
-      <div class="fday-name">${dayName}</div>
-      <div class="fday-icon">${icon}</div>
-      <div class="fday-hi">${hi}°</div>
-      <div class="fday-lo">${lo}°</div>
-      <div class="fday-rain">${rain}mm${prob>0?' ('+prob+'%)':''}</div>
-      <div class="fday-divider"></div>
-      <div class="fday-energy-row">
-        <span>⚡</span>
-        <span class="fday-energy-val" style="color:${strom.color}">${strom.val.toFixed(1)}</span>
-        <span class="fday-energy-unit">kWh</span>
-      </div>
-      <div class="fday-energy-row">
-        <span>🔥</span>
-        <span class="fday-energy-val" style="color:${gas.color}">${gas.val.toFixed(1)}</span>
-        <span class="fday-energy-unit">m³</span>
-      </div>
-      <div class="fday-solar-label" style="color:${strom.color}">${strom.label}</div>
-    </div>`;
-  }).join('');
-
-  document.getElementById('forecastGrid').innerHTML = grid;
-  document.getElementById('forecastUpdated').textContent =
-    `Linnich · Open-Meteo · Ø Strom ${avgStrom.toFixed(2)} kWh/Tag · Gas ${avgGas.toFixed(2)} m³/Tag`;
-
-  const labels = (daily.time || daily.date).map((date,i) => i===0?'Heute':DAYS[new Date(date).getDay()]);
-  const hi = daily.temperature_2m_max.map(v=>Math.round(v));
-  const lo = daily.temperature_2m_min.map(v=>Math.round(v));
-
-  if (fcChart) { fcChart.destroy(); fcChart = null; }
-  fcChart = new Chart(document.getElementById('forecastChart'), {
-    type:'line',
-    data:{labels, datasets:[
-      {label:'Max',data:hi,borderColor:'#ef4444',backgroundColor:'rgba(239,68,68,0.08)',fill:true,tension:0.4,pointRadius:4,pointBackgroundColor:'#ef4444',borderWidth:2},
-      {label:'Min',data:lo,borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,0.08)',fill:true,tension:0.4,pointRadius:4,pointBackgroundColor:'#3b82f6',borderWidth:2}
-    ]},
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{
-        legend:{display:false},
-        datalabels: { display: false },
-        tooltip:{backgroundColor:'rgba(10,15,30,0.97)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,titleColor:'#94a3b8',bodyColor:'#f1f5f9',padding:10,cornerRadius:8,callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y}°C`}}
-      },
-      scales:{
-        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#94a3b8',font:{size:10}}},
-        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#94a3b8',font:{size:10},callback:v=>v+'°'}}
-      }
-    }
-  });
-}
-
-// ── JAHRESVERGLEICH ────────────────────────────────────────
-function buildYearTabs() {
-  const active = ALL_CATS.filter(c => prefs.cats[c.key]);
-  if (!yearCat || !prefs.cats[yearCat]) yearCat = active[0]?.key || 'strom';
-  document.getElementById('yearCatTabs').innerHTML = active.map(c =>
-    `<button class="ytab ${c.key} ${yearCat===c.key?'active':''}" onclick="switchYearCat('${c.key}',this)">${c.icon} ${c.label}</button>`).join('');
-}
-
-function switchYearCat(key, btn) {
-  yearCat = key;
-  document.querySelectorAll('.ytab').forEach(t => t.classList.remove('active'));
-  btn.classList.add('active');
-  renderYear();
-}
-
-function renderYear() {
-  if (!DB || curPage !== 'jahr') return;
-  buildYearTabs();
-  const meta = ALL_CATS.find(c => c.key === yearCat);
-  if (!meta) return;
-  const raw  = DB[yearCat]; if (!raw) return;
-  const vals = raw.values || {};
-  const tots = raw.totals || {};
-  const activeYears = ALL_YEARS.filter(yr => prefs.years[yr]);
-
-  const v26 = vals[2026] || [];
-  let lastM = -1;
-  v26.forEach((v,i) => { if(v!==null&&v!=='') lastM=i; });
-  if (lastM < 0) lastM = 0;
-
-  const v26m = v26[lastM];
-  const v25m = (vals[2025]||[])[lastM];
-  const pct  = (v25m && v26m!==null) ? ((v26m-v25m)/v25m*100).toFixed(1) : null;
-  const sign = pct > 0 ? '+' : '';
-  const tcls = yearCat==='temp' ? '' : (pct>0?'trend-up':'trend-down');
-  const sum26 = v26.slice(0,lastM+1).filter(v=>v!==null).reduce((a,b)=>a+b,0);
-  const sum25 = (vals[2025]||[]).slice(0,lastM+1).filter(v=>v!==null).reduce((a,b)=>a+b,0);
-  const ytdPct = sum25 ? (((sum26-sum25)/sum25)*100).toFixed(1) : null;
-  const ytdSign = ytdPct > 0 ? '+' : '';
-  const ytdCls = yearCat==='temp' ? '' : (ytdPct>0?'trend-up':'trend-down');
-
-  document.getElementById('sumCards').innerHTML = `
-    <div class="sum-card">
-      <div class="sum-label">2026 gesamt</div>
-      <div class="sum-val" style="color:${meta.color}">${fmt(sum26)}</div>
-      <div class="sum-sub">${meta.unit} · Jan–${MON[lastM]}</div>
-      ${ytdPct!==null?`<div class="sum-trend ${ytdCls}">${ytdSign}${ytdPct}% vs 2025</div>`:''}
-    </div>
-    <div class="sum-card">
-      <div class="sum-label">${MON[lastM]} 2026</div>
-      <div class="sum-val" style="color:${meta.color}">${v26m!==null?fmt(v26m):'–'}</div>
-      <div class="sum-sub">${meta.unit}</div>
-      ${pct!==null?`<div class="sum-trend ${tcls}">${sign}${pct}% vs ${MON[lastM]} '25</div>`:''}
-    </div>`;
-
-  const datasets = activeYears.map(yr => ({
-    label: String(yr),
-    data: (vals[yr]||[]).map(v=>(v===null||v==='')?null:Number(v)),
-    borderColor: YEAR_COLORS[yr],
-    backgroundColor: yr===2026?'rgba(241,245,249,0.06)':'transparent',
-    borderWidth: yr===2026?2.5:1.5,
-    pointRadius: yr===2026?3:1.5,
-    pointBackgroundColor: YEAR_COLORS[yr],
-    tension:0.4, spanGaps:false, fill:yr===2026,
-    yAxisID: 'y'
-  }));
-
-  const showTemp = yearCat === 'gas';
-  if (showTemp && DB.temp) {
-    const tempVals = DB.temp.values || {};
-    activeYears.forEach(yr => {
-      datasets.push({
-        label: 'Temp ' + yr,
-        data: (tempVals[yr]||[]).map(v=>(v===null||v==='')?null:Number(v)),
-        borderColor: '#10b981', backgroundColor: 'transparent',
-        borderWidth: yr===2026 ? 2 : 1, borderDash: [4,3],
-        pointRadius: yr===2026 ? 2 : 0, pointBackgroundColor: '#10b981',
-        tension:0.4, spanGaps:false, fill:false,
-        yAxisID: 'yTemp'
-      });
-    });
-  }
-
-  document.getElementById('yr-legend').innerHTML = [
-    ...activeYears.map(yr =>
-      `<div class="yr-leg ${yr===2026?'hi':''}"><div class="yr-leg-dot" style="background:${YEAR_COLORS[yr]}"></div>${yr}</div>`),
-    showTemp ? `<div class="yr-leg"><div class="yr-leg-dot" style="background:#10b981;border:1px dashed #10b981"></div>Temp °C</div>` : ''
-  ].join('');
-
-  if (yearChart) { yearChart.destroy(); yearChart = null; }
-  yearChart = new Chart(document.getElementById('yearChart'), {
-    type:'line', data:{labels:MON, datasets},
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      interaction:{mode:'index',intersect:false},
-      plugins:{
-        legend:{display:false},
-        datalabels: { display: false },
-        tooltip:{backgroundColor:'rgba(10,15,30,0.97)',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,titleColor:'#94a3b8',bodyColor:'#f1f5f9',padding:10,cornerRadius:8,
-          callbacks:{label:ctx=>{
-            const v = ctx.parsed.y;
-            if (v === null) return null;
-            if (ctx.dataset.yAxisID === 'yTemp') return ` ${ctx.dataset.label}: ${fmt(v)} °C`;
-            return ` ${ctx.dataset.label}: ${fmt(v)} ${meta.unit}`;
-          }}}
-      },
-      scales:{
-        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#94a3b8',font:{size:10}}},
-        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#94a3b8',font:{size:10},callback:v=>v+' '+meta.unit}},
-        ...(showTemp ? {yTemp:{position:'right',grid:{display:false},ticks:{color:'#10b981',font:{size:10},callback:v=>v+'°'},title:{display:true,text:'°C',color:'#10b981',font:{size:10}}}} : {})
-      }
-    }
-  });
-
-  const rows = MON.map((m,i) => {
-    const rv = activeYears.map(yr=>{const v=(vals[yr]||[])[i];return(v===null||v==='')?null:Number(v);});
-    const def = rv.filter(v=>v!==null);
-    const minV=def.length?Math.min(...def):null, maxV=def.length?Math.max(...def):null;
-    const cells = activeYears.map((yr,j)=>{
-      const v=rv[j];
-      if(v===null) return `<td style="color:var(--muted)">–</td>`;
-      const best=yearCat!=='temp'&&v===minV&&def.length>1;
-      const worst=yearCat!=='temp'&&v===maxV&&def.length>1;
-      const cls=[yr===2026?'hi':'',best?'best':'',worst?'worst':''].filter(Boolean).join(' ');
-      return `<td class="${cls}">${fmt(v)}</td>`;
-    }).join('');
-    return `<tr class="${i===lastM?'cm':''}"><td>${m}</td>${cells}</tr>`;
-  }).join('');
-
-  const totRow = activeYears.map(yr=>{
-    const t=tots[yr];
-    return `<td class="${yr===2026?'hi':''}" style="color:${yr===2026?'var(--text)':YEAR_COLORS[yr]}">${t!=null?fmt(t):'–'}</td>`;
-  }).join('');
-
-  document.getElementById('yearTable').innerHTML = `<table>
-    <thead><tr><th>Mon</th>${activeYears.map(yr=>`<th style="color:${YEAR_COLORS[yr]}">${yr}</th>`).join('')}</tr></thead>
-    <tbody>${rows}
-    <tr style="border-top:2px solid rgba(255,255,255,0.15)"><td style="color:var(--muted);font-weight:700">Σ</td>${totRow}</tr>
-    </tbody></table>`;
-}
-
-// ── STROM MONATSPROGNOSE ───────────────────────────────────
-function renderStromPrognose() {
-  const el = document.getElementById('stromPrognose');
-  if (!el) return;
-  if (!DB || !DB.daily || !DB.daily.length) { el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">Keine Daten</div>'; return; }
-
-  const now = new Date();
-  const curMonth = now.getMonth();
-  const curYear  = now.getFullYear();
-  const daysInMonth = new Date(curYear, curMonth + 1, 0).getDate();
-  const today = now.getDate();
-  const restTage = daysInMonth - today;
-
-  function parseEntryDate(datum) {
-    const m = String(datum).match(/(\d{1,2})\.(\d{1,2})/);
-    if (!m) return null;
-    return { day: parseInt(m[1]), mon: parseInt(m[2]) - 1 };
-  }
-
-  const dailyData = DB.dailyExpanded || DB.daily || [];
-  let istKwh = 0, istTage = 0, sumAll = 0, countAll = 0;
-  dailyData.forEach(r => {
-    if (r.strom === null) return;
-    const d = parseEntryDate(r.datum);
-    if (!d) return;
-    sumAll += r.strom; countAll++;
-    if (d.mon === curMonth) { istKwh += r.strom; istTage++; }
-  });
-
-  const last30 = dailyData.slice(-30);
-  let origSum = 0, origCount = 0;
-  last30.forEach(r => {
-    if (r.strom !== null && r.strom !== undefined) { origSum += r.strom; origCount++; }
-  });
-  const avgPerDay = origCount > 0 ? origSum / origCount : (countAll > 0 ? sumAll / countAll : 0);
-
-  let solarTageRest = 0, solarDetails = [];
-  if (forecastData && forecastData.daily && forecastData.daily.sunshine_duration) {
-    const fd = forecastData.daily;
-    const SOLAR_SCHWELLE = 4 * 3600;
-    (fd.time || fd.date).forEach((date, i) => {
-      const dt = new Date(date);
-      if (dt.getMonth() === curMonth) {
-        const sun = fd.sunshine_duration[i] || 0;
-        const sunH = Math.round(sun / 360) / 10;
-        const isSolar = sun >= SOLAR_SCHWELLE;
-        const dayName = i === 0 ? 'Heute' : DAYS[dt.getDay()];
-        solarDetails.push({ dayName, sunH, isSolar, date: dt.getDate() });
-        if (isSolar) solarTageRest++;
-      }
-    });
-  }
-
-  const bewolktRest = restTage - solarTageRest;
-  const prognoseOhneSolar = istKwh + avgPerDay * restTage;
-  const prognoseMitSolar  = istKwh + avgPerDay * bewolktRest;
-
-  const vorjahrKwh = DB.strom && DB.strom.values['2025'] ? (DB.strom.values['2025'][curMonth] || null) : null;
-  const diffPct = vorjahrKwh ? ((prognoseMitSolar - vorjahrKwh) / vorjahrKwh * 100).toFixed(0) : null;
-  const MON_NAMES = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
-
-  const solarRows = solarDetails.map(s => {
-    const col  = s.isSolar ? '#10b981' : s.sunH >= 2 ? '#f59e0b' : '#ef4444';
-    const badge = s.isSolar ? 'Solar ✓' : s.sunH >= 2 ? 'Grenzwertig' : 'Kein Solar';
-    const bgCol = s.isSolar ? 'rgba(16,185,129,0.12)' : s.sunH >= 2 ? 'rgba(245,158,11,0.12)' : 'rgba(239,68,68,0.12)';
-    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:12px;">
-      <span style="color:var(--text)">${s.dayName} ${s.date}.${(curMonth+1).toString().padStart(2,'0')}.</span>
-      <span style="color:var(--muted);font-family:monospace">${s.sunH.toFixed(1)}h ☀️</span>
-      <span style="background:${bgCol};color:${col};font-size:10px;padding:2px 8px;border-radius:20px">${badge}</span>
-    </div>`;
-  }).join('');
-
-  el.innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
-      <div style="background:var(--bg3);border-radius:10px;padding:10px;text-align:center">
-        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:4px">IST bisher</div>
-        <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:var(--text)">${Math.round(istKwh)}</div>
-        <div style="font-size:10px;color:var(--muted);margin-top:2px">kWh · ${istTage} Tage</div>
-      </div>
-      <div style="background:var(--bg3);border-radius:10px;padding:10px;text-align:center">
-        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:4px">Ø pro Tag</div>
-        <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:#f1f5f9">${avgPerDay.toFixed(2)}</div>
-        <div style="font-size:10px;color:var(--muted);margin-top:2px">kWh/Tag</div>
-      </div>
-      <div style="background:var(--bg3);border-radius:10px;padding:10px;text-align:center">
-        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:4px">Resttage</div>
-        <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:var(--text)">${restTage}</div>
-        <div style="font-size:10px;color:var(--muted);margin-top:2px">bis ${daysInMonth}. ${MON_NAMES[curMonth]}</div>
-      </div>
-    </div>
-    <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:12px;margin-bottom:12px">
-      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px">Hochrechnung Monatsende</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-        <div style="background:var(--bg3);border-radius:10px;padding:10px;text-align:center">
-          <div style="font-size:10px;color:var(--muted);margin-bottom:4px">Ohne Solar</div>
-          <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:#f1f5f9">${Math.round(prognoseOhneSolar)}</div>
-          <div style="font-size:10px;color:var(--muted)">kWh</div>
-        </div>
-        <div style="background:var(--bg3);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:10px;text-align:center">
-          <div style="font-size:10px;color:var(--muted);margin-bottom:4px">Mit Solar ☀️</div>
-          <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:var(--text)">${Math.round(prognoseMitSolar)}</div>
-          <div style="font-size:10px;color:var(--muted)">${solarTageRest} Sonnentage</div>
-        </div>
-        <div style="background:var(--bg3);border-radius:10px;padding:10px;text-align:center">
-          <div style="font-size:10px;color:var(--muted);margin-bottom:4px">Vorjahr ${MON_NAMES[curMonth]}</div>
-          <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:#f1f5f9">${vorjahrKwh !== null ? Math.round(vorjahrKwh) : '–'}</div>
-          <div style="font-size:10px;color:${diffPct!==null?(diffPct>0?'#ef4444':'#10b981'):'var(--muted)'}">${diffPct!==null?(diffPct>0?'+':'')+diffPct+'% vs 2025':'–'}</div>
-        </div>
-      </div>
-    </div>
-    ${solarRows ? `<div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:10px">
-      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px">☀️ Solar-Forecast Resttage (Schwelle &gt;4h)</div>
-      ${solarRows}
-    </div>` : ''}`;
-}
-
-// ── PROMPT EDITOR ──────────────────────────────────────────
-function saveCustomPrompt() {
-  const v = document.getElementById('prompt-custom')?.value || '';
-  if (v.trim()) localStorage.setItem('wagael_ki_prompt', v);
-  else localStorage.removeItem('wagael_ki_prompt');
-}
-
-function resetCustomPrompt() {
-  localStorage.removeItem('wagael_ki_prompt');
-  const el = document.getElementById('prompt-custom');
-  if (el) el.value = '';
-}
-
-function copyPrompt() {
-  const custom = document.getElementById('prompt-custom')?.value?.trim();
-  const text = custom || DEFAULT_KI_PROMPT;
-  navigator.clipboard.writeText(text).then(() => {
-    const el = document.getElementById('prompt-copied');
-    if (el) { el.style.display = 'block'; setTimeout(() => el.style.display = 'none', 2500); }
-  });
-}
-
-function testCustomPrompt() {
-  showPage('ki', document.querySelectorAll('.nav-item')[3]);
-  setTimeout(() => runKiAnalysis(), 300);
-}
-
-// ── KI ANALYSE ─────────────────────────────────────────────
-const DEFAULT_KI_PROMPT = `Du bist ein Energie-Assistent für einen Haushalt mit Solaranlage.
-
-WICHTIG zur Interpretation der Stromdaten:
-- Strom = 0 kWh bedeutet: Die Solaranlage hat den gesamten Bedarf gedeckt, kein Netzbezug. Das ist optimal.
-- Strom > 0 kWh bedeutet: Netzbezug war nötig, Solar hat nicht gereicht. Je höher, desto mehr Bewölkung oder Nacht.
-- Der Stromwert ist also der Netzbezug, NICHT der Solarertrag. Niedriger Wert = guter Solartag.
-
-Antworte auf Deutsch, maximal 180 Wörter, keine Einleitung. Struktur: je ein kurzer Abschnitt pro Kategorie mit Emoji, nur wenn etwas auffällt. Dann ein Abschnitt "📊 Langzeit" mit max. 2 Sätzen zum YTD-Vergleich 2026 vs. 2025. Abschluss: eine Zeile Gesamtfazit.`;
-const KI_CACHE_KEY  = 'wagael_ki_v1';
-const KI_INTERVAL   = 14 * 24 * 60 * 60 * 1000;
-
-function loadKiCache() {
-  try { return JSON.parse(localStorage.getItem(KI_CACHE_KEY)) || null; } catch(e) { return null; }
-}
-function saveKiCache(data) {
-  localStorage.setItem(KI_CACHE_KEY, JSON.stringify(data));
-}
-
-function getKiAge(ts) {
-  if (!ts) return null;
-  const diff = Date.now() - ts;
-  const days = Math.floor(diff / 86400000);
-  const hours = Math.floor((diff % 86400000) / 3600000);
-  if (days > 0) return `vor ${days} Tag${days>1?'en':''}`;
-  if (hours > 0) return `vor ${hours} Stunde${hours>1?'n':''}`;
-  return 'gerade eben';
-}
-
-function getNextAnalysisText(ts) {
-  if (!ts) return '';
-  const next = new Date(ts + KI_INTERVAL);
-  return 'Nächste automatische Analyse: ' + next.toLocaleDateString('de', {day:'2-digit',month:'2-digit',year:'numeric'});
-}
-
-function buildKiPrompt() {
-  if (!DB || !DB.daily) return null;
-  const daily = (DB.dailyExpanded || DB.daily).slice(-14);
-  const lines = daily.map(r =>
-    `${r.datum}: Strom=${r.strom!==null?r.strom.toFixed(2):'–'} kWh, Gas=${r.gas!==null?r.gas.toFixed(2):'–'} m³, Temp=${r.temp!==null?r.temp:'–'}°C`
-  ).join('\n');
-  const now = new Date();
-  const curMonth = now.getMonth();
-  function ytdSum(cat, yr) {
-    const vals = DB[cat] && DB[cat].values && DB[cat].values[yr] ? DB[cat].values[yr] : [];
-    return vals.slice(0, curMonth + 1).filter(v => v !== null).reduce((a,b) => a+b, 0);
-  }
-  const strom26 = Math.round(ytdSum('strom', 2026));
-  const strom25 = Math.round(ytdSum('strom', 2025));
-  const gas26   = Math.round(ytdSum('gas',   2026));
-  const gas25   = Math.round(ytdSum('gas',   2025));
-  const ytdLabel = `Jan–${MON[curMonth]}`;
-  const ytd = `Strom ${ytdLabel}: 2026=${strom26} kWh, 2025=${strom25} kWh\nGas ${ytdLabel}: 2026=${gas26} m³, 2025=${gas25} m³`;
-
-  const customPromptText = localStorage.getItem('wagael_ki_prompt') || '';
-  const basePrompt = customPromptText.trim() || DEFAULT_KI_PROMPT;
-
-  let wasserInfo = '';
-  if (DB.wasserDaily && DB.wasserDaily.length) {
-    const wValid = DB.wasserDaily.filter(r => r.datum && String(r.datum).trim().length > 2 && r.tage > 0).slice(-14);
-    if (wValid.length) wasserInfo = '\n\nWasserablesungen (Datum · Tage ohne Zähleränderung — je höher desto sparsamer):\n' +
-      wValid.map(r => `${String(r.datum).trim()}: ${r.tage} Tage`).join('\n');
-  }
-
-  return `${basePrompt}
-
-WICHTIG zur Interpretation der Wasserdaten:
-- Wasserverbrauch wird in Tage/m³ gemessen: je mehr Tage pro m³, desto sparsamer.
-- 🚿 Duschig = 1 Tag/m³ (hoher Verbrauch, rot)
-- 💧 Normal = 2–4 Tage/m³ (durchschnittlich, gelb)
-- 🌊 Sparsam = >4 Tage/m³ (sehr sparsam, blau)
-
-Tagesdaten letzte 14 Tage (Strom = Netzbezug in kWh, 0 = reiner Solartag):
-${lines}
-
-Jahresdaten YTD:
-${ytd}${wasserInfo}`;
-}
-
-async function runKiAnalysis(auto = false) {
-  const btn = document.getElementById('ki-btn');
-  if (btn) { btn.disabled = true; btn.classList.add('loading'); btn.textContent = '⏳ Analysiere…'; }
-  const resultEl = document.getElementById('ki-result');
-  if (resultEl) resultEl.innerHTML = '<div class="ki-text-placeholder">KI analysiert deine Daten…</div>';
-  try {
-    const prompt = buildKiPrompt();
-    if (!prompt) throw new Error('Keine Daten verfügbar');
-    const url = API_URL + '?action=ki&prompt=' + encodeURIComponent(prompt);
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    if (data.error) throw new Error(data.error);
-    const text = data.analysis || data.content || '–';
-    const now = Date.now();
-    saveKiCache({ text, ts: now });
-    renderKiResult(text, now);
-  } catch(err) {
-    if (resultEl) resultEl.innerHTML = `<div class="ki-text-placeholder" style="color:#ef4444">⚠️ Fehler: ${err.message}</div>`;
-  }
-  if (btn) { btn.disabled = false; btn.classList.remove('loading'); btn.textContent = '↻ Neu analysieren'; }
-}
-
-function renderKiResult(text, ts) {
-  const resultEl = document.getElementById('ki-result');
-  if (resultEl) resultEl.innerHTML = `<div class="ki-text">${text}</div>`;
-  const lastEl = document.getElementById('ki-last');
-  if (lastEl) lastEl.textContent = 'Analysiert ' + getKiAge(ts);
-  const nextEl = document.getElementById('ki-next');
-  if (nextEl) nextEl.textContent = getNextAnalysisText(ts);
-  updateKiMini(text, ts);
-}
-
-function updateKiMini(text, ts) {
-  const miniText = document.getElementById('ki-mini-text');
-  const miniDate = document.getElementById('ki-mini-date');
-  if (miniText) miniText.textContent = text || 'Keine Analyse vorhanden';
-  if (miniDate && ts) miniDate.textContent = getKiAge(ts);
-}
-
-function renderKiPage() {
-  const cache = loadKiCache();
-  if (cache) {
-    renderKiResult(cache.text, cache.ts);
-    const btn = document.getElementById('ki-btn');
-    if (btn) btn.textContent = '↻ Neu analysieren';
-    if (Date.now() - cache.ts > KI_INTERVAL) runKiAnalysis(true);
-  }
-}
-
-function initKi() {
-  const cache = loadKiCache();
-  if (cache) {
-    updateKiMini(cache.text, cache.ts);
-    if (Date.now() - cache.ts > KI_INTERVAL) runKiAnalysis(true);
-  }
-}
-
-// ── WASSER TAGESKURVE ─────────────────────────────────────
-function renderCurveWasser() {
-  if (!DB || !DB.daily || !DB.daily.length) return;
-  const dailyOrig = DB.daily.filter(r => r.wasser !== null && r.wasser !== undefined && r.tage > 0);
-  if (!dailyOrig.length) return;
-
-  function tageProM3(curr, prev) {
-    if (!prev) return null;
-    const diff = curr.wasser - prev.wasser;
-    if (diff <= 0) return Infinity;
-    return curr.tage / diff;
-  }
-
-  function segColor(tpm) {
-    if (tpm === null) return '#475569';
-    if (tpm === Infinity || tpm >= 4) return '#3b82f6';
-    if (tpm >= 2) return '#f59e0b';
-    return '#ef4444';
-  }
-
-  function expandWasserDaily(arr) {
-    const result = [];
-    arr.forEach((r, i) => {
-      if (i === 0 || r.tage <= 0) { result.push({datum: r.datum, wasser: r.wasser, _tpm: null}); return; }
-      const tpm = tageProM3(r, arr[i-1]);
-      const m = r.datum.match(/(\d{1,2})\.(\d{1,2})\./);
-      if (!m) { result.push({datum: r.datum, wasser: r.wasser, _tpm: tpm}); return; }
-      const now = new Date(); let yr = now.getFullYear();
-      const mon = parseInt(m[2]) - 1;
-      if (mon > now.getMonth()) yr--;
-      const endDate = new Date(yr, mon, parseInt(m[1]));
-      for (let dd = r.tage - 1; dd >= 0; dd--) {
-        const dt = new Date(endDate); dt.setDate(dt.getDate() - dd);
-        const label = dt.getDate() + '.' + String(dt.getMonth()+1).padStart(2,'0') + '.';
-        result.push({datum: label, wasser: r.wasser, _tpm: tpm});
-      }
-    });
-    return result;
-  }
-
-  const expanded = expandWasserDaily(dailyOrig);
-
-  let duschig=0, normal=0, sparsam=0;
-  dailyOrig.forEach((r,i) => {
-    if (i===0) return;
-    const tpm = tageProM3(r, dailyOrig[i-1]);
-    if (tpm===null) return;
-    if (tpm >= 4 || tpm===Infinity) sparsam++;
-    else if (tpm >= 2) normal++;
-    else duschig++;
-  });
-
-  document.getElementById('curve-stats').innerHTML = `
-    <div class="wetter-stats">
-      <div class="wstat"><div class="wstat-icon">🚿</div><div class="wstat-label">Duschig</div><div class="wstat-val" style="color:#ef4444">${duschig}</div><div class="wstat-sub">1 Tag/m³</div></div>
-      <div class="wstat"><div class="wstat-icon">💧</div><div class="wstat-label">Normal</div><div class="wstat-val" style="color:#f59e0b">${normal}</div><div class="wstat-sub">2–4 Tage/m³</div></div>
-      <div class="wstat"><div class="wstat-icon">🌊</div><div class="wstat-label">Sparsam</div><div class="wstat-val" style="color:#3b82f6">${sparsam}</div><div class="wstat-sub">&gt;4 Tage/m³</div></div>
-    </div>`;
-
-  document.getElementById('curve-legend').innerHTML = `
-    <div class="cleg"><div class="cleg-dot" style="background:#ef4444"></div>🚿 Duschig (1d/m³)</div>
-    <div class="cleg"><div class="cleg-dot" style="background:#f59e0b"></div>💧 Normal (2–4d/m³)</div>
-    <div class="cleg"><div class="cleg-dot" style="background:#3b82f6"></div>🌊 Sparsam (&gt;4d/m³)</div>`;
-
-  const maxDays = prefs.curveDays || 60;
-  const sliced  = expanded.slice(-maxDays);
-  const labels  = sliced.map(r => r.datum);
-  const vals    = sliced.map(r => r.wasser);
-
-  const first = sliced[0]?.wasser || 0;
-  const last  = sliced[sliced.length-1]?.wasser || 0;
-  const totalDays = sliced.length;
-  document.getElementById('curve-range').textContent =
-    `Zähler: ${first} → ${last} m³  ·  Verbrauch: ${last-first} m³  ·  Ø ${totalDays > 0 ? ((last-first)/totalDays).toFixed(3) : '–'} m³/Tag`;
-
-  const datasets = [];
-  for (let i = 0; i < sliced.length - 1; i++) {
-    const col = segColor(sliced[i+1]._tpm);
-    const seg = new Array(sliced.length).fill(null);
-    seg[i] = vals[i]; seg[i+1] = vals[i+1];
-    datasets.push({
-      data: seg, borderColor: col, backgroundColor: 'transparent',
-      borderWidth: 2.5, pointRadius: 0, tension: 0, spanGaps: false, fill: false
-    });
-  }
-  const isMeasured = sliced.map(r => r._tpm !== null);
-  datasets.push({
-    data: vals, borderColor: 'transparent',
-    backgroundColor: sliced.map(r => segColor(r._tpm)),
-    pointRadius: sliced.map((r,i) => isMeasured[i] ? 4 : 0),
-    pointHoverRadius: 6, borderWidth: 0,
-    fill: false, tension: 0, spanGaps: false
-  });
-
-  const titleEl = document.getElementById('curve-title');
-  if (titleEl) titleEl.textContent = (prefs.curveDays||60) + ' Tage';
-
-  if (curveChart) { curveChart.destroy(); curveChart = null; }
-  curveChart = new Chart(document.getElementById('curveChart'), {
-    type: 'line', plugins: [weekendBgPlugin], data: { labels, datasets },
-    options: {
-      responsive: true, maintainAspectRatio: false, animation: false,
-      plugins: {
-        legend: { display: false },
-        datalabels: { display: false },
-        tooltip: {
-          backgroundColor: 'rgba(10,15,30,0.97)', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
-          titleColor: '#94a3b8', bodyColor: '#f1f5f9', padding: 10, cornerRadius: 8,
-          filter: item => item.datasetIndex === datasets.length - 1,
-          callbacks: { label: ctx => {
-            const tpm = sliced[ctx.dataIndex]?._tpm;
-            const tpmStr = tpm === null || tpm === undefined ? '–' : tpm === Infinity ? '∞' : tpm.toFixed(1);
-            const cat = !tpm ? '' : tpm >= 4 || tpm===Infinity ? ' 🌊' : tpm >= 2 ? ' 💧' : ' 🚿';
-            return ` ${ctx.parsed.y} m³  (${tpmStr} Tage/m³)${cat}`;
-          }}
-        }
-      },
-      scales: {
-        x: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#94a3b8',font:{size:10},maxTicksLimit:8,maxRotation:0} },
-        y: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#94a3b8',font:{size:10},callback:v=>v+' m³'}, min: first - 1 }
-      }
-    }
-  });
-}
-
-// ── HELPERS ────────────────────────────────────────────────
-function fmt(v) {
-  if(v===null||v===undefined) return '–';
-  return Number(v).toLocaleString('de',{maximumFractionDigits:1});
-}
-
-loadData();
+// Initialer Aufruf
+renderYearChart();
 </script>
+
 </body>
 </html>

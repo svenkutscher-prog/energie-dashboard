@@ -448,7 +448,7 @@ canvas{display:block;}
           <span style="font-size:11px;color:var(--text);font-family:'Space Mono',monospace;" id="wp-o-foerd">55</span>
         </div>
         <input type="range" min="0" max="70" step="5" value="55" id="wp-s-foerd" oninput="wpCalc()" style="width:100%;accent-color:#a78bfa;">
-        <div style="font-size:10px;color:var(--muted);margin-top:3px;">Basisförderung 30% + Effizienzbonus 10% + Klimageschwindigkeit 15% = max. 55%</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:3px;">55% × 35.000 € = 19.250 € · Basis 30% + Effizienz 10% + Klimageschw. 15%</div>
       </div>
 
       <div style="border-top:1px solid rgba(255,255,255,0.07);padding-top:10px;margin-top:4px;">
@@ -618,12 +618,24 @@ canvas{display:block;}
       </div>
     </div>
 
+    <!-- Monatsgrafik -->
+    <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;font-weight:600;">📊 Monatsübersicht — Strom & Solar-Schätzung</div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:10px;">
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;font-size:11px;">
+        <span style="display:flex;align-items:center;gap:5px;color:#818cf8;"><span style="width:10px;height:10px;border-radius:2px;background:#818cf8;display:inline-block;"></span>Netzbezug IST (kWh)</span>
+        <span style="display:flex;align-items:center;gap:5px;color:#fbbf24;"><span style="width:10px;height:10px;border-radius:2px;background:#fbbf24;display:inline-block;"></span>Solar-Anteil geschätzt (kWh)</span>
+        <span style="display:flex;align-items:center;gap:5px;color:#10b981;"><span style="width:10px;height:10px;border-radius:2px;background:#10b981;display:inline-block;"></span>WP-Bedarf simuliert (kWh)</span>
+      </div>
+      <div style="position:relative;height:180px;"><canvas id="wpMonatChart"></canvas></div>
+      <div style="font-size:10px;color:var(--muted);margin-top:6px;text-align:center;">Solar-Anteil = Tage mit Netzbezug=0 × Ø-Tagesverbrauch · WP-Bedarf = Gas × 9 kWh/m³ ÷ COP</div>
+    </div>
+
     <!-- Grundpreis-Hinweis -->
     <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:var(--r);padding:10px 14px;margin-bottom:10px;">
       <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px;font-weight:600;">ℹ️ Hinweis Grundpreise</div>
       <div style="font-size:11px;color:var(--muted);line-height:1.7;">
         Strom Grundpreis: <span style="color:var(--text);">11,11 €/Mo</span> · Gas Grundpreis: <span style="color:var(--text);">12,60 €/Mo</span><br>
-        Bei WP-Einbau entfällt der Gasgrundpreis → <span style="color:#34d399;font-weight:600;">+151,20 €/Jahr Einsparung</span> (in Break-even nicht eingerechnet — manuell addieren)
+        Bei WP-Einbau entfällt der Gasgrundpreis → <span style="color:#34d399;font-weight:600;">+151,20 €/Jahr Einsparung</span> (in Break-even eingerechnet ✓)
       </div>
     </div>
 
@@ -778,7 +790,7 @@ canvas{display:block;}
 
 <script>
 // ── APP VERSION (bei jeder Änderung hochzählen → iOS lädt neu) ──
-const APP_VERSION = '2.2.1';
+const APP_VERSION = '2.2.2';
 const VERSION_KEY = 'wagael_app_version';
 
 // iOS Hard-Reload: öffnet mit ?v=timestamp → umgeht jeden Cache
@@ -1010,6 +1022,7 @@ function applyData() {
   renderStromPrognose();
   loadForecast();
   if (curPage === 'jahr') renderYear();
+  if (curPage === 'trends') renderWpMonatChart();
 }
 
 // ── DAILY EXPANDIEREN ──────────────────────────────────────
@@ -2239,7 +2252,7 @@ function wpCalc() {
   }
 
   // ── Investition & Break-even ─────────────────────────────
-  const foerdBetrag = Math.round(WP_INVEST * foerd / 100);
+  const foerdBetrag = Math.round(WP_INVEST * foerd / 100); // 55% × 35.000 = 19.250 €
   const netInvest   = WP_INVEST - foerdBetrag;
   // Gasgrundpreis-Einsparung: 12,60 €/Mo × 12 = 151,20 €/Jahr (wenn Gasanschluss gekündigt)
   const gasGrundErspar = 151.20;
@@ -2272,10 +2285,139 @@ function wpCalc() {
     beBar.style.width      = Math.round(pct) + '%';
     beBar.style.background = beJahre <= 12 ? '#10b981' : beJahre <= 20 ? '#f59e0b' : '#ef4444';
   }
+
+  // Monatsgrafik neu rendern wenn COP sich ändert
+  renderWpMonatChart();
+}
+
+let wpMonatChart = null;
+
+function renderWpMonatChart() {
+  if (!DB || !DB.strom || !DB.gas) return;
+  const canvas = document.getElementById('wpMonatChart');
+  if (!canvas) return;
+
+  const cop = parseInt(document.getElementById('wp-s-cop')?.value || 35) / 10;
+
+  const stromVals = DB.strom.values || {};
+  const gasVals   = DB.gas.values   || {};
+
+  // Aktuelles Jahr bevorzugen, sonst letztes Jahr mit Daten
+  const yr = Object.keys(stromVals).reverse().find(y => stromVals[y] && stromVals[y].some(v => v !== null)) || '2025';
+
+  const stromMon = stromVals[yr] || new Array(12).fill(null);
+  const gasMon   = gasVals[yr]   || new Array(12).fill(null);
+
+  // Solar-Anteil schätzen: aus Tagesdaten — Tage mit Strom=0 pro Monat
+  const daily = DB.dailyExpanded || DB.daily || [];
+  const solarTagePM = new Array(12).fill(0);
+  const gesamtTagePM = new Array(12).fill(0);
+  const avgStromPM   = new Array(12).fill(0);
+  const countPM      = new Array(12).fill(0);
+
+  daily.forEach(r => {
+    const m = String(r.datum || '').match(/\d{1,2}\.(\d{1,2})\./);
+    if (!m) return;
+    const mon = parseInt(m[1]) - 1;
+    if (mon < 0 || mon > 11) return;
+    gesamtTagePM[mon]++;
+    if (r.strom === 0) solarTagePM[mon]++;
+    if (r.strom !== null && r.strom !== undefined) {
+      avgStromPM[mon] += r.strom;
+      countPM[mon]++;
+    }
+  });
+
+  const netzbezugData = stromMon.map(v => v !== null ? Math.round(v) : null);
+  
+  // Solar-Schätzung: Solartage × Ø-Tagesverbrauch (an nicht-Solar-Tagen)
+  const solarData = stromMon.map((v, i) => {
+    if (v === null || gesamtTagePM[i] === 0) return null;
+    const avgTag = countPM[i] > 0 ? avgStromPM[i] / countPM[i] : 0;
+    // Solar-Schätzung: Solartage hätten ohne Solar avgTag kWh verbraucht
+    return Math.round(solarTagePM[i] * avgTag);
+  });
+
+  // WP-Bedarf simuliert: Gas m³ × 9 kWh Heizwert × 0.9 Wirkungsgrad ÷ COP
+  const wpData = gasMon.map(v => v !== null ? Math.round(v * 9 * 0.9 / cop) : null);
+
+  if (wpMonatChart) { wpMonatChart.destroy(); wpMonatChart = null; }
+  wpMonatChart = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'],
+      datasets: [
+        {
+          label: 'Netzbezug IST',
+          data: netzbezugData,
+          backgroundColor: 'rgba(129,140,248,0.7)',
+          borderColor: '#818cf8',
+          borderWidth: 1,
+          borderRadius: 4,
+          stack: 'strom'
+        },
+        {
+          label: 'Solar geschätzt',
+          data: solarData,
+          backgroundColor: 'rgba(251,191,36,0.7)',
+          borderColor: '#fbbf24',
+          borderWidth: 1,
+          borderRadius: 4,
+          stack: 'strom'
+        },
+        {
+          label: 'WP-Bedarf sim.',
+          data: wpData,
+          backgroundColor: 'rgba(16,185,129,0.25)',
+          borderColor: '#10b981',
+          borderWidth: 2,
+          borderRadius: 4,
+          type: 'line',
+          fill: false,
+          tension: 0.4,
+          pointRadius: 4,
+          pointBackgroundColor: '#10b981',
+          stack: undefined
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        datalabels: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(10,15,30,0.97)',
+          borderColor: 'rgba(255,255,255,0.1)',
+          borderWidth: 1,
+          titleColor: '#94a3b8',
+          bodyColor: '#f1f5f9',
+          padding: 10,
+          cornerRadius: 8,
+          callbacks: {
+            label: ctx => {
+              const v = ctx.parsed.y;
+              if (v === null || v === undefined) return null;
+              const labels = ['Netzbezug IST','Solar geschätzt','WP-Bedarf sim.'];
+              return ' ' + labels[ctx.datasetIndex] + ': ' + v + ' kWh';
+            }
+          }
+        }
+      },
+      scales: {
+        x: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#94a3b8',font:{size:10}}, stacked: true },
+        y: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#94a3b8',font:{size:10},callback:v=>v+' kWh'}, stacked: true }
+      }
+    }
+  });
 }
 
 function wpInit() {
   wpSetTab('m');
+  // Monatsgrafik nach kurzem Delay rendern (DB muss geladen sein)
+  setTimeout(renderWpMonatChart, 300);
 }
 </script>
 </body>

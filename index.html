@@ -7,6 +7,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="WAGAEL">
 <meta name="theme-color" content="#0a0f1e">
+<!-- iOS Cache-Killer: kein Browser-Cache -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>WAGAEL</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
@@ -247,10 +251,13 @@ canvas{display:block;}
 
 <div class="topbar">
   <div>
-    <h1>WAGAEL</h1>
+    <h1>WAGAEL <span id="app-version" style="font-size:11px;color:var(--muted);font-weight:400;letter-spacing:0.05em;"></span></h1>
     <p id="lastRefresh">Lade Daten…</p>
   </div>
-  <button class="refresh-btn" onclick="loadData(true)">↻ Refresh</button>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <button class="refresh-btn" onclick="loadData(true)" title="Daten neu laden">↻</button>
+    <button class="refresh-btn" onclick="hardReload()" title="Seite komplett neu laden (iOS-Fix)" style="background:rgba(139,92,246,0.15);border-color:rgba(139,92,246,0.3);color:#a78bfa;">⟳ Neu</button>
+  </div>
 </div>
 
 <div class="error-banner" id="errorBanner"></div>
@@ -680,7 +687,7 @@ canvas{display:block;}
 
     <div class="acc-group">
       <div class="acc-header" onclick="toggleAcc(this)">
-        <div class="acc-left"><div class="acc-icon">🔗</div><div><div class="acc-name">Datenquelle</div><div class="acc-sub">API URL · Cache leeren</div></div></div>
+        <div class="acc-left"><div class="acc-icon">🔗</div><div><div class="acc-name">Datenquelle & Version</div><div class="acc-sub">API URL · Cache · iOS-Reload</div></div></div>
         <div class="acc-right"><span class="acc-chevron">▼</span></div>
       </div>
       <div class="acc-body">
@@ -688,9 +695,17 @@ canvas{display:block;}
           <div class="api-label">Apps Script URL</div>
           <div class="api-url" id="apiUrlDisplay"></div>
         </div>
-        <div class="settings-row" style="border-bottom:none">
+        <div class="api-row" style="padding-top:0;">
+          <div class="api-label">App Version</div>
+          <div class="api-url" id="versionDisplay" style="color:#a78bfa;"></div>
+        </div>
+        <div class="settings-row">
           <div class="settings-row-left"><div class="settings-icon">🗑️</div><div><div class="settings-label">Cache leeren & neu laden</div><div class="settings-sub">Holt frische Daten vom Sheet</div></div></div>
           <button onclick="clearCache()" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#ef4444;padding:6px 14px;border-radius:20px;font-size:13px;cursor:pointer;font-family:inherit;">Leeren</button>
+        </div>
+        <div class="settings-row" style="border-bottom:none">
+          <div class="settings-row-left"><div class="settings-icon">📱</div><div><div class="settings-label">iOS Hard-Reload</div><div class="settings-sub">Lädt Seite komplett neu · umgeht Safari-Cache</div></div></div>
+          <button onclick="hardReload()" style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);color:#a78bfa;padding:6px 14px;border-radius:20px;font-size:13px;cursor:pointer;font-family:inherit;">⟳ Reload</button>
         </div>
       </div>
     </div>
@@ -730,6 +745,30 @@ canvas{display:block;}
 </div>
 
 <script>
+// ── APP VERSION (bei jeder Änderung hochzählen → iOS lädt neu) ──
+const APP_VERSION = '2.1.0';
+const VERSION_KEY = 'wagael_app_version';
+
+// iOS Hard-Reload: öffnet mit ?v=timestamp → umgeht jeden Cache
+function hardReload() {
+  const url = location.href.split('?')[0] + '?v=' + Date.now();
+  location.replace(url);
+}
+
+// Version prüfen: wenn neue Version → alten Cache löschen
+(function checkVersion() {
+  const stored = localStorage.getItem(VERSION_KEY);
+  if (stored !== APP_VERSION) {
+    // Neue Version erkannt → Daten-Cache löschen, Prefs behalten
+    ['wagael_v3','wagael_ki_v1'].forEach(k => localStorage.removeItem(k));
+    localStorage.setItem(VERSION_KEY, APP_VERSION);
+    console.log('WAGAEL: neue Version', APP_VERSION, '→ Cache geleert');
+  }
+  // Version im Topbar anzeigen
+  const vEl = document.getElementById('app-version');
+  if (vEl) vEl.textContent = 'v' + APP_VERSION;
+})();
+
 const API_URL   = 'https://script.google.com/macros/s/AKfycbxvXeeBPFz7J7rvIV6zGa6Dllq--a53RBE4Lbq49d6jqokph8GEt9PeWR1GR6_EJUoQjw/exec';
 const CACHE_KEY = 'wagael_v3';
 const PREF_KEY  = 'wagael_prefs_v3';
@@ -799,6 +838,7 @@ function renderSettings() {
   const ycEl = document.getElementById('yearChips'); if(ycEl) ycEl.innerHTML = ALL_YEARS.map(yr =>
     `<button class="year-chip ${prefs.years[yr]?'on':''}" data-yr="${yr}" onclick="toggleYear(${yr},this)">${yr}</button>`).join('');
   const apiEl = document.getElementById('apiUrlDisplay'); if(apiEl) apiEl.textContent = API_URL;
+  const verEl = document.getElementById('versionDisplay'); if(verEl) verEl.textContent = 'v' + APP_VERSION + ' · Build ' + new Date().toLocaleDateString('de');
   const wbEl = document.getElementById('toggle-weekend'); if(wbEl) wbEl.checked = prefs.weekendBg !== false;
   renderBlockOrderList();
   const defEl = document.getElementById('prompt-default');
@@ -835,25 +875,14 @@ function setCurveDays(v) {
 }
 
 function clearCache() {
+  // Alle Caches löschen
   localStorage.removeItem(CACHE_KEY);
   localStorage.removeItem(KI_CACHE_KEY);
+  localStorage.removeItem(VERSION_KEY);
   localStorage.removeItem('wagael_ki_prompt');
   DB = null;
-  const kiResult = document.getElementById('ki-result');
-  if (kiResult) kiResult.innerHTML = '<div class="ki-text-placeholder">Klicke auf "Analysieren" um eine KI-Bewertung zu erhalten.</div>';
-  const kiLast = document.getElementById('ki-last');
-  if (kiLast) kiLast.textContent = 'Noch keine Analyse vorhanden';
-  const kiNext = document.getElementById('ki-next');
-  if (kiNext) kiNext.textContent = '';
-  const kiBtn = document.getElementById('ki-btn');
-  if (kiBtn) kiBtn.textContent = '▶ Analysieren';
-  const miniText = document.getElementById('ki-mini-text');
-  if (miniText) miniText.textContent = 'Noch keine Analyse — tippe hier um zu starten.';
-  const miniDate = document.getElementById('ki-mini-date');
-  if (miniDate) miniDate.textContent = '';
-  document.getElementById('lastRefresh').textContent = 'Cache geleert…';
-  showPage('dashboard', document.querySelectorAll('.nav-item')[0]);
-  loadData(true);
+  // iOS: Hard-Reload mit timestamp → Safari-Cache wird sicher umgangen
+  setTimeout(() => hardReload(), 100);
 }
 
 // ── DATA LOADING ───────────────────────────────────────────
@@ -874,7 +903,12 @@ async function loadData(force = false) {
     }
   }
   try {
-    const res = await fetch(API_URL);
+    // Cache-Buster: ?t=timestamp verhindert iOS-Safari-Cache beim Fetch
+    const bustUrl = API_URL + (API_URL.includes('?') ? '&' : '?') + '_t=' + Date.now();
+    const res = await fetch(bustUrl, {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache, no-store', 'Pragma': 'no-cache' }
+    });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     if (data.error) throw new Error(data.error);

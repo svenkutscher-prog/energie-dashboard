@@ -373,6 +373,8 @@ canvas{display:block;}
         <span style="background:rgba(59,130,246,0.12);color:#60a5fa;border:1px solid rgba(59,130,246,0.25);font-size:10px;padding:3px 9px;border-radius:20px;">FBH · VL 30–40°C</span>
         <span style="background:rgba(16,185,129,0.12);color:#34d399;border:1px solid rgba(16,185,129,0.25);font-size:10px;padding:3px 9px;border-radius:20px;">WW 55°C · 500L</span>
         <span style="background:rgba(16,185,129,0.12);color:#34d399;border:1px solid rgba(16,185,129,0.25);font-size:10px;padding:3px 9px;border-radius:20px;">2 Personen</span>
+        <span style="background:rgba(245,158,11,0.12);color:#fbbf24;border:1px solid rgba(245,158,11,0.3);font-size:10px;padding:3px 9px;border-radius:20px;">☀️ 22 Solar-Panels</span>
+        <span style="background:rgba(245,158,11,0.12);color:#fbbf24;border:1px solid rgba(245,158,11,0.3);font-size:10px;padding:3px 9px;border-radius:20px;">🔋 9,7 kWh Akku</span>
       </div>
     </div>
 
@@ -411,21 +413,46 @@ canvas{display:block;}
         <input type="range" min="20" max="55" step="5" value="35" id="wp-s-cop" oninput="wpCalc()" style="width:100%;accent-color:#10b981;">
       </div>
 
-      <div>
+      <div style="margin-bottom:10px;">
         <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
           <span style="font-size:11px;color:var(--muted);">BEG-Förderung (%)</span>
           <span style="font-size:11px;color:var(--text);font-family:'Space Mono',monospace;" id="wp-o-foerd">30</span>
         </div>
         <input type="range" min="0" max="70" step="5" value="30" id="wp-s-foerd" oninput="wpCalc()" style="width:100%;accent-color:#a78bfa;">
       </div>
+
+      <div style="border-top:1px solid rgba(255,255,255,0.07);padding-top:10px;margin-top:4px;">
+        <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#fbbf24;margin-bottom:8px;font-weight:600;">☀️ Solar-Anlage (22 Panels · 9,7 kWh Akku)</div>
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+            <span style="font-size:11px;color:var(--muted);">Solar-Eigenverbrauch WP (%)</span>
+            <span style="font-size:11px;color:var(--text);font-family:'Space Mono',monospace;" id="wp-o-solar">60</span>
+          </div>
+          <input type="range" min="0" max="100" step="5" value="60" id="wp-s-solar" oninput="wpCalc()" style="width:100%;accent-color:#fbbf24;">
+          <div style="font-size:10px;color:var(--muted);margin-top:3px;">Anteil des WP-Stroms der von der Solar gedeckt wird · IST: Sonnentage / Gesamttage</div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+            <span style="font-size:11px;color:var(--muted);">Solar-Strompreis (€/kWh)</span>
+            <span style="font-size:11px;color:var(--text);font-family:'Space Mono',monospace;" id="wp-o-solar-preis">0.00</span>
+          </div>
+          <input type="range" min="0" max="15" step="1" value="0" id="wp-s-solar-preis" oninput="wpCalc()" style="width:100%;accent-color:#fbbf24;">
+          <div style="font-size:10px;color:var(--muted);margin-top:3px;">Eigenverbrauch-Kosten (Wartung/Abschreibung Solar) · 0 = kostenlos</div>
+        </div>
+      </div>
     </div>
 
     <!-- KPI Grid -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;">
       <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:10px;text-align:center;">
-        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:3px;">Extra Strom WP</div>
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:3px;">WP-Strom gesamt</div>
         <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:#f59e0b;" id="wp-kpi-strom">–</div>
         <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="wp-kpi-strom-unit">kWh</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:10px;text-align:center;">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:3px;">davon Netzbezug</div>
+        <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:#f87171;" id="wp-kpi-netz">–</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="wp-kpi-netz-unit">kWh</div>
       </div>
       <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:10px;text-align:center;">
         <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:3px;">Gas erspart</div>
@@ -434,9 +461,74 @@ canvas{display:block;}
       </div>
     </div>
 
+    <!-- IST-Daten Box -->
+    <div style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.25);border-radius:var(--r);padding:10px 12px;margin-bottom:8px;">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#818cf8;margin-bottom:8px;font-weight:600;">📊 IST-Daten (letzte 30 Tage)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+        <div style="background:rgba(99,102,241,0.08);border-radius:8px;padding:8px;text-align:center;">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:3px;">Ø Strom/Tag (Netz)</div>
+          <div style="font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:#818cf8;" id="wp-ist-strom">–</div>
+          <div style="font-size:10px;color:var(--muted);">kWh/Tag</div>
+        </div>
+        <div style="background:rgba(99,102,241,0.08);border-radius:8px;padding:8px;text-align:center;">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:3px;">Ø Gas/Tag</div>
+          <div style="font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:#818cf8;" id="wp-ist-gas">–</div>
+          <div style="font-size:10px;color:var(--muted);">m³/Tag</div>
+        </div>
+        <div style="background:rgba(99,102,241,0.08);border-radius:8px;padding:8px;text-align:center;">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:3px;">Gas Jahresbedarf (IST)</div>
+          <div style="font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:#818cf8;" id="wp-ist-gas-jahr">–</div>
+          <div style="font-size:10px;color:var(--muted);">m³/Jahr</div>
+        </div>
+        <div style="background:rgba(99,102,241,0.08);border-radius:8px;padding:8px;text-align:center;">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:3px;">Strom Jahresbedarf (IST)</div>
+          <div style="font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:#818cf8;" id="wp-ist-strom-jahr">–</div>
+          <div style="font-size:10px;color:var(--muted);">kWh/Jahr</div>
+        </div>
+      </div>
+      <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(99,102,241,0.2);">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:11px;color:var(--muted);">Mehr Netzstrom durch WP</span>
+          <span style="font-size:12px;font-weight:700;font-family:'Space Mono',monospace;" id="wp-ist-mehr-strom">–</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+          <span style="font-size:11px;color:var(--muted);">Ø Temp letzte 30 Tage</span>
+          <span style="font-size:12px;font-weight:700;font-family:'Space Mono',monospace;color:#10b981;" id="wp-ist-temp">–</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Solar-Box -->
+    <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:var(--r);padding:10px 12px;margin-bottom:8px;">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#fbbf24;margin-bottom:8px;font-weight:600;">☀️ Solar-Deckung WP-Strom (22 Panels · 9,7 kWh Akku)</div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+        <span style="font-size:11px;color:var(--muted);">WP-Strombedarf gesamt</span>
+        <span style="font-size:12px;font-weight:700;color:#f59e0b;" id="wp-solar-gesamt">–</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+        <span style="font-size:11px;color:var(--muted);">davon solar gedeckt</span>
+        <span style="font-size:12px;font-weight:700;color:#fbbf24;" id="wp-solar-kwh">–</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-size:11px;color:var(--muted);">davon Netzbezug nötig</span>
+        <span style="font-size:12px;font-weight:700;color:#f87171;" id="wp-solar-netz">–</span>
+      </div>
+      <!-- Solar-Balken -->
+      <div style="height:8px;background:rgba(255,255,255,0.07);border-radius:4px;overflow:hidden;margin-bottom:4px;">
+        <div style="height:100%;border-radius:4px;background:linear-gradient(90deg,#fbbf24,#f59e0b);transition:width 0.4s;" id="wp-solar-bar"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:8px;">
+        <span id="wp-solar-bar-label">Solar 0%</span><span>Netz 100%</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;border-top:1px solid rgba(245,158,11,0.2);padding-top:6px;">
+        <span style="font-size:11px;color:var(--muted);">Stromkosten effektiv</span>
+        <span style="font-size:12px;font-weight:700;color:#fbbf24;" id="wp-solar-cost">–</span>
+      </div>
+    </div>
+
     <!-- Kosten & Ersparnis -->
     <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:var(--r);padding:10px 12px;margin-bottom:8px;">
-      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#f87171;margin-bottom:6px;font-weight:600;">Mehrkosten Strom</div>
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#f87171;margin-bottom:6px;font-weight:600;">Netz-Strom Mehrkosten (nach Solar)</div>
       <div style="display:flex;justify-content:space-between;">
         <span style="font-size:11px;color:var(--muted);" id="wp-cost-formula">–</span>
         <span style="font-size:12px;font-weight:700;color:#f87171;" id="wp-cost-val">–</span>
@@ -1211,11 +1303,11 @@ function renderCurve() {
 
 // ── ENERGIE-PROGNOSE HELFER ────────────────────────────────
 function getAvgFromDaily(field, days) {
-  if (!DB || !DB.daily) return field === 'strom' ? 4.33 : 4.8;
+  if (!DB || !DB.daily) return field === 'strom' ? 4.33 : field === 'gas' ? 4.8 : 0;
   const src = DB.dailyExpanded || DB.daily;
   const slice = src.slice(-days);
   const vals = slice.map(r => r[field]).filter(v => v !== null && v !== undefined && !isNaN(v));
-  if (!vals.length) return field === 'strom' ? 4.33 : 4.8;
+  if (!vals.length) return field === 'strom' ? 4.33 : field === 'gas' ? 4.8 : 0;
   return vals.reduce((a,b) => a+b, 0) / vals.length;
 }
 
@@ -1949,44 +2041,97 @@ function wpSetTab(t) {
 }
 
 function wpCalc() {
-  const stromP = parseInt(document.getElementById('wp-s-strom')?.value || 32) / 100;
-  const gasP   = parseInt(document.getElementById('wp-s-gas')?.value   || 11) / 100;
-  const cop    = parseInt(document.getElementById('wp-s-cop')?.value   || 35) / 10;
-  const foerd  = parseInt(document.getElementById('wp-s-foerd')?.value || 30);
+  const stromP      = parseInt(document.getElementById('wp-s-strom')?.value || 32) / 100;
+  const gasP        = parseInt(document.getElementById('wp-s-gas')?.value   || 11) / 100;
+  const cop         = parseInt(document.getElementById('wp-s-cop')?.value   || 35) / 10;
+  const foerd       = parseInt(document.getElementById('wp-s-foerd')?.value || 30);
+  const solarPct    = parseInt(document.getElementById('wp-s-solar')?.value || 60) / 100;
+  const solarPreisC = parseInt(document.getElementById('wp-s-solar-preis')?.value || 0) / 100;
 
-  const oStrom = document.getElementById('wp-o-strom'); if(oStrom) oStrom.textContent = stromP.toFixed(2);
-  const oGas   = document.getElementById('wp-o-gas');   if(oGas)   oGas.textContent   = gasP.toFixed(2);
-  const oCop   = document.getElementById('wp-o-cop');   if(oCop)   oCop.textContent   = cop.toFixed(1);
-  const oFoerd = document.getElementById('wp-o-foerd'); if(oFoerd) oFoerd.textContent = foerd;
+  // Ausgabe Slider-Werte
+  const oStrom = document.getElementById('wp-o-strom');       if(oStrom)      oStrom.textContent      = stromP.toFixed(2);
+  const oGas   = document.getElementById('wp-o-gas');         if(oGas)        oGas.textContent        = gasP.toFixed(2);
+  const oCop   = document.getElementById('wp-o-cop');         if(oCop)        oCop.textContent        = cop.toFixed(1);
+  const oFoerd = document.getElementById('wp-o-foerd');       if(oFoerd)      oFoerd.textContent      = foerd;
+  const oSolar = document.getElementById('wp-o-solar');       if(oSolar)      oSolar.textContent      = Math.round(solarPct * 100);
+  const oSP    = document.getElementById('wp-o-solar-preis'); if(oSP)         oSP.textContent         = solarPreisC.toFixed(2);
 
-  const wpStromJahr  = WP_HEAT_KWH / cop;
-  const gasJahr      = WP_GAS_JAHR;
-  const factor       = wpTab === 'w' ? 1/52 : wpTab === 'm' ? 1/12 : 1;
-  const label        = wpTab === 'w' ? '/Wo'  : wpTab === 'm' ? '/Mo'  : '/Jahr';
-  const stromUnit    = wpTab === 'w' ? 'kWh/Wo'  : wpTab === 'm' ? 'kWh/Mo'  : 'kWh/J';
-  const gasUnit      = wpTab === 'w' ? 'm³/Wo'   : wpTab === 'm' ? 'm³/Mo'   : 'm³/J';
+  // ── IST-Daten aus DB (letzte 30 Tage) ───────────────────
+  const istStromTag = getAvgFromDaily('strom', 30);   // kWh/Tag Netzbezug IST
+  const istGasTag   = getAvgFromDaily('gas',   30);   // m³/Tag IST
+  const istTempTag  = getAvgFromDaily('temp',  30);   // °C IST
 
-  const wpStrom     = wpStromJahr * factor;
-  const gasM3       = gasJahr     * factor;
-  const stromKosten = wpStrom * stromP;
-  const gasErspar   = gasM3   * gasP;
-  const netto       = gasErspar - stromKosten;
-  const nettoJahr   = (gasJahr * gasP) - (wpStromJahr * stromP);
+  const istStromJahr = Math.round(istStromTag * 365);
+  const istGasJahr   = Math.round(istGasTag   * 365);
 
-  const foerdBetrag = Math.round(WP_INVEST * foerd / 100);
-  const netInvest   = WP_INVEST - foerdBetrag;
-  const beJahre     = nettoJahr > 0 ? netInvest / nettoJahr : 999;
+  // IST-Daten anzeigen
+  const istSEl    = document.getElementById('wp-ist-strom');      if(istSEl)    istSEl.textContent    = istStromTag.toFixed(2);
+  const istGEl    = document.getElementById('wp-ist-gas');        if(istGEl)    istGEl.textContent    = istGasTag.toFixed(2);
+  const istGJEl   = document.getElementById('wp-ist-gas-jahr');   if(istGJEl)   istGJEl.textContent   = istGasJahr.toLocaleString('de');
+  const istSJEl   = document.getElementById('wp-ist-strom-jahr'); if(istSJEl)   istSJEl.textContent   = istStromJahr.toLocaleString('de');
+  const istTEl    = document.getElementById('wp-ist-temp');       if(istTEl)    istTEl.textContent    = (istTempTag > 0 ? istTempTag.toFixed(1) : '–') + ' °C';
 
-  const kpiS = document.getElementById('wp-kpi-strom');      if(kpiS)  kpiS.textContent  = Math.round(wpStrom);
-  const kpiSU= document.getElementById('wp-kpi-strom-unit'); if(kpiSU) kpiSU.textContent = stromUnit;
-  const kpiG = document.getElementById('wp-kpi-gas');        if(kpiG)  kpiG.textContent  = Math.round(gasM3);
-  const kpiGU= document.getElementById('wp-kpi-gas-unit');   if(kpiGU) kpiGU.textContent = gasUnit;
+  // ── WP-Berechnung auf IST-Gasbasis ──────────────────────
+  // Heizwert Erdgas ≈ 10 kWh/m³, Wirkungsgrad Gasheizung ≈ 90%
+  const gasKwhJahr   = istGasJahr * 10 * 0.9;    // tatsächlicher Wärmebedarf kWh/Jahr
+  const wpStromJahr  = gasKwhJahr / cop;          // WP-Strombedarf kWh/Jahr bei COP
+  const wpStromSolar = wpStromJahr * solarPct;    // davon solar gedeckt
+  const wpStromNetz  = wpStromJahr - wpStromSolar; // davon Netzbezug
 
-  const cf = document.getElementById('wp-cost-formula'); if(cf) cf.textContent = Math.round(wpStrom) + ' kWh × ' + stromP.toFixed(2) + ' €';
+  // Mehrverbrauch Netz gegenüber IST (IST enthält schon Solar-Eigenverbrauch)
+  const mehrNetzJahr = wpStromNetz - istStromJahr; // positiv = mehr Netz, negativ = weniger!
+
+  // Zeitraum-Faktor
+  const factor    = wpTab === 'w' ? 1/52 : wpTab === 'm' ? 1/12 : 1;
+  const label     = wpTab === 'w' ? '/Wo'  : wpTab === 'm' ? '/Mo'  : '/Jahr';
+  const stromUnit = wpTab === 'w' ? 'kWh/Wo' : wpTab === 'm' ? 'kWh/Mo' : 'kWh/J';
+  const gasUnit   = wpTab === 'w' ? 'm³/Wo'  : wpTab === 'm' ? 'm³/Mo'  : 'm³/J';
+
+  const wpStromP      = wpStromJahr  * factor;
+  const wpStromSolarP = wpStromSolar * factor;
+  const wpStromNetzP  = wpStromNetz  * factor;
+  const gasPeriod     = istGasJahr   * factor;
+
+  // Kosten: Netzstrom + Solar-Anteil (optional mit Solar-Preis)
+  const stromKosten   = wpStromNetzP * stromP + wpStromSolarP * solarPreisC;
+  const gasErspar     = gasPeriod * gasP;
+  const netto         = gasErspar - stromKosten;
+  const nettoJahr     = (istGasJahr * gasP) - (wpStromNetz * stromP + wpStromSolar * solarPreisC);
+
+  // ── KPI Grid ────────────────────────────────────────────
+  const kpiS  = document.getElementById('wp-kpi-strom');      if(kpiS)  kpiS.textContent  = Math.round(wpStromP);
+  const kpiSU = document.getElementById('wp-kpi-strom-unit'); if(kpiSU) kpiSU.textContent = stromUnit;
+  const kpiN  = document.getElementById('wp-kpi-netz');       if(kpiN)  kpiN.textContent  = Math.round(wpStromNetzP);
+  const kpiNU = document.getElementById('wp-kpi-netz-unit');  if(kpiNU) kpiNU.textContent = stromUnit;
+  const kpiG  = document.getElementById('wp-kpi-gas');        if(kpiG)  kpiG.textContent  = Math.round(gasPeriod);
+  const kpiGU = document.getElementById('wp-kpi-gas-unit');   if(kpiGU) kpiGU.textContent = gasUnit;
+
+  // ── Solar-Box ────────────────────────────────────────────
+  const sgEl  = document.getElementById('wp-solar-gesamt'); if(sgEl)  sgEl.textContent  = Math.round(wpStromP) + ' kWh' + label;
+  const skEl  = document.getElementById('wp-solar-kwh');    if(skEl)  skEl.textContent  = Math.round(wpStromSolarP) + ' kWh' + label;
+  const snEl  = document.getElementById('wp-solar-netz');   if(snEl)  snEl.textContent  = Math.round(wpStromNetzP)  + ' kWh' + label;
+  const scEl  = document.getElementById('wp-solar-cost');   if(scEl)  scEl.textContent  = stromKosten.toFixed(2) + ' €' + label;
+  const sBar  = document.getElementById('wp-solar-bar');
+  const sLbl  = document.getElementById('wp-solar-bar-label');
+  if(sBar) sBar.style.width = Math.round(solarPct * 100) + '%';
+  if(sLbl) sLbl.textContent = 'Solar ' + Math.round(solarPct * 100) + '%';
+
+  // ── Mehr-Netz-Anzeige ────────────────────────────────────
+  const mehrEl = document.getElementById('wp-ist-mehr-strom');
+  if(mehrEl) {
+    const v = Math.round(mehrNetzJahr);
+    mehrEl.textContent = (v >= 0 ? '+' : '') + v.toLocaleString('de') + ' kWh/Jahr';
+    mehrEl.style.color = v <= 0 ? '#34d399' : v < 500 ? '#f59e0b' : '#f87171';
+  }
+
+  // ── Kosten & Ersparnis ───────────────────────────────────
+  const cf = document.getElementById('wp-cost-formula');
+  if(cf) cf.textContent = Math.round(wpStromNetzP) + ' kWh × ' + stromP.toFixed(2) + ' €' + (solarPreisC > 0 ? ' + Solar' : ' (Netz)');
   const cv = document.getElementById('wp-cost-val');     if(cv) cv.textContent = '+' + stromKosten.toFixed(2) + ' €' + label;
-  const gf = document.getElementById('wp-gas-formula');  if(gf) gf.textContent = Math.round(gasM3) + ' m³ × ' + gasP.toFixed(2) + ' €';
+  const gf = document.getElementById('wp-gas-formula');  if(gf) gf.textContent = Math.round(gasPeriod) + ' m³ × ' + gasP.toFixed(2) + ' €';
   const gv = document.getElementById('wp-gas-val');      if(gv) gv.textContent = '−' + gasErspar.toFixed(2) + ' €' + label;
 
+  // ── Nettoeffekt ──────────────────────────────────────────
   const netEl   = document.getElementById('wp-net-val');
   const netPill = document.getElementById('wp-net-pill');
   if (netEl) {
@@ -1995,17 +2140,22 @@ function wpCalc() {
   }
   if (netPill) {
     if (netto >= 0) {
-      netPill.textContent = 'WP spart Geld';
+      netPill.textContent = '✓ WP spart Geld';
       netPill.style.cssText = 'font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.3)';
     } else {
-      netPill.textContent = 'Mehrkosten';
+      netPill.textContent = '⚠ Mehrkosten';
       netPill.style.cssText = 'font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3)';
     }
   }
 
-  const foerdEl  = document.getElementById('wp-foerd-val');  if(foerdEl)  foerdEl.textContent  = '−' + foerdBetrag.toLocaleString('de') + ' €';
-  const niEl     = document.getElementById('wp-net-invest');  if(niEl)     niEl.textContent     = netInvest.toLocaleString('de') + ' €';
-  const annEl    = document.getElementById('wp-annual-net');
+  // ── Investition & Break-even ─────────────────────────────
+  const foerdBetrag = Math.round(WP_INVEST * foerd / 100);
+  const netInvest   = WP_INVEST - foerdBetrag;
+  const beJahre     = nettoJahr > 0 ? netInvest / nettoJahr : 999;
+
+  const foerdEl = document.getElementById('wp-foerd-val');  if(foerdEl) foerdEl.textContent = '−' + foerdBetrag.toLocaleString('de') + ' €';
+  const niEl    = document.getElementById('wp-net-invest');  if(niEl)    niEl.textContent    = netInvest.toLocaleString('de') + ' €';
+  const annEl   = document.getElementById('wp-annual-net');
   if (annEl) {
     annEl.textContent = (nettoJahr >= 0 ? '−' : '+') + Math.abs(Math.round(nettoJahr)).toLocaleString('de') + ' €/Jahr';
     annEl.style.color = nettoJahr >= 0 ? '#34d399' : '#f87171';
@@ -2015,9 +2165,9 @@ function wpCalc() {
   const bePill = document.getElementById('wp-be-pill');
   if (bePill) {
     bePill.textContent = beText;
-    if (beJahre <= 15) {
+    if (beJahre <= 12) {
       bePill.style.cssText = 'font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.3)';
-    } else if (beJahre <= 25) {
+    } else if (beJahre <= 20) {
       bePill.style.cssText = 'font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3)';
     } else {
       bePill.style.cssText = 'font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3)';
@@ -2026,8 +2176,8 @@ function wpCalc() {
   const beBar = document.getElementById('wp-be-bar');
   if (beBar) {
     const pct = Math.min(beJahre / 30, 1) * 100;
-    beBar.style.width   = Math.round(pct) + '%';
-    beBar.style.background = beJahre <= 15 ? '#10b981' : beJahre <= 25 ? '#f59e0b' : '#ef4444';
+    beBar.style.width      = Math.round(pct) + '%';
+    beBar.style.background = beJahre <= 12 ? '#10b981' : beJahre <= 20 ? '#f59e0b' : '#ef4444';
   }
 }
 

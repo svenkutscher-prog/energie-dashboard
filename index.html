@@ -372,16 +372,19 @@ canvas{display:block;}
 
     <!-- Gebäude-Info -->
     <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:10px;">
-      <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Gebäude-Profil (Samsung Mono Block)</div>
+      <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Gebäude-Profil (Samsung Mono Block · Luft-Wasser)</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;">
         <span style="background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.25);font-size:10px;padding:3px 9px;border-radius:20px;">350 m²</span>
         <span style="background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.25);font-size:10px;padding:3px 9px;border-radius:20px;">Bj. 2001</span>
         <span style="background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.25);font-size:10px;padding:3px 9px;border-radius:20px;">Mittl. Dämmung</span>
-        <span style="background:rgba(59,130,246,0.12);color:#60a5fa;border:1px solid rgba(59,130,246,0.25);font-size:10px;padding:3px 9px;border-radius:20px;">FBH · VL 30–40°C</span>
+        <span style="background:rgba(59,130,246,0.12);color:#60a5fa;border:1px solid rgba(59,130,246,0.25);font-size:10px;padding:3px 9px;border-radius:20px;">FBH · VL 35°C</span>
         <span style="background:rgba(16,185,129,0.12);color:#34d399;border:1px solid rgba(16,185,129,0.25);font-size:10px;padding:3px 9px;border-radius:20px;">WW 55°C · 500L</span>
+        <span style="background:rgba(16,185,129,0.12);color:#34d399;border:1px solid rgba(16,185,129,0.25);font-size:10px;padding:3px 9px;border-radius:20px;">21°C Innen</span>
         <span style="background:rgba(16,185,129,0.12);color:#34d399;border:1px solid rgba(16,185,129,0.25);font-size:10px;padding:3px 9px;border-radius:20px;">2 Personen</span>
         <span style="background:rgba(245,158,11,0.12);color:#fbbf24;border:1px solid rgba(245,158,11,0.3);font-size:10px;padding:3px 9px;border-radius:20px;">☀️ 22 Solar-Panels</span>
-        <span style="background:rgba(245,158,11,0.12);color:#fbbf24;border:1px solid rgba(245,158,11,0.3);font-size:10px;padding:3px 9px;border-radius:20px;">🔋 9,7 kWh Akku</span>
+        <span style="background:rgba(245,158,11,0.12);color:#fbbf24;border:1px solid rgba(245,158,11,0.3);font-size:10px;padding:3px 9px;border-radius:20px;">🔋 10 kWh Akku</span>
+        <span style="background:rgba(245,158,11,0.12);color:#fbbf24;border:1px solid rgba(245,158,11,0.3);font-size:10px;padding:3px 9px;border-radius:20px;">20 kW WP-Leistung</span>
+        <span style="background:rgba(245,158,11,0.12);color:#fbbf24;border:1px solid rgba(245,158,11,0.3);font-size:10px;padding:3px 9px;border-radius:20px;">Fenster 25%</span>
       </div>
     </div>
 
@@ -392,44 +395,64 @@ canvas{display:block;}
       <button id="wp-tab-y" onclick="wpSetTab('y')" style="flex:1;padding:6px 0;border-radius:20px;font-size:12px;border:1px solid var(--border);color:var(--muted);background:transparent;cursor:pointer;font-family:'Space Mono',monospace;">Jahr</button>
     </div>
 
+    <!-- Preisinfo aus Vertrag -->
+    <div style="background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.2);border-radius:var(--r);padding:10px 14px;margin-bottom:10px;">
+      <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#818cf8;margin-bottom:6px;font-weight:600;">📋 Vertragspreise (aktuell)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px;">
+        <div style="color:var(--muted);">Strom Arbeitspreis <span style="color:var(--text);font-family:'Space Mono',monospace;font-weight:600;">30,64 Ct/kWh</span> brutto</div>
+        <div style="color:var(--muted);">Strom Grundpreis <span style="color:var(--text);font-family:'Space Mono',monospace;font-weight:600;">11,11 €/Mo</span> brutto</div>
+        <div style="color:var(--muted);">Gas Arbeitspreis <span style="color:var(--text);font-family:'Space Mono',monospace;font-weight:600;">10,45 Ct/kWh</span> inkl. MwSt</div>
+        <div style="color:var(--muted);">Gas Grundpreis <span style="color:var(--text);font-family:'Space Mono',monospace;font-weight:600;">12,60 €/Mo</span> brutto</div>
+      </div>
+    </div>
+
     <!-- Schieberegler -->
     <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:10px;">
       <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Preise & Effizienz</div>
 
+      <!-- Strom: Default 31 Ct = 0.31 €/kWh (brutto 30,64 gerundet) -->
       <div style="margin-bottom:10px;">
         <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-          <span style="font-size:11px;color:var(--muted);">Strompreis (€/kWh)</span>
-          <span style="font-size:11px;color:var(--text);font-family:'Space Mono',monospace;" id="wp-o-strom">0.32</span>
+          <span style="font-size:11px;color:var(--muted);">Strompreis (€/kWh) <span style="font-size:10px;color:#818cf8;">· Vertrag: 0,3064</span></span>
+          <span style="font-size:11px;color:var(--text);font-family:'Space Mono',monospace;" id="wp-o-strom">0.31</span>
         </div>
-        <input type="range" min="15" max="50" step="1" value="32" id="wp-s-strom" oninput="wpCalc()" style="width:100%;accent-color:#f59e0b;">
+        <input type="range" min="15" max="50" step="1" value="31" id="wp-s-strom" oninput="wpCalc()" style="width:100%;accent-color:#f59e0b;">
+      </div>
+
+      <!-- Gas: Default 11 Ct = 0.11 €/kWh thermisch → ~1,10 €/m³ (10 kWh/m³)
+           Aber Slider läuft in €/m³: 0,1045 €/kWh × 10 kWh/m³ = 1,045 €/m³ → 10 im Slider (= 0.10 €/m³ Einheit)
+           Bisheriger Slider war in Ct/m³ mit Schritt 1 → value=10 entspricht 0.10 €/m³ ≈ 1,045 €/m³
+           Einheit bleibt €/m³, Wert: 10 = 0.10 €/m³ (thermisch) — aber echter Wert ist 1,045 €/m³ Erdgas
+           → Wir setzen Slider auf "10" (= 0.10 x 10 kWh = 1,045 €/m³ beim Heizwert-Rechner) -->
+      <div style="margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+          <span style="font-size:11px;color:var(--muted);">Gaspreis (€/m³) <span style="font-size:10px;color:#818cf8;">· Vertrag: ~1,05 €/m³</span></span>
+          <span style="font-size:11px;color:var(--text);font-family:'Space Mono',monospace;" id="wp-o-gas">1.05</span>
+        </div>
+        <input type="range" min="50" max="300" step="5" value="105" id="wp-s-gas" oninput="wpCalc()" style="width:100%;accent-color:#3b82f6;">
+        <div style="font-size:10px;color:var(--muted);margin-top:3px;">Preis pro m³ Erdgas inkl. MwSt (10,45 Ct/kWh × ~10 kWh/m³)</div>
       </div>
 
       <div style="margin-bottom:10px;">
         <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-          <span style="font-size:11px;color:var(--muted);">Gaspreis (€/m³)</span>
-          <span style="font-size:11px;color:var(--text);font-family:'Space Mono',monospace;" id="wp-o-gas">0.11</span>
-        </div>
-        <input type="range" min="5" max="30" step="1" value="11" id="wp-s-gas" oninput="wpCalc()" style="width:100%;accent-color:#3b82f6;">
-      </div>
-
-      <div style="margin-bottom:10px;">
-        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-          <span style="font-size:11px;color:var(--muted);">COP Wärmepumpe</span>
+          <span style="font-size:11px;color:var(--muted);">COP Wärmepumpe <span style="font-size:10px;color:#818cf8;">· Samsung 20 kW</span></span>
           <span style="font-size:11px;color:var(--text);font-family:'Space Mono',monospace;" id="wp-o-cop">3.5</span>
         </div>
         <input type="range" min="20" max="55" step="5" value="35" id="wp-s-cop" oninput="wpCalc()" style="width:100%;accent-color:#10b981;">
       </div>
 
+      <!-- Förderung: Default 55% (BEG) -->
       <div style="margin-bottom:10px;">
         <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-          <span style="font-size:11px;color:var(--muted);">BEG-Förderung (%)</span>
-          <span style="font-size:11px;color:var(--text);font-family:'Space Mono',monospace;" id="wp-o-foerd">30</span>
+          <span style="font-size:11px;color:var(--muted);">BEG-Förderung (%) <span style="font-size:10px;color:#34d399;">· Default: 55%</span></span>
+          <span style="font-size:11px;color:var(--text);font-family:'Space Mono',monospace;" id="wp-o-foerd">55</span>
         </div>
-        <input type="range" min="0" max="70" step="5" value="30" id="wp-s-foerd" oninput="wpCalc()" style="width:100%;accent-color:#a78bfa;">
+        <input type="range" min="0" max="70" step="5" value="55" id="wp-s-foerd" oninput="wpCalc()" style="width:100%;accent-color:#a78bfa;">
+        <div style="font-size:10px;color:var(--muted);margin-top:3px;">Basisförderung 30% + Effizienzbonus 10% + Klimageschwindigkeit 15% = max. 55%</div>
       </div>
 
       <div style="border-top:1px solid rgba(255,255,255,0.07);padding-top:10px;margin-top:4px;">
-        <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#fbbf24;margin-bottom:8px;font-weight:600;">☀️ Solar-Anlage (22 Panels · 9,7 kWh Akku)</div>
+        <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#fbbf24;margin-bottom:8px;font-weight:600;">☀️ Solar-Anlage (22 Panels · 10 kWh Akku)</div>
         <div style="margin-bottom:10px;">
           <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
             <span style="font-size:11px;color:var(--muted);">Solar-Eigenverbrauch WP (%)</span>
@@ -507,7 +530,7 @@ canvas{display:block;}
 
     <!-- Solar-Box -->
     <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:var(--r);padding:10px 12px;margin-bottom:8px;">
-      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#fbbf24;margin-bottom:8px;font-weight:600;">☀️ Solar-Deckung WP-Strom (22 Panels · 9,7 kWh Akku)</div>
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#fbbf24;margin-bottom:8px;font-weight:600;">☀️ Solar-Deckung WP-Strom (22 Panels · 10 kWh Akku)</div>
       <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
         <span style="font-size:11px;color:var(--muted);">WP-Strombedarf gesamt</span>
         <span style="font-size:12px;font-weight:700;color:#f59e0b;" id="wp-solar-gesamt">–</span>
@@ -592,6 +615,15 @@ canvas{display:block;}
       <div style="display:flex;justify-content:space-between;">
         <span style="font-size:11px;color:var(--muted);">Jährl. Netto-Einsparung</span>
         <span style="font-size:12px;font-weight:700;font-family:'Space Mono',monospace;" id="wp-annual-net">–</span>
+      </div>
+    </div>
+
+    <!-- Grundpreis-Hinweis -->
+    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:var(--r);padding:10px 14px;margin-bottom:10px;">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px;font-weight:600;">ℹ️ Hinweis Grundpreise</div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.7;">
+        Strom Grundpreis: <span style="color:var(--text);">11,11 €/Mo</span> · Gas Grundpreis: <span style="color:var(--text);">12,60 €/Mo</span><br>
+        Bei WP-Einbau entfällt der Gasgrundpreis → <span style="color:#34d399;font-weight:600;">+151,20 €/Jahr Einsparung</span> (in Break-even nicht eingerechnet — manuell addieren)
       </div>
     </div>
 
@@ -746,7 +778,7 @@ canvas{display:block;}
 
 <script>
 // ── APP VERSION (bei jeder Änderung hochzählen → iOS lädt neu) ──
-const APP_VERSION = '2.1.0';
+const APP_VERSION = '2.2.1';
 const VERSION_KEY = 'wagael_app_version';
 
 // iOS Hard-Reload: öffnet mit ?v=timestamp → umgeht jeden Cache
@@ -759,12 +791,10 @@ function hardReload() {
 (function checkVersion() {
   const stored = localStorage.getItem(VERSION_KEY);
   if (stored !== APP_VERSION) {
-    // Neue Version erkannt → Daten-Cache löschen, Prefs behalten
     ['wagael_v3','wagael_ki_v1'].forEach(k => localStorage.removeItem(k));
     localStorage.setItem(VERSION_KEY, APP_VERSION);
     console.log('WAGAEL: neue Version', APP_VERSION, '→ Cache geleert');
   }
-  // Version im Topbar anzeigen
   const vEl = document.getElementById('app-version');
   if (vEl) vEl.textContent = 'v' + APP_VERSION;
 })();
@@ -875,53 +905,76 @@ function setCurveDays(v) {
 }
 
 function clearCache() {
-  // Alle Caches löschen
+  // VERSION_KEY NICHT löschen – sonst denkt die App beim nächsten Start
+  // es sei eine neue Version und löscht den Cache erneut (Endlosschleife auf iOS)
   localStorage.removeItem(CACHE_KEY);
   localStorage.removeItem(KI_CACHE_KEY);
-  localStorage.removeItem(VERSION_KEY);
-  localStorage.removeItem('wagael_ki_prompt');
   DB = null;
-  // iOS: Hard-Reload mit timestamp → Safari-Cache wird sicher umgangen
   setTimeout(() => hardReload(), 100);
 }
 
 // ── DATA LOADING ───────────────────────────────────────────
+let _loadRetryTimer = null;
+
 async function loadData(force = false) {
   document.getElementById('loadingBar').classList.add('active');
   if (force) { forecastLoaded = false; forecastData = null; }
+
+  // 1. Cache prüfen (nicht bei force)
   if (!force) {
     const c = localStorage.getItem(CACHE_KEY);
     if (c) {
       try {
-        const {data,ts} = JSON.parse(c);
+        const {data, ts} = JSON.parse(c);
         if (Date.now() - ts < CACHE_TTL) {
           DB = data;
           document.getElementById('loadingBar').classList.remove('active');
-          applyData(); return;
+          applyData();
+          return;
         }
       } catch(e) {}
     }
   }
+
+  // 2. Frischen Fetch versuchen
+  // WICHTIG iOS: KEINE 'Cache-Control' Header im fetch() – diese blockieren
+  // auf iOS Safari den CORS-Preflight zu Google Apps Script!
+  // Der Cache-Buster im URL reicht völlig aus.
   try {
-    // Cache-Buster: ?t=timestamp verhindert iOS-Safari-Cache beim Fetch
     const bustUrl = API_URL + (API_URL.includes('?') ? '&' : '?') + '_t=' + Date.now();
-    const res = await fetch(bustUrl, {
-      cache: 'no-store',
-      headers: { 'Cache-Control': 'no-cache, no-store', 'Pragma': 'no-cache' }
-    });
+    const res = await fetch(bustUrl);   // kein mode/cache/headers → iOS-kompatibel
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     if (data.error) throw new Error(data.error);
     DB = data;
-    localStorage.setItem(CACHE_KEY, JSON.stringify({data, ts:Date.now()}));
+    localStorage.setItem(CACHE_KEY, JSON.stringify({data, ts: Date.now()}));
     document.getElementById('errorBanner').style.display = 'none';
+    if (_loadRetryTimer) { clearTimeout(_loadRetryTimer); _loadRetryTimer = null; }
     applyData();
   } catch(err) {
     const b = document.getElementById('errorBanner');
-    b.textContent = '⚠️ ' + err.message;
-    b.style.display = 'block';
+    // 3. Fallback: abgelaufenen Cache trotzdem verwenden
     const c = localStorage.getItem(CACHE_KEY);
-    if (c) { try { DB = JSON.parse(c).data; applyData(); } catch(e){} }
+    if (c) {
+      try {
+        DB = JSON.parse(c).data;
+        b.textContent = '⚠️ Offline – zeige gespeicherte Daten (' + err.message + ')';
+        b.style.display = 'block';
+        applyData();
+      } catch(e2) {
+        b.textContent = '⚠️ Kein Cache & kein Netz: ' + err.message;
+        b.style.display = 'block';
+        document.getElementById('lastRefresh').textContent = 'Fehler – ↻ drücken';
+      }
+    } else {
+      // 4. Kein Cache vorhanden → Fehlermeldung + Auto-Retry nach 8s
+      b.textContent = '⚠️ ' + err.message + ' — Neuer Versuch in 8s…';
+      b.style.display = 'block';
+      document.getElementById('lastRefresh').textContent = 'Verbindung fehlgeschlagen';
+      if (!_loadRetryTimer) {
+        _loadRetryTimer = setTimeout(() => { _loadRetryTimer = null; loadData(true); }, 8000);
+      }
+    }
   }
   document.getElementById('loadingBar').classList.remove('active');
 }
@@ -2049,9 +2102,13 @@ function fmt(v) {
 loadData();
 
 // ── WÄRMEPUMPEN SIMULATION ─────────────────────────────────
-const WP_INVEST   = 35000;
-const WP_GAS_JAHR = 2100;
-const WP_HEAT_KWH = WP_GAS_JAHR * 10;
+// Echte Vertragsdaten aus Wärmepumpe.rtf:
+// Strom: 30,64 Ct/kWh brutto → 0.3064 €/kWh → Slider-Default: 31 (Ct)
+// Gas: 10,45 Ct/kWh thermisch × 10 kWh/m³ Heizwert = 1,045 €/m³ → Slider-Default: 105 (= 1,05 €/m³)
+// BEG-Förderung: 55% (Basis 30% + Effizienz 10% + Klimageschw. 15%)
+// WP-Kosten: 35.000 € brutto
+// Akku: 10 kWh · Panels: 22 · Leistung: 20 kW
+const WP_INVEST = 35000;
 let wpTab = 'm';
 
 function wpSetTab(t) {
@@ -2075,30 +2132,31 @@ function wpSetTab(t) {
 }
 
 function wpCalc() {
-  const stromP      = parseInt(document.getElementById('wp-s-strom')?.value || 32) / 100;
-  const gasP        = parseInt(document.getElementById('wp-s-gas')?.value   || 11) / 100;
+  // Strom: Slider 15–50 in Ct, output /100 → €/kWh
+  const stromP      = parseInt(document.getElementById('wp-s-strom')?.value || 31) / 100;
+  // Gas: Slider 50–300 in Ct/m³, output /100 → €/m³
+  const gasP        = parseInt(document.getElementById('wp-s-gas')?.value   || 105) / 100;
   const cop         = parseInt(document.getElementById('wp-s-cop')?.value   || 35) / 10;
-  const foerd       = parseInt(document.getElementById('wp-s-foerd')?.value || 30);
+  const foerd       = parseInt(document.getElementById('wp-s-foerd')?.value || 55);
   const solarPct    = parseInt(document.getElementById('wp-s-solar')?.value || 60) / 100;
   const solarPreisC = parseInt(document.getElementById('wp-s-solar-preis')?.value || 0) / 100;
 
-  // Ausgabe Slider-Werte
-  const oStrom = document.getElementById('wp-o-strom');       if(oStrom)      oStrom.textContent      = stromP.toFixed(2);
-  const oGas   = document.getElementById('wp-o-gas');         if(oGas)        oGas.textContent        = gasP.toFixed(2);
-  const oCop   = document.getElementById('wp-o-cop');         if(oCop)        oCop.textContent        = cop.toFixed(1);
-  const oFoerd = document.getElementById('wp-o-foerd');       if(oFoerd)      oFoerd.textContent      = foerd;
-  const oSolar = document.getElementById('wp-o-solar');       if(oSolar)      oSolar.textContent      = Math.round(solarPct * 100);
-  const oSP    = document.getElementById('wp-o-solar-preis'); if(oSP)         oSP.textContent         = solarPreisC.toFixed(2);
+  // Slider-Anzeige
+  const oStrom = document.getElementById('wp-o-strom');       if(oStrom)  oStrom.textContent  = stromP.toFixed(2);
+  const oGas   = document.getElementById('wp-o-gas');         if(oGas)    oGas.textContent    = gasP.toFixed(2);
+  const oCop   = document.getElementById('wp-o-cop');         if(oCop)    oCop.textContent    = cop.toFixed(1);
+  const oFoerd = document.getElementById('wp-o-foerd');       if(oFoerd)  oFoerd.textContent  = foerd;
+  const oSolar = document.getElementById('wp-o-solar');       if(oSolar)  oSolar.textContent  = Math.round(solarPct * 100);
+  const oSP    = document.getElementById('wp-o-solar-preis'); if(oSP)     oSP.textContent     = solarPreisC.toFixed(2);
 
   // ── IST-Daten aus DB (letzte 30 Tage) ───────────────────
-  const istStromTag = getAvgFromDaily('strom', 30);   // kWh/Tag Netzbezug IST
-  const istGasTag   = getAvgFromDaily('gas',   30);   // m³/Tag IST
-  const istTempTag  = getAvgFromDaily('temp',  30);   // °C IST
+  const istStromTag = getAvgFromDaily('strom', 30);
+  const istGasTag   = getAvgFromDaily('gas',   30);
+  const istTempTag  = getAvgFromDaily('temp',  30);
 
   const istStromJahr = Math.round(istStromTag * 365);
   const istGasJahr   = Math.round(istGasTag   * 365);
 
-  // IST-Daten anzeigen
   const istSEl    = document.getElementById('wp-ist-strom');      if(istSEl)    istSEl.textContent    = istStromTag.toFixed(2);
   const istGEl    = document.getElementById('wp-ist-gas');        if(istGEl)    istGEl.textContent    = istGasTag.toFixed(2);
   const istGJEl   = document.getElementById('wp-ist-gas-jahr');   if(istGJEl)   istGJEl.textContent   = istGasJahr.toLocaleString('de');
@@ -2107,13 +2165,11 @@ function wpCalc() {
 
   // ── WP-Berechnung auf IST-Gasbasis ──────────────────────
   // Heizwert Erdgas ≈ 10 kWh/m³, Wirkungsgrad Gasheizung ≈ 90%
-  const gasKwhJahr   = istGasJahr * 10 * 0.9;    // tatsächlicher Wärmebedarf kWh/Jahr
-  const wpStromJahr  = gasKwhJahr / cop;          // WP-Strombedarf kWh/Jahr bei COP
-  const wpStromSolar = wpStromJahr * solarPct;    // davon solar gedeckt
-  const wpStromNetz  = wpStromJahr - wpStromSolar; // davon Netzbezug
-
-  // Mehrverbrauch Netz gegenüber IST (IST enthält schon Solar-Eigenverbrauch)
-  const mehrNetzJahr = wpStromNetz - istStromJahr; // positiv = mehr Netz, negativ = weniger!
+  const gasKwhJahr   = istGasJahr * 10 * 0.9;
+  const wpStromJahr  = gasKwhJahr / cop;
+  const wpStromSolar = wpStromJahr * solarPct;
+  const wpStromNetz  = wpStromJahr - wpStromSolar;
+  const mehrNetzJahr = wpStromNetz - istStromJahr;
 
   // Zeitraum-Faktor
   const factor    = wpTab === 'w' ? 1/52 : wpTab === 'm' ? 1/12 : 1;
@@ -2126,11 +2182,11 @@ function wpCalc() {
   const wpStromNetzP  = wpStromNetz  * factor;
   const gasPeriod     = istGasJahr   * factor;
 
-  // Kosten: Netzstrom + Solar-Anteil (optional mit Solar-Preis)
-  const stromKosten   = wpStromNetzP * stromP + wpStromSolarP * solarPreisC;
-  const gasErspar     = gasPeriod * gasP;
-  const netto         = gasErspar - stromKosten;
-  const nettoJahr     = (istGasJahr * gasP) - (wpStromNetz * stromP + wpStromSolar * solarPreisC);
+  // Kosten
+  const stromKosten = wpStromNetzP * stromP + wpStromSolarP * solarPreisC;
+  const gasErspar   = gasPeriod * gasP;
+  const netto       = gasErspar - stromKosten;
+  const nettoJahr   = (istGasJahr * gasP) - (wpStromNetz * stromP + wpStromSolar * solarPreisC);
 
   // ── KPI Grid ────────────────────────────────────────────
   const kpiS  = document.getElementById('wp-kpi-strom');      if(kpiS)  kpiS.textContent  = Math.round(wpStromP);
@@ -2185,14 +2241,17 @@ function wpCalc() {
   // ── Investition & Break-even ─────────────────────────────
   const foerdBetrag = Math.round(WP_INVEST * foerd / 100);
   const netInvest   = WP_INVEST - foerdBetrag;
-  const beJahre     = nettoJahr > 0 ? netInvest / nettoJahr : 999;
+  // Gasgrundpreis-Einsparung: 12,60 €/Mo × 12 = 151,20 €/Jahr (wenn Gasanschluss gekündigt)
+  const gasGrundErspar = 151.20;
+  const nettoJahrMitGrund = nettoJahr + gasGrundErspar;
+  const beJahre = nettoJahrMitGrund > 0 ? netInvest / nettoJahrMitGrund : 999;
 
   const foerdEl = document.getElementById('wp-foerd-val');  if(foerdEl) foerdEl.textContent = '−' + foerdBetrag.toLocaleString('de') + ' €';
   const niEl    = document.getElementById('wp-net-invest');  if(niEl)    niEl.textContent    = netInvest.toLocaleString('de') + ' €';
   const annEl   = document.getElementById('wp-annual-net');
   if (annEl) {
-    annEl.textContent = (nettoJahr >= 0 ? '−' : '+') + Math.abs(Math.round(nettoJahr)).toLocaleString('de') + ' €/Jahr';
-    annEl.style.color = nettoJahr >= 0 ? '#34d399' : '#f87171';
+    annEl.textContent = (nettoJahrMitGrund >= 0 ? '−' : '+') + Math.abs(Math.round(nettoJahrMitGrund)).toLocaleString('de') + ' €/Jahr';
+    annEl.style.color = nettoJahrMitGrund >= 0 ? '#34d399' : '#f87171';
   }
 
   const beText = beJahre >= 100 ? '> 30 Jahre' : beJahre.toFixed(1) + ' Jahre';

@@ -358,6 +358,145 @@ canvas{display:block;}
       <div class="curve-wrap"><canvas id="forecastChart"></canvas></div>
     </div>
   </div>
+
+  <!-- WÄRMEPUMPEN SIMULATION -->
+  <div class="section" style="margin-top:16px;">
+    <div class="section-title">🌡️ Wärmepumpen-Simulation</div>
+
+    <!-- Gebäude-Info -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:10px;">
+      <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Gebäude-Profil (Samsung Mono Block)</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        <span style="background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.25);font-size:10px;padding:3px 9px;border-radius:20px;">350 m²</span>
+        <span style="background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.25);font-size:10px;padding:3px 9px;border-radius:20px;">Bj. 2001</span>
+        <span style="background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.25);font-size:10px;padding:3px 9px;border-radius:20px;">Mittl. Dämmung</span>
+        <span style="background:rgba(59,130,246,0.12);color:#60a5fa;border:1px solid rgba(59,130,246,0.25);font-size:10px;padding:3px 9px;border-radius:20px;">FBH · VL 30–40°C</span>
+        <span style="background:rgba(16,185,129,0.12);color:#34d399;border:1px solid rgba(16,185,129,0.25);font-size:10px;padding:3px 9px;border-radius:20px;">WW 55°C · 500L</span>
+        <span style="background:rgba(16,185,129,0.12);color:#34d399;border:1px solid rgba(16,185,129,0.25);font-size:10px;padding:3px 9px;border-radius:20px;">2 Personen</span>
+      </div>
+    </div>
+
+    <!-- Zeitraum Tabs -->
+    <div style="display:flex;gap:6px;margin-bottom:10px;">
+      <button id="wp-tab-w" onclick="wpSetTab('w')" style="flex:1;padding:6px 0;border-radius:20px;font-size:12px;border:1px solid var(--border);color:var(--muted);background:transparent;cursor:pointer;font-family:'Space Mono',monospace;">Woche</button>
+      <button id="wp-tab-m" onclick="wpSetTab('m')" style="flex:1;padding:6px 0;border-radius:20px;font-size:12px;border:1px solid var(--border);color:var(--muted);background:transparent;cursor:pointer;font-family:'Space Mono',monospace;">Monat</button>
+      <button id="wp-tab-y" onclick="wpSetTab('y')" style="flex:1;padding:6px 0;border-radius:20px;font-size:12px;border:1px solid var(--border);color:var(--muted);background:transparent;cursor:pointer;font-family:'Space Mono',monospace;">Jahr</button>
+    </div>
+
+    <!-- Schieberegler -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:10px;">
+      <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Preise & Effizienz</div>
+
+      <div style="margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+          <span style="font-size:11px;color:var(--muted);">Strompreis (€/kWh)</span>
+          <span style="font-size:11px;color:var(--text);font-family:'Space Mono',monospace;" id="wp-o-strom">0.32</span>
+        </div>
+        <input type="range" min="15" max="50" step="1" value="32" id="wp-s-strom" oninput="wpCalc()" style="width:100%;accent-color:#f59e0b;">
+      </div>
+
+      <div style="margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+          <span style="font-size:11px;color:var(--muted);">Gaspreis (€/m³)</span>
+          <span style="font-size:11px;color:var(--text);font-family:'Space Mono',monospace;" id="wp-o-gas">0.11</span>
+        </div>
+        <input type="range" min="5" max="30" step="1" value="11" id="wp-s-gas" oninput="wpCalc()" style="width:100%;accent-color:#3b82f6;">
+      </div>
+
+      <div style="margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+          <span style="font-size:11px;color:var(--muted);">COP Wärmepumpe</span>
+          <span style="font-size:11px;color:var(--text);font-family:'Space Mono',monospace;" id="wp-o-cop">3.5</span>
+        </div>
+        <input type="range" min="20" max="55" step="5" value="35" id="wp-s-cop" oninput="wpCalc()" style="width:100%;accent-color:#10b981;">
+      </div>
+
+      <div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+          <span style="font-size:11px;color:var(--muted);">BEG-Förderung (%)</span>
+          <span style="font-size:11px;color:var(--text);font-family:'Space Mono',monospace;" id="wp-o-foerd">30</span>
+        </div>
+        <input type="range" min="0" max="70" step="5" value="30" id="wp-s-foerd" oninput="wpCalc()" style="width:100%;accent-color:#a78bfa;">
+      </div>
+    </div>
+
+    <!-- KPI Grid -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:10px;text-align:center;">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:3px;">Extra Strom WP</div>
+        <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:#f59e0b;" id="wp-kpi-strom">–</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="wp-kpi-strom-unit">kWh</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:10px;text-align:center;">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:3px;">Gas erspart</div>
+        <div style="font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:#10b981;" id="wp-kpi-gas">–</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="wp-kpi-gas-unit">m³</div>
+      </div>
+    </div>
+
+    <!-- Kosten & Ersparnis -->
+    <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:var(--r);padding:10px 12px;margin-bottom:8px;">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#f87171;margin-bottom:6px;font-weight:600;">Mehrkosten Strom</div>
+      <div style="display:flex;justify-content:space-between;">
+        <span style="font-size:11px;color:var(--muted);" id="wp-cost-formula">–</span>
+        <span style="font-size:12px;font-weight:700;color:#f87171;" id="wp-cost-val">–</span>
+      </div>
+    </div>
+
+    <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:var(--r);padding:10px 12px;margin-bottom:8px;">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#34d399;margin-bottom:6px;font-weight:600;">Gasersparnis</div>
+      <div style="display:flex;justify-content:space-between;">
+        <span style="font-size:11px;color:var(--muted);" id="wp-gas-formula">–</span>
+        <span style="font-size:12px;font-weight:700;color:#34d399;" id="wp-gas-val">–</span>
+      </div>
+    </div>
+
+    <div style="background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.25);border-radius:var(--r);padding:10px 12px;margin-bottom:10px;">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#a78bfa;margin-bottom:6px;font-weight:600;">Nettoeffekt</div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+        <span style="font-size:11px;color:var(--muted);">Differenz</span>
+        <span style="font-size:12px;font-weight:700;" id="wp-net-val">–</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;">
+        <span style="font-size:11px;color:var(--muted);">Bewertung</span>
+        <span id="wp-net-pill">–</span>
+      </div>
+    </div>
+
+    <!-- Investition & Break-even -->
+    <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;font-weight:600;">Investition & Break-even</div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-size:11px;color:var(--muted);">Investition brutto</span>
+        <span style="font-size:12px;color:var(--text);font-family:'Space Mono',monospace;">35.000 €</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-size:11px;color:var(--muted);">BEG-Förderung</span>
+        <span style="font-size:12px;font-weight:700;color:#34d399;font-family:'Space Mono',monospace;" id="wp-foerd-val">–</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+        <span style="font-size:11px;color:var(--muted);">Netto-Invest</span>
+        <span style="font-size:12px;font-weight:700;color:var(--text);font-family:'Space Mono',monospace;" id="wp-net-invest">–</span>
+      </div>
+      <div style="height:1px;background:rgba(255,255,255,0.06);margin-bottom:10px;"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="font-size:11px;color:var(--muted);">Break-even</span>
+        <span style="font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;" id="wp-be-pill">–</span>
+      </div>
+      <!-- Break-even Balken -->
+      <div style="height:8px;background:rgba(255,255,255,0.07);border-radius:4px;overflow:hidden;margin-bottom:4px;">
+        <div style="height:100%;border-radius:4px;transition:width 0.4s,background 0.4s;" id="wp-be-bar"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:10px;">
+        <span>0 J.</span><span>15 J.</span><span>30 J.</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;">
+        <span style="font-size:11px;color:var(--muted);">Jährl. Netto-Einsparung</span>
+        <span style="font-size:12px;font-weight:700;font-family:'Space Mono',monospace;" id="wp-annual-net">–</span>
+      </div>
+    </div>
+
+  </div>
   <div style="height:20px"></div>
 </div>
 
@@ -546,7 +685,7 @@ function showPage(name, navEl) {
   if (navEl) navEl.classList.add('active');
   if (name === 'settings') renderSettings();
   if (name === 'ki') renderKiPage();
-  if (name === 'trends') loadForecast();
+  if (name === 'trends') { loadForecast(); wpInit(); }
   if (name === 'jahr') renderYear();
   if (name === 'dashboard') renderCurve();
 }
@@ -1782,6 +1921,119 @@ function fmt(v) {
 }
 
 loadData();
+
+// ── WÄRMEPUMPEN SIMULATION ─────────────────────────────────
+const WP_INVEST   = 35000;
+const WP_GAS_JAHR = 2100;
+const WP_HEAT_KWH = WP_GAS_JAHR * 10;
+let wpTab = 'm';
+
+function wpSetTab(t) {
+  wpTab = t;
+  ['w','m','y'].forEach(x => {
+    const btn = document.getElementById('wp-tab-' + x);
+    if (!btn) return;
+    if (x === t) {
+      btn.style.background = '#a78bfa';
+      btn.style.color = '#0a0f1e';
+      btn.style.borderColor = 'transparent';
+      btn.style.fontWeight = '700';
+    } else {
+      btn.style.background = 'transparent';
+      btn.style.color = 'var(--muted)';
+      btn.style.borderColor = 'rgba(255,255,255,0.1)';
+      btn.style.fontWeight = '400';
+    }
+  });
+  wpCalc();
+}
+
+function wpCalc() {
+  const stromP = parseInt(document.getElementById('wp-s-strom')?.value || 32) / 100;
+  const gasP   = parseInt(document.getElementById('wp-s-gas')?.value   || 11) / 100;
+  const cop    = parseInt(document.getElementById('wp-s-cop')?.value   || 35) / 10;
+  const foerd  = parseInt(document.getElementById('wp-s-foerd')?.value || 30);
+
+  const oStrom = document.getElementById('wp-o-strom'); if(oStrom) oStrom.textContent = stromP.toFixed(2);
+  const oGas   = document.getElementById('wp-o-gas');   if(oGas)   oGas.textContent   = gasP.toFixed(2);
+  const oCop   = document.getElementById('wp-o-cop');   if(oCop)   oCop.textContent   = cop.toFixed(1);
+  const oFoerd = document.getElementById('wp-o-foerd'); if(oFoerd) oFoerd.textContent = foerd;
+
+  const wpStromJahr  = WP_HEAT_KWH / cop;
+  const gasJahr      = WP_GAS_JAHR;
+  const factor       = wpTab === 'w' ? 1/52 : wpTab === 'm' ? 1/12 : 1;
+  const label        = wpTab === 'w' ? '/Wo'  : wpTab === 'm' ? '/Mo'  : '/Jahr';
+  const stromUnit    = wpTab === 'w' ? 'kWh/Wo'  : wpTab === 'm' ? 'kWh/Mo'  : 'kWh/J';
+  const gasUnit      = wpTab === 'w' ? 'm³/Wo'   : wpTab === 'm' ? 'm³/Mo'   : 'm³/J';
+
+  const wpStrom     = wpStromJahr * factor;
+  const gasM3       = gasJahr     * factor;
+  const stromKosten = wpStrom * stromP;
+  const gasErspar   = gasM3   * gasP;
+  const netto       = gasErspar - stromKosten;
+  const nettoJahr   = (gasJahr * gasP) - (wpStromJahr * stromP);
+
+  const foerdBetrag = Math.round(WP_INVEST * foerd / 100);
+  const netInvest   = WP_INVEST - foerdBetrag;
+  const beJahre     = nettoJahr > 0 ? netInvest / nettoJahr : 999;
+
+  const kpiS = document.getElementById('wp-kpi-strom');      if(kpiS)  kpiS.textContent  = Math.round(wpStrom);
+  const kpiSU= document.getElementById('wp-kpi-strom-unit'); if(kpiSU) kpiSU.textContent = stromUnit;
+  const kpiG = document.getElementById('wp-kpi-gas');        if(kpiG)  kpiG.textContent  = Math.round(gasM3);
+  const kpiGU= document.getElementById('wp-kpi-gas-unit');   if(kpiGU) kpiGU.textContent = gasUnit;
+
+  const cf = document.getElementById('wp-cost-formula'); if(cf) cf.textContent = Math.round(wpStrom) + ' kWh × ' + stromP.toFixed(2) + ' €';
+  const cv = document.getElementById('wp-cost-val');     if(cv) cv.textContent = '+' + stromKosten.toFixed(2) + ' €' + label;
+  const gf = document.getElementById('wp-gas-formula');  if(gf) gf.textContent = Math.round(gasM3) + ' m³ × ' + gasP.toFixed(2) + ' €';
+  const gv = document.getElementById('wp-gas-val');      if(gv) gv.textContent = '−' + gasErspar.toFixed(2) + ' €' + label;
+
+  const netEl   = document.getElementById('wp-net-val');
+  const netPill = document.getElementById('wp-net-pill');
+  if (netEl) {
+    netEl.textContent = (netto >= 0 ? '−' : '+') + Math.abs(netto).toFixed(2) + ' €' + label;
+    netEl.style.color = netto >= 0 ? '#34d399' : '#f87171';
+  }
+  if (netPill) {
+    if (netto >= 0) {
+      netPill.textContent = 'WP spart Geld';
+      netPill.style.cssText = 'font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.3)';
+    } else {
+      netPill.textContent = 'Mehrkosten';
+      netPill.style.cssText = 'font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3)';
+    }
+  }
+
+  const foerdEl  = document.getElementById('wp-foerd-val');  if(foerdEl)  foerdEl.textContent  = '−' + foerdBetrag.toLocaleString('de') + ' €';
+  const niEl     = document.getElementById('wp-net-invest');  if(niEl)     niEl.textContent     = netInvest.toLocaleString('de') + ' €';
+  const annEl    = document.getElementById('wp-annual-net');
+  if (annEl) {
+    annEl.textContent = (nettoJahr >= 0 ? '−' : '+') + Math.abs(Math.round(nettoJahr)).toLocaleString('de') + ' €/Jahr';
+    annEl.style.color = nettoJahr >= 0 ? '#34d399' : '#f87171';
+  }
+
+  const beText = beJahre >= 100 ? '> 30 Jahre' : beJahre.toFixed(1) + ' Jahre';
+  const bePill = document.getElementById('wp-be-pill');
+  if (bePill) {
+    bePill.textContent = beText;
+    if (beJahre <= 15) {
+      bePill.style.cssText = 'font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.3)';
+    } else if (beJahre <= 25) {
+      bePill.style.cssText = 'font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3)';
+    } else {
+      bePill.style.cssText = 'font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3)';
+    }
+  }
+  const beBar = document.getElementById('wp-be-bar');
+  if (beBar) {
+    const pct = Math.min(beJahre / 30, 1) * 100;
+    beBar.style.width   = Math.round(pct) + '%';
+    beBar.style.background = beJahre <= 15 ? '#10b981' : beJahre <= 25 ? '#f59e0b' : '#ef4444';
+  }
+}
+
+function wpInit() {
+  wpSetTab('m');
+}
 </script>
 </body>
 </html>

@@ -859,7 +859,7 @@ canvas{display:block;}
 
 <script>
 // ── APP VERSION (bei jeder Änderung hochzählen → iOS lädt neu) ──
-const APP_VERSION = '2.2.5';
+const APP_VERSION = '2.2.6';
 const VERSION_KEY = 'wagael_app_version';
 
 // iOS Hard-Reload: öffnet mit ?v=timestamp → umgeht jeden Cache
@@ -1915,19 +1915,28 @@ function testCustomPrompt() {
 }
 
 // ── KI ANALYSE ─────────────────────────────────────────────
-const DEFAULT_KI_PROMPT = `Du bist ein Energie-Assistent für einen Haushalt mit Solaranlage.
+const DEFAULT_KI_PROMPT = `Du bist der Energie-Assistent für Svens Haushalt (Solaranlage + Wärmepumpe Samsung 20 kW, Linnich). Sprich ihn direkt mit "du" an.
 
-WICHTIG zur Interpretation der Stromdaten:
-- Strom = 0 kWh bedeutet: Die Solaranlage hat den gesamten Bedarf gedeckt, kein Netzbezug. Das ist optimal.
-- Strom > 0 kWh bedeutet: Netzbezug war nötig, Solar hat nicht gereicht. Je höher, desto mehr Bewölkung oder Nacht.
-- Der Stromwert ist also der Netzbezug, NICHT der Solarertrag. Niedriger Wert = guter Solartag.
+DATEN RICHTIG LESEN:
+- Strom = Netzbezug in kWh, NICHT der Solarertrag. 0 kWh = Solar hat alles gedeckt (optimal). Hohe Werte = wenig Sonne, Nacht oder hoher Bedarf.
+- Geheizt wird mit der Wärmepumpe, nicht mehr mit Gas. Gas = 0 oder fehlend ist normal. Gas nur erwähnen, wenn trotzdem nennenswerter Verbrauch auftaucht.
+- Die Wärmepumpe läuft mit Strom: Bewerte den Netzbezug immer zusammen mit der Temperatur. Ein kalter Tag mit hohem Netzbezug ist normal, ein milder Tag mit hohem Netzbezug ist auffällig.
+- YTD 2026 vs. 2025: mehr Strom und weniger Gas kommen vom Umstieg auf die Wärmepumpe. Das ist keine Verschlechterung, ordne es so ein.
+- Strompreis: 0,31 €/kWh. Rechne auffällige Mengen in Euro um.
 
-WICHTIG: Der Haushalt heizt inzwischen mit einer Wärmepumpe (Samsung 20 kW) statt mit Gas.
-- Gas = 0 oder fehlend ist der Normalzustand und kein Datenfehler. Gas nur erwähnen, wenn trotzdem nennenswerter Gasverbrauch auftaucht.
-- Die Wärmepumpe läuft mit Strom: An kalten Tagen und in der Heizperiode ist ein höherer Netzbezug zu erwarten. Bewerte den Strom immer im Zusammenhang mit der Temperatur, nicht als reinen Mehrverbrauch.
-- Beim YTD-Vergleich 2026 vs. 2025: Mehr Strom und weniger Gas sind durch den Umstieg auf die Wärmepumpe bedingt. Ordne das so ein und werte es nicht als Verschlechterung.
+SO SOLL DIE ANTWORT AUSSEHEN:
+Zeile 1: ein Satz Fazit, der die wichtigste Erkenntnis der letzten 14 Tage nennt (wird als Vorschau angezeigt, muss allein verständlich sein).
+Danach diese Abschnitte, jeweils mit Emoji und Überschrift in einer eigenen Zeile:
+⚡ Strom & Wärmepumpe – Netzbezug gesamt in kWh und €, bester und schlechtester Tag mit Datum und Temperatur, Trend erste vs. zweite Woche.
+💧 Wasser – nur wenn etwas auffällt, sonst weglassen.
+📊 Langzeit – max. 2 Sätze zum YTD-Vergleich mit Zahlen.
+💡 Tipp – 1 bis 2 konkrete Maßnahmen, die direkt aus diesen Daten folgen (z. B. Verbraucher in sonnige Mittagsstunden legen, WP-Heizkurve prüfen, wenn milde Tage viel Netzbezug haben). Keine Allgemeinplätze wie "Licht ausschalten".
 
-Antworte auf Deutsch, maximal 180 Wörter, keine Einleitung. Struktur: je ein kurzer Abschnitt pro Kategorie mit Emoji, nur wenn etwas auffällt. Dann ein Abschnitt "📊 Langzeit" mit max. 2 Sätzen zum YTD-Vergleich 2026 vs. 2025. Abschluss: eine Zeile Gesamtfazit.`;
+REGELN:
+- Deutsch, max. 170 Wörter, keine Einleitung, keine Grußformel.
+- Reiner Text: KEIN Markdown, keine Sternchen, keine Rauten, keine Tabellen.
+- Immer konkrete Zahlen mit Datum statt vager Aussagen ("12,4 kWh am 03.11. bei 4 °C" statt "an einem kalten Tag").
+- Fehlen Daten, sag es in einem Halbsatz und spekuliere nicht.`;
 const KI_CACHE_KEY  = 'wagael_ki_v1';
 const KI_INTERVAL   = 14 * 24 * 60 * 60 * 1000;
 

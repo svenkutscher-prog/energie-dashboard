@@ -79,6 +79,10 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 /* ── ZÄHLERSTÄNDE ────────────────────────────────── */
 .zaehler-title{font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:10px;}
 .zaehler-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+/* Gas ausblenden (Wärmepumpe) – gesteuert über Einstellungen › Kategorien › Gas */
+body.no-gas .gas-only{display:none !important;}
+body.no-gas .zaehler-grid{grid-template-columns:1fr 1fr;}
+body.no-gas .tacho-grid{grid-template-columns:1fr !important;}
 .zcard{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px 10px;text-align:center;position:relative;overflow:hidden;}
 .zcard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
 .zcard.s::before{background:var(--strom);}
@@ -271,7 +275,7 @@ canvas{display:block;}
       <div class="curve-title" id="curve-title">Letzte 60 Tage</div>
       <div class="curve-tabs">
         <button class="ctab strom active" onclick="switchCurve('strom',this)">Strom</button>
-        <button class="ctab gas" onclick="switchCurve('gas',this)">Gas</button>
+        <button class="ctab gas gas-only" onclick="switchCurve('gas',this)">Gas</button>
         <button class="ctab temp" onclick="switchCurve('temp',this)">Temp</button>
         <button class="ctab wasser" onclick="switchCurve('wasser',this)">Wasser</button>
       </div>
@@ -286,12 +290,12 @@ canvas{display:block;}
   <div data-block="tacho">
   <div class="section">
     <div class="section-title" id="tacho-title">Min / Max</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <div class="tacho-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px;text-align:center">
         <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px">⚡ Strom</div>
         <canvas id="tachoStrom" width="160" height="100" style="max-width:100%"></canvas>
       </div>
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px;text-align:center">
+      <div class="gas-only" style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px;text-align:center">
         <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px">🔥 Gas</div>
         <canvas id="tachoGas" width="160" height="100" style="max-width:100%"></canvas>
       </div>
@@ -303,7 +307,7 @@ canvas{display:block;}
   <div class="section">
     <div class="zaehler-title" id="zaehler-title">Zählerstände</div>
     <div class="zaehler-grid">
-      <div class="zcard g"><div class="zlabel">Gas</div><div class="zval" id="z-gas">–</div><div class="zunit">m³</div></div>
+      <div class="zcard g gas-only"><div class="zlabel">Gas</div><div class="zval" id="z-gas">–</div><div class="zunit">m³</div></div>
       <div class="zcard s"><div class="zlabel">Strom</div><div class="zval" id="z-strom">–</div><div class="zunit">kWh</div></div>
       <div class="zcard w"><div class="zlabel">Wasser</div><div class="zval" id="z-wasser">–</div><div class="zunit">m³</div></div>
     </div>
@@ -349,12 +353,12 @@ canvas{display:block;}
   <!-- ENERGIE-LEGENDE -->
   <div class="section" style="margin-top:10px;">
     <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;">
-      <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">⚡ Strom · 🔥 Gas — Tagesprognose</div>
+      <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">⚡ Strom<span class="gas-only"> · 🔥 Gas</span> — Tagesprognose</div>
       <div style="display:flex;flex-wrap:wrap;gap:10px;font-size:11px;color:var(--muted);">
         <span><span style="color:#10b981;font-weight:700">●</span> Solar / Niedrig</span>
         <span><span style="color:#f59e0b;font-weight:700">●</span> Normal</span>
         <span><span style="color:#ef4444;font-weight:700">●</span> Hoch / Bad Day</span>
-        <span style="color:var(--muted)">· Basis: Ø letzte 30 Tage · Temp-Korrektur Gas</span>
+        <span style="color:var(--muted)">· Basis: Ø letzte 30 Tage<span class="gas-only"> · Temp-Korrektur Gas</span></span>
       </div>
     </div>
   </div>
@@ -855,7 +859,7 @@ canvas{display:block;}
 
 <script>
 // ── APP VERSION (bei jeder Änderung hochzählen → iOS lädt neu) ──
-const APP_VERSION = '2.2.3';
+const APP_VERSION = '2.2.5';
 const VERSION_KEY = 'wagael_app_version';
 
 // iOS Hard-Reload: öffnet mit ?v=timestamp → umgeht jeden Cache
@@ -898,7 +902,7 @@ const CURVE_COLORS = { gas:'#ef4444', temp:'#10b981', wasser:'#3b82f6' };
 const CURVE_TARGETS = { strom:4.33, gas:4.8, temp:null, wasser:null };
 
 function defaultPrefs() {
-  return { cats:{strom:true,gas:true,wasser:true,temp:false}, years:{2021:true,2022:true,2023:true,2024:true,2025:true,2026:true}, weekendBg:true, curveDays:60, blockOrder:['kurve','tacho','zaehler','prognose','ki'], blockDisabled:{} };
+  return { cats:{strom:true,gas:false,wasser:true,temp:false}, years:{2021:true,2022:true,2023:true,2024:true,2025:true,2026:true}, weekendBg:true, curveDays:60, blockOrder:['kurve','tacho','zaehler','prognose','ki'], blockDisabled:{} };
 }
 function loadPrefs() { try { return JSON.parse(localStorage.getItem(PREF_KEY)) || defaultPrefs(); } catch(e) { return defaultPrefs(); } }
 function savePrefs(p) { localStorage.setItem(PREF_KEY, JSON.stringify(p)); }
@@ -959,6 +963,7 @@ function toggleCat(key, on) {
   const active = ALL_CATS.filter(c => c.key !== key && prefs.cats[c.key]);
   if (!on && active.length === 0) { event.target.checked = true; return; }
   prefs.cats[key] = on; savePrefs(prefs); renderYear();
+  if (key === 'gas') { applyGasVisibility(); renderBlockOrderList(); }
 }
 
 function toggleYear(yr, btn) {
@@ -1261,7 +1266,7 @@ function renderBlockOrderList() {
     return `<div class="settings-row" style="${rowOpacity}">
       <div class="settings-row-left">
         <div class="settings-icon">${m.icon}</div>
-        <div><div class="settings-label">${m.name}</div><div class="settings-sub">${m.sub}</div></div>
+        <div><div class="settings-label">${m.name}</div><div class="settings-sub">${prefs.cats.gas ? m.sub : m.sub.replace(/ · Gas|Gas · /g, '')}</div></div>
       </div>
       <div style="display:flex;align-items:center;gap:6px">
         <label class="toggle" title="${isOff?'Einschalten':'Ausschalten'}">
@@ -1327,7 +1332,7 @@ function renderTacho() {
   const daily = (DB.dailyExpanded || DB.daily).slice(-maxDays);
   const stromVals = daily.map(r => r.strom).filter(v => v !== null && v !== undefined && !isNaN(v));
   const gasVals   = daily.map(r => r.gas).filter(v => v !== null && v !== undefined && !isNaN(v));
-  if (!stromVals.length || !gasVals.length) return;
+  if (!stromVals.length) return;
   const sMin = Math.min(...stromVals), sMax = Math.max(...stromVals);
   const gMin = Math.min(...gasVals),   gMax = Math.max(...gasVals);
   const sAvg = stromVals.reduce((a,b)=>a+b,0) / stromVals.length;
@@ -1335,7 +1340,7 @@ function renderTacho() {
   const sScale = Math.ceil(sMax * 1.1);
   const gScale = Math.ceil(gMax * 1.1);
   drawTachoMinMax('tachoStrom', 0, sScale, sMin, sMax, sAvg, '#f59e0b');
-  drawTachoMinMax('tachoGas',   0, gScale, gMin, gMax, gAvg, '#ef4444');
+  if (gasVals.length) drawTachoMinMax('tachoGas',   0, gScale, gMin, gMax, gAvg, '#ef4444');
   const titleEl = document.getElementById('tacho-title');
   if (titleEl) titleEl.textContent = 'Min / Ø / Max — letzte ' + maxDays + ' Tage';
 }
@@ -1586,7 +1591,7 @@ function renderForecast(d) {
         <span class="fday-energy-val" style="color:${strom.color}">${strom.val.toFixed(1)}</span>
         <span class="fday-energy-unit">kWh</span>
       </div>
-      <div class="fday-energy-row">
+      <div class="fday-energy-row gas-only">
         <span>🔥</span>
         <span class="fday-energy-val" style="color:${gas.color}">${gas.val.toFixed(1)}</span>
         <span class="fday-energy-unit">m³</span>
@@ -1597,7 +1602,7 @@ function renderForecast(d) {
 
   document.getElementById('forecastGrid').innerHTML = grid;
   document.getElementById('forecastUpdated').textContent =
-    `Linnich · Open-Meteo · Ø Strom ${avgStrom.toFixed(2)} kWh/Tag · Gas ${avgGas.toFixed(2)} m³/Tag`;
+    `Linnich · Open-Meteo · Ø Strom ${avgStrom.toFixed(2)} kWh/Tag` + (prefs.cats.gas ? ` · Gas ${avgGas.toFixed(2)} m³/Tag` : '');
 
   const labels = (daily.time || daily.date).map((date,i) => i===0?'Heute':DAYS[new Date(date).getDay()]);
   const hi = daily.temperature_2m_max.map(v=>Math.round(v));
@@ -1917,6 +1922,11 @@ WICHTIG zur Interpretation der Stromdaten:
 - Strom > 0 kWh bedeutet: Netzbezug war nötig, Solar hat nicht gereicht. Je höher, desto mehr Bewölkung oder Nacht.
 - Der Stromwert ist also der Netzbezug, NICHT der Solarertrag. Niedriger Wert = guter Solartag.
 
+WICHTIG: Der Haushalt heizt inzwischen mit einer Wärmepumpe (Samsung 20 kW) statt mit Gas.
+- Gas = 0 oder fehlend ist der Normalzustand und kein Datenfehler. Gas nur erwähnen, wenn trotzdem nennenswerter Gasverbrauch auftaucht.
+- Die Wärmepumpe läuft mit Strom: An kalten Tagen und in der Heizperiode ist ein höherer Netzbezug zu erwarten. Bewerte den Strom immer im Zusammenhang mit der Temperatur, nicht als reinen Mehrverbrauch.
+- Beim YTD-Vergleich 2026 vs. 2025: Mehr Strom und weniger Gas sind durch den Umstieg auf die Wärmepumpe bedingt. Ordne das so ein und werte es nicht als Verschlechterung.
+
 Antworte auf Deutsch, maximal 180 Wörter, keine Einleitung. Struktur: je ein kurzer Abschnitt pro Kategorie mit Emoji, nur wenn etwas auffällt. Dann ein Abschnitt "📊 Langzeit" mit max. 2 Sätzen zum YTD-Vergleich 2026 vs. 2025. Abschluss: eine Zeile Gesamtfazit.`;
 const KI_CACHE_KEY  = 'wagael_ki_v1';
 const KI_INTERVAL   = 14 * 24 * 60 * 60 * 1000;
@@ -2176,6 +2186,20 @@ function fmt(v) {
   if(v===null||v===undefined) return '–';
   return Number(v).toLocaleString('de',{maximumFractionDigits:1});
 }
+
+// ── GAS AUSBLENDEN (Wärmepumpe) ────────────────────────────
+// Gas wird nicht gelöscht, nur ausgeblendet. Wieder einblenden: Einstellungen › Kategorien › Gas
+function applyGasVisibility() {
+  const show = !!prefs.cats.gas;
+  document.body.classList.toggle('no-gas', !show);
+  if (!show && curveMode === 'gas') {
+    const st = document.querySelector('.ctab.strom');
+    if (st) switchCurve('strom', st);
+  }
+}
+// Einmalig: gespeicherte Einstellungen auf "Gas aus" umstellen (Umstieg Wärmepumpe)
+if (!prefs.gasWpMigrated) { prefs.cats.gas = false; prefs.gasWpMigrated = true; savePrefs(prefs); }
+applyGasVisibility();
 
 loadData();
 
